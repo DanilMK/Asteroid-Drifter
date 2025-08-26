@@ -1,0 +1,44 @@
+{
+	"schemaVersion": 1,
+	"id": "asteroid_drifter",
+	"version": "${version}",
+	"name": "Asteroid Drifter",
+	"description": "This mod add new Ad Astra dimension and new mechanic: asteroid drifting in space ship!",
+	"authors": [
+		"Smok419"
+	],
+	"contact": {
+
+	},
+	"license": "MIT",
+	"icon": "assets/asteroid_drifter/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.smok.drifter.AsteroidDrifter"
+		],
+		"client": [
+			"net.smok.drifter.AsteroidDrifterClient"
+		],
+		"fabric-datagen": [
+			"net.smok.drifter.AsteroidDrifterDataGenerator"
+		]
+	},
+	"mixins": [
+		"asteroid-drifter.mixins.json",
+		{
+			"config": "asteroid-drifter.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*",
+		"ad_astra": ">=1.15.19"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
