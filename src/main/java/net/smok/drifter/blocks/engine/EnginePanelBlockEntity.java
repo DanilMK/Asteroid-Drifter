@@ -119,7 +119,7 @@ public class EnginePanelBlockEntity extends BlockEntity implements BasicContaine
 
     @Override
     public Component getDisplayName() {
-        return Component.literal("Engine panel"); // todo translate this
+        return Component.literal("block.asteroid_drifter.engine_panel");
     }
 
     @Nullable
