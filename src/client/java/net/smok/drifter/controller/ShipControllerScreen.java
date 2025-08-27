@@ -90,15 +90,15 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
             buttonY += 24;
             addRenderableWidget(new LabeledImageButton(10,
                     buttonY, 99, 20, 0, 0, 20, BUTTON,
-                    99, 40, (b) -> rerollAsteroids(), Component.literal("Reroll")));
+                    99, 40, (b) -> rerollAsteroids(), Component.translatable("gui.asteroid_drifter.reroll")));
             buttonY += 24;
             addRenderableWidget(new LabeledImageButton(10,
                     buttonY, 99, 20, 0, 0, 20, BUTTON,
-                    99, 40, (b) -> pauseShip(), Component.literal("Pause")));
+                    99, 40, (b) -> pauseShip(), Component.translatable("gui.asteroid_drifter.pause")));
             buttonY += 24;
             addRenderableWidget(new LabeledImageButton(10,
                     buttonY, 99, 20, 0, 0, 20, BUTTON,
-                    99, 40, (b) -> stopShip(), Component.literal("Stop")));
+                    99, 40, (b) -> stopShip(), Component.translatable("gui.asteroid_drifter.stop")));
         }
 
         int centerX = width / 2;

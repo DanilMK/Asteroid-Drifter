@@ -1,7 +1,7 @@
 {
   "values": [
     "asteroid_drifter:alert_lamp",
-    "asteroid_drifter:alert_system",
+    "asteroid_drifter:alert_panel",
     "asteroid_drifter:engine_panel",
     "asteroid_drifter:ship_controller"
   ]

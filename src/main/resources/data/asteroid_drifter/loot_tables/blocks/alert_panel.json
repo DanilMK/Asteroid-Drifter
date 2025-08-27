@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "asteroid_drifter:alert_system"
+          "name": "asteroid_drifter:alert_panel"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "asteroid_drifter:blocks/alert_system"
+  "random_sequence": "asteroid_drifter:blocks/alert_panel"
 }
