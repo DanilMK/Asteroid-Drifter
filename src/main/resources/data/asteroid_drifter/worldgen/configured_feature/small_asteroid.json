@@ -1,0 +1,60 @@
+{
+  "type": "asteroid_drifter:asteroid_feature",
+  "config": {
+    "fraction": 0.75,
+    "size": 32,
+    "filler": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:stone"
+      }
+    },
+    "modifiers": [
+      {
+        "asteroid_modifier_type": "asteroid_drifter:noise_replace",
+        "noise": "simplex",
+        "fraction": 2.5,
+        "test_all_cube": false,
+        "blocks": [
+          {
+            "threshold": 0.75,
+            "target": {
+              "predicate_type": "minecraft:tag_match",
+              "tag": "minecraft:stone_ore_replaceables"
+            },
+            "state": {
+              "Name": "minecraft:air"
+            }
+          }
+        ]
+      },
+      {
+        "asteroid_modifier_type": "asteroid_drifter:noise_replace",
+        "noise": "splatter",
+        "fraction": 5,
+        "test_all_cube": false,
+        "blocks": [
+          {
+            "threshold": 0.85,
+            "target": {
+              "predicate_type": "minecraft:tag_match",
+              "tag": "minecraft:stone_ore_replaceables"
+            },
+            "state": {
+              "Name": "minecraft:iron_ore"
+            }
+          }
+        ]
+      },
+      {
+        "asteroid_modifier_type": "asteroid_drifter:sharp_surface",
+        "min_sharpness": 5,
+        "max_sharpness": 15
+      },
+      {
+        "asteroid_modifier_type": "asteroid_drifter:smooth_surface",
+        "smooth": 2
+      }
+    ]
+  }
+}

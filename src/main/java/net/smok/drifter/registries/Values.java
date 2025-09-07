@@ -13,10 +13,12 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.material.Fluid;
 import net.smok.drifter.AlertEffect;
 import net.smok.drifter.Debug;
 import net.smok.drifter.recipies.AsteroidRecipe;
+import net.smok.drifter.world.AsteroidFeature;
 
 import java.util.function.Function;
 
@@ -35,6 +37,8 @@ public final class Values {
     public static final FluidRegistry FLUID_PROPERTIES = new FluidRegistry(MOD_ID);
     public static final ResourcefulRegistry<Fluid> FLUIDS = ResourcefulRegistries.create(BuiltInRegistries.FLUID, MOD_ID);
     public static final ResourcefulRegistry<MobEffect> EFFECTS = ResourcefulRegistries.create(BuiltInRegistries.MOB_EFFECT, MOD_ID);
+    public static final ResourcefulRegistry<Feature<?>> FEATURES = ResourcefulRegistries.create(BuiltInRegistries.FEATURE, MOD_ID);
+
 
 
     public static final FluidData SHIP_FUEL = FLUID_PROPERTIES.register("ship_fuel", FluidProperties.create()
@@ -55,6 +59,9 @@ public final class Values {
     public static final RegistryEntry<RecipeType<AsteroidRecipe>> ASTEROID_RECIPE_TYPE = registerRecipeType("asteroid");
     public static final RegistryEntry<CodecRecipeSerializer<AsteroidRecipe>> ASTEROID_RECIPE =
             registerRecipe("asteroid", ASTEROID_RECIPE_TYPE.get(), AsteroidRecipe::codec);
+
+    public static final RegistryEntry<AsteroidFeature> ASTEROID_FEATURE =
+            FEATURES.register("asteroid_feature", AsteroidFeature::new);
 
 
     private static <T extends Recipe<?>> RegistryEntry<CodecRecipeSerializer<T>> registerRecipe(String id, RecipeType<T> recipeType, Function<ResourceLocation, Codec<T>> codec) {
