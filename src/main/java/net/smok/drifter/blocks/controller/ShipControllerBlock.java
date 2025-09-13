@@ -3,6 +3,7 @@ package net.smok.drifter.blocks.controller;
 import earth.terrarium.botarium.common.menu.ExtraDataMenuProvider;
 import earth.terrarium.botarium.common.menu.MenuHooks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -48,7 +49,7 @@ public class ShipControllerBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
         return blockEntityType == DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get() && !level.isClientSide ?
-                (level1, blockPos, blockState1, blockEntity) -> ((ShipControllerBlockEntity) blockEntity).tick(level1)
-                 : null;
+                (level1, blockPos, blockState1, blockEntity) -> ((ShipControllerBlockEntity) blockEntity).tick((ServerLevel) level1)
+                 : (level1, blockPos, blockState1, blockEntity) -> ((ShipControllerBlockEntity) blockEntity).tick(level1);
     }
 }

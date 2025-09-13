@@ -29,10 +29,10 @@ public abstract class ExtendedMenu extends AbstractContainerMenu {
     protected void addCustomDataSlot(CustomDataSlot slot) {
         customDataSlots.add(slot);
     }
-
+/*
     @Override
-    public void broadcastFullState() {
-        super.broadcastFullState();
+    public void sendAllDataToRemote() {
+        super.sendAllDataToRemote();
         for (int i = 0; i < customDataSlots.size(); i++) {
             CustomDataSlot slot = customDataSlots.get(i);
             CompoundTag data = new CompoundTag();
@@ -44,7 +44,7 @@ public abstract class ExtendedMenu extends AbstractContainerMenu {
                 ServerPlayNetworking.send(serverPlayer, CustomDataSlot.ID, friendlyByteBuf);
             }
         }
-    }
+    }*/
 
     @Override
     public void broadcastChanges() {
@@ -65,7 +65,6 @@ public abstract class ExtendedMenu extends AbstractContainerMenu {
     }
 
     public void receiveData(int index, CompoundTag data) {
-
         customDataSlots.get(index).receiveData(data);
     }
 

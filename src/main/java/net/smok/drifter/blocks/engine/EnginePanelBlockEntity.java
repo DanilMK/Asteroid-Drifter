@@ -31,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.smok.drifter.Debug;
+import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.ShipBlock;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
@@ -43,8 +44,8 @@ import oshi.util.tuples.Pair;
 
 import java.util.List;
 
-public class EnginePanelBlockEntity extends BlockEntity implements BasicContainer, WorldlyContainer,
-        ExtraDataMenuProvider, ShipBlock {
+public class EnginePanelBlockEntity extends ExtendedBlockEntity implements BasicContainer, WorldlyContainer,
+        ShipBlock {
 
     public static final int TANK_0 = 0;
     public static final int SECOND_UPGRADE = 1;
@@ -58,8 +59,6 @@ public class EnginePanelBlockEntity extends BlockEntity implements BasicContaine
     private final SavedDataSlot<Integer> speed = SavedDataSlot.intValue("speed");
 
 
-
-    private int changeCount;
 
     private final List<SavedDataSlot<?>> savedData = List.of(fuelEfficiency, maxSpeed, speed);
 
@@ -87,11 +86,6 @@ public class EnginePanelBlockEntity extends BlockEntity implements BasicContaine
                 new InsertOnlyFluidContainer(value -> FluidConstants.fromMillibuckets(MachineConfig.deshTierFluidCapacity), 1,
                         (integer, fluidHolder) -> true)
         );
-    }
-
-    @Override
-    public void writeExtraData(ServerPlayer serverPlayer, FriendlyByteBuf friendlyByteBuf) {
-        friendlyByteBuf.writeBlockPos(getBlockPos());
     }
 
     @Override
@@ -240,11 +234,6 @@ public class EnginePanelBlockEntity extends BlockEntity implements BasicContaine
         speed.setValue(0);
     }
 
-    @Override
-    public void setChanged() {
-        super.setChanged();
-        changeCount++;
-    }
 
     public long getFuel() {
         return FluidUtils.getTank(getItem(TANK_0)).getFluidAmount();
@@ -278,9 +267,6 @@ public class EnginePanelBlockEntity extends BlockEntity implements BasicContaine
         return fuelEfficiency.get();
     }
 
-    public int getChangeCount() {
-        return changeCount;
-    }
 
     public int maxSpeed() {
         return maxSpeed.getValue();

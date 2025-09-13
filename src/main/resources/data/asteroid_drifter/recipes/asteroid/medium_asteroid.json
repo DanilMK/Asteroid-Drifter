@@ -1,0 +1,8 @@
+{
+  "type": "asteroid_drifter:asteroid",
+  "icon": "asteroid_drifter:medium_asteroid",
+  "tooltips": [
+    "item.asteroid_drifter.medium_asteroid"
+  ],
+  "configured_feature": "asteroid_drifter:medium_asteroid"
+}

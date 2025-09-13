@@ -1,76 +1,49 @@
 package net.smok.drifter.blocks.controller;
 
-import earth.terrarium.adastra.common.blockentities.base.BasicContainer;
-import earth.terrarium.botarium.common.menu.ExtraDataMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.smok.drifter.Debug;
+import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
-import net.smok.drifter.recipies.AsteroidRecipe;
+import net.smok.drifter.blocks.controller.extras.SimpleAsteroidFieldGenerator;
+import net.smok.drifter.blocks.controller.extras.SimpleLandLaunchHandler;
+import net.smok.drifter.recipies.PlacedAsteroidRecipe;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.blocks.ShipBlock;
-import net.smok.drifter.registries.DrifterItems;
-import net.smok.drifter.registries.Values;
 import net.smok.drifter.utils.BlockEntityPosition;
 import net.smok.drifter.utils.FlyUtils;
 import net.smok.drifter.utils.SavedDataSlot;
-import net.smok.drifter.utils.SimpleContainerData;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataMenuProvider, BasicContainer, ShipBlock {
+public class ShipControllerBlockEntity extends ExtendedBlockEntity implements ShipBlock {
 
     
     private static final int ASTEROIDS_AMOUNT = 8;
-    private static final int ASTEROID_SCATTER = 30;
 
 
     private static final int DANGER_HALF_SIZE = 16;
     private static final int ESCAPE_DANGER_TIME = 60 * 20; // 60 seconds
-    private static final int DISTANCE_FACTOR = 50000; // convert UI distance to km
-
-
-    // start positions for scattering
-    private static final int[] startX = new int[] {-88, -8, +72, -88, +92, -88, -8, +72};
-    private static final int[] startY = new int[] {-88, -88, -88, -8, -8, +72, +72, +72};
 
 
     // Asteroids
-    private final AsteroidRecipe[] asteroidRecipes = new AsteroidRecipe[ASTEROIDS_AMOUNT];
-    private final NonNullList<ItemStack> items = NonNullList.withSize(ASTEROIDS_AMOUNT, ItemStack.EMPTY);
-    private final SimpleContainerData x = new SimpleContainerData(ASTEROIDS_AMOUNT);
-    private final SimpleContainerData y = new SimpleContainerData(ASTEROIDS_AMOUNT);
-    private final SimpleContainerData dist = new SimpleContainerData(ASTEROIDS_AMOUNT);
+    private final List<PlacedAsteroidRecipe> asteroids = NonNullList.withSize(ASTEROIDS_AMOUNT, PlacedAsteroidRecipe.EMPTY);
 
 
     // Local data
@@ -82,6 +55,9 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
     private final SavedDataSlot<Integer> escapeDangerTime = SavedDataSlot.intValue("escapeDangerTime", 0, ESCAPE_DANGER_TIME); // in ticks
     private final SavedDataSlot<Boolean> stand = SavedDataSlot.booleanValue("stand");
     private int shipMoving;
+
+    private final AsteroidFieldGenerator asteroidFieldGenerator;
+    private final LandLaunchHandler landLaunchHandler;
 
 
     private final BlockEntityPosition<AlertPanelBlockEntity> alertPanel =
@@ -96,9 +72,10 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
 
     public ShipControllerBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get(), blockPos, blockState);
+        asteroidFieldGenerator = new SimpleAsteroidFieldGenerator();
+        landLaunchHandler = new SimpleLandLaunchHandler(getBlockPos(), 25);
 
         stand.setValue(true);
-        createNewAsteroids();
     }
 
     @Override
@@ -116,18 +93,14 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
         return Container.stillValidBlockEntity(this, player);
     }
 
-    @Override
-    public void writeExtraData(ServerPlayer player, FriendlyByteBuf buffer) {
-        buffer.writeBlockPos(this.getBlockPos());
+    public void tick(Level clientLevel) {
+        asteroids.forEach(recipe -> recipe.setRecipe(clientLevel));
     }
 
-    @Override
-    public NonNullList<ItemStack> items() {
-        return items;
-    }
-
-    public void tick(Level lvl) {
+    public void tick(ServerLevel serverLevel) {
         boolean save = false;
+        asteroids.forEach(recipe -> recipe.setRecipe(serverLevel));
+        landLaunchHandler.destroyOnLaunch(serverLevel);
         if (isStand()) return;
 
         // handle speed
@@ -136,8 +109,8 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
 
 
         if (getRemainDistance() > 0 && getSpeed() > 0) {
-            long gameTime = lvl.getGameTime();
-            movingTick(lvl, gameTime);
+            long gameTime = serverLevel.getGameTime();
+            movingTick(serverLevel, gameTime);
             save |= gameTime % 10 == 0;
 
         } else {
@@ -195,12 +168,15 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
             return;
         }
 
-        if (items.get(asteroid).isEmpty()) return; // We can't drive to empty asteroid
-        if (!engine.getBlock(level).map(e -> e.canLaunch(dist.get(asteroid))).orElse(false)) return; // We can't launch if not enough fuel
+        PlacedAsteroidRecipe recipe = asteroids.get(asteroid);
+
+        if (recipe.recipe().isEmpty()) return; // We can't drive to empty asteroid
+        if (!engine.getBlock(level).map(e -> e.canLaunch(recipe.distance())).orElse(false)) return; // We can't launch if not enough fuel
 
         stand.setValue(false);
+        landLaunchHandler.startDestroy();
         selectedAsteroid.setValue(asteroid);
-        remainDistance.setValue(dist.get(asteroid));
+        remainDistance.setValue(getSelectedRecipe().distance());
         shipPosition.setValue(0);
         setChanged();
     }
@@ -217,14 +193,7 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
 
     public void land() {
         if (getRemainDistance() < 100) {
-            if (level instanceof ServerLevel serverLevel) {
-                ResourceLocation structure = asteroidRecipes[getSelectedAsteroid()].structure();
-                StructureTemplate template = serverLevel.getStructureManager().getOrCreate(structure);
-                BlockPos place = getBlockPos().above(100);
-                serverLevel.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(place), 1, place);
-                template.placeInWorld(serverLevel, place, place, new StructurePlaceSettings(), serverLevel.random, 2);
-            }
-
+            if (level instanceof ServerLevel serverLevel) asteroids.get(getSelectedAsteroid()).recipe().ifPresent(recipe -> landLaunchHandler.placeOnLand(serverLevel, recipe));
             remainDistance.setValue(0);
             createNewAsteroids();
         }
@@ -233,7 +202,6 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
         if (isInDanger()) pass();
         setChanged();
     }
-
 
 
     public boolean isInDanger() {
@@ -253,40 +221,15 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
         if (level == null) return;
         RandomSource random = level.getRandom();
 
-        // todo
-        
-        do for (int i = 0; i < ASTEROIDS_AMOUNT; i++) {
-            if (random.nextBoolean()) { // randomly get slot
-                AsteroidRecipe recipe = generateAsteroid(random);
-                if (recipe == null) continue;
-                int xDist = startX[i] + random.nextInt(-ASTEROID_SCATTER, +ASTEROID_SCATTER);
-                int yDist = startY[i] + random.nextInt(-ASTEROID_SCATTER, +ASTEROID_SCATTER);
-                dist.set(i, (int) (Math.sqrt(xDist * xDist + yDist * yDist) * DISTANCE_FACTOR));
-                asteroidRecipes[i] = recipe;
-                x.set(i, xDist);
-                y.set(i, yDist);
-            }
-        } while (isEmpty());
+        asteroids.clear();
+        asteroidFieldGenerator.genAsteroidField(this, random, asteroids);
 
-        setChanged(level, worldPosition, getBlockState());
+        setChanged();
     }
 
 
     public void moveShip(int value) {
-        if (value < 0) shipMoving = -1;
-        else if (value > 0) shipMoving = 1;
-        else shipMoving = 0;
-    }
-
-    private AsteroidRecipe generateAsteroid(RandomSource random) {
-        List<AsteroidRecipe> allRecipesFor = level.getRecipeManager().getAllRecipesFor(Values.ASTEROID_RECIPE_TYPE.get())
-                .stream().filter(asteroidRecipe -> asteroidRecipe.matches(this, level)).toList();
-        return allRecipesFor.get(random.nextInt(allRecipesFor.size()));
-
-    }
-
-    private ItemStack generateItems(@NotNull RandomSource random) {
-        return new ItemStack(DrifterItems.MEDIUM_ASTEROID.get());
+        shipMoving = Integer.compare(value, 0);
     }
 
 
@@ -304,10 +247,6 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
     @Override
     public void load(CompoundTag compoundTag) {
         super.load(compoundTag);
-        ContainerHelper.loadAllItems(compoundTag, items);/*
-        x.setAll(compoundTag.getIntArray("xPositions"));
-        y.setAll(compoundTag.getIntArray("yPositions"));
-        dist.setAll(compoundTag.getIntArray("dist"));*/
         alertPanel.load(compoundTag);
         engine.load(compoundTag);
 
@@ -315,27 +254,10 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
 
         if (!compoundTag.contains("asteroids", Tag.TAG_LIST)) return;
         ListTag asteroids = compoundTag.getList("asteroids", CompoundTag.TAG_COMPOUND);
-        for (int i = 0; i < asteroids.size(); i++) {
+        for (int i = 0; i < asteroids.size() && i < this.asteroids.size(); i++) {
             CompoundTag tag = (CompoundTag) asteroids.get(i);
-            int ax = 0;
-            int ay = 0;
-            int ad = 0;
-            AsteroidRecipe recipe = null;
-            if (tag.contains("x", Tag.TAG_INT)) ax = tag.getInt("x");
-            if (tag.contains("y", Tag.TAG_INT)) ay = tag.getInt("y");
-            if (tag.contains("distance", Tag.TAG_INT)) ad = tag.getInt("distance");
-            if (tag.contains("recipe", Tag.TAG_STRING))
-                recipe = level.getRecipeManager().getAllRecipesFor(Values.ASTEROID_RECIPE_TYPE.get()).stream()
-                        .filter(asteroidRecipe -> asteroidRecipe.id().equals(new ResourceLocation(tag.getString("recipe"))))
-                        .findFirst().orElse(null);
-
-            if (ad == 0 || recipe == null) continue;
-
-            asteroidRecipes[i] = recipe;
-            x.set(i, ax);
-            y.set(i, ay);
-            dist.set(i, ad);
-
+            PlacedAsteroidRecipe placedAsteroidRecipe = PlacedAsteroidRecipe.loadData(tag);
+            this.asteroids.set(i, placedAsteroidRecipe);
         }
 
     }
@@ -343,64 +265,21 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
     @Override
     protected void saveAdditional(CompoundTag compoundTag) {
         super.saveAdditional(compoundTag);
-        ContainerHelper.saveAllItems(compoundTag, items);/*
-        compoundTag.putIntArray("xPositions", x.getAll());
-        compoundTag.putIntArray("yPositions", y.getAll());
-        compoundTag.putIntArray("dist", dist.getAll());*/
         alertPanel.save(compoundTag);
         engine.save(compoundTag);
 
         savedDataSlots.forEach(savedValue -> savedValue.save(compoundTag));
 
         ListTag asteroids = new ListTag();
-        for (int i = 0; i < ASTEROIDS_AMOUNT; i++) {
-            AsteroidRecipe recipe = asteroidRecipes[i];
+        this.asteroids.forEach(placedAsteroidRecipe -> asteroids.add(placedAsteroidRecipe.saveData()));
 
-            if (recipe == null) {
-                asteroids.add(new CompoundTag());
-                continue;
-            }
-
-            int ax = x.get(i);
-            int ay = y.get(i);
-            int ad = dist.get(i);
-            CompoundTag asteroid = new CompoundTag();
-            asteroid.putInt("x", ax);
-            asteroid.putInt("y", ay);
-            asteroid.putInt("distance", ad);
-            asteroid.putString("recipe", recipe.id().toString());
-
-            asteroids.add(asteroid);
-        }
         compoundTag.put("asteroids", asteroids);
     }
 
 
-    @Override
-    public void clearContent() {
-        items.clear();
+    public PlacedAsteroidRecipe getSelectedRecipe() {
+        return asteroids.get(selectedAsteroid.getValue());
     }
-
-    public @NotNull CompoundTag getUpdateTag() {
-        return this.saveWithoutMetadata();
-    }
-
-    public Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    public SimpleContainerData getX() {
-        return x;
-    }
-
-    public SimpleContainerData getY() {
-        return y;
-    }
-
-    public SimpleContainerData getDist() {
-        return dist;
-    }
-
 
     public Component getRequired(int distance) {
         return engine.getBlock(level).map(block -> block.getRequired(distance)).orElse(null);
@@ -411,7 +290,7 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
     }
 
     public int getTotalDistance() {
-        return dist.get(getSelectedAsteroid());
+        return getSelectedRecipe().distance();
     }
 
     public int getRemainDistance() {
@@ -455,7 +334,6 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
     }
 
 
-
     @Override
     public boolean bind(BlockPos pos, ShipBlock other) {
         if (other instanceof AlertPanelBlockEntity) {
@@ -473,6 +351,10 @@ public class ShipControllerBlockEntity extends BlockEntity implements ExtraDataM
     public void clear() {
         alertPanel.setPos(null);
         engine.setPos(null);
+    }
+
+    public List<PlacedAsteroidRecipe> getAllRecipes() {
+        return asteroids;
     }
 
     public enum Collision {

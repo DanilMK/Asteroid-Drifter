@@ -12,13 +12,14 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
+import net.smok.drifter.recipies.PlacedAsteroidRecipe;
 import net.smok.drifter.registries.Values;
-import net.smok.drifter.blocks.controller.AsteroidSlot;
 import net.smok.drifter.blocks.controller.ShipControllerMenu;
 import net.smok.drifter.network.NetworkHandler;
 import net.smok.drifter.widgets.*;
@@ -58,9 +59,13 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
         this.menu = menu;
         controller = menu.controller();
         player = inventory.player;
-        asteroids = menu.getAsteroidSlots().stream().map((AsteroidSlot slot) ->
-                new AsteroidSlotWidget(controller, slot, this)).toList();
 
+        List<AsteroidSlotWidget> list = new ArrayList<>();
+        for (int i = 0; i < controller.getAllRecipes().size(); i++) {
+            AsteroidSlotWidget asteroidSlotWidget = new AsteroidSlotWidget(i, controller, this);
+            list.add(asteroidSlotWidget);
+        }
+        asteroids = list;
         initDriving = menu.controller().getRemainDistance() != 0;
 
         launchAnim = new AnimationHandler(60);

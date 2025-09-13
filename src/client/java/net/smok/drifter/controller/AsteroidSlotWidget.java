@@ -7,61 +7,80 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.smok.drifter.Debug;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
+import net.smok.drifter.recipies.AsteroidRecipe;
+import net.smok.drifter.recipies.PlacedAsteroidRecipe;
 import net.smok.drifter.registries.Values;
-import net.smok.drifter.blocks.controller.AsteroidSlot;
 import net.smok.drifter.utils.FlyUtils;
 import net.smok.drifter.widgets.Hovered;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class AsteroidSlotWidget implements Renderable, GuiEventListener, NarratableEntry, Hovered {
     public static final ResourceLocation SELECTOR = new ResourceLocation(Values.MOD_ID, "textures/gui/controller/selector.png");
     private static final ChatFormatting TOOLTIP_COLOR = ChatFormatting.GRAY;
 
+    private final int slot;
     private final ShipControllerBlockEntity controller;
-    private final AsteroidSlot slot;
     private boolean focused;
     private boolean selected;
 
     private final ShipControllerScreen parent;
 
-    public AsteroidSlotWidget(ShipControllerBlockEntity controller, AsteroidSlot slot, ShipControllerScreen parent) {
-        this.controller = controller;
+    public AsteroidSlotWidget(int slot, ShipControllerBlockEntity controller, ShipControllerScreen parent) {
         this.slot = slot;
+        this.controller = controller;
         this.parent = parent;
     }
 
     public int getX() {
-        return parent.width / 2 + slot.getX();
+        return parent.width / 2 + getPlacedAsteroidRecipe().x() - 8;
     }
 
     public int getY() {
-        return parent.height / 2 + slot.getY();
+        return parent.height / 2 + getPlacedAsteroidRecipe().y() - 8;
+    }
+
+    public int getXMid() {
+        return parent.width / 2 + getPlacedAsteroidRecipe().x();
+    }
+
+    public int getYMid() {
+        return parent.height / 2 + getPlacedAsteroidRecipe().y();
+    }
+
+    public Optional<AsteroidRecipe> getRecipe() {
+        return getPlacedAsteroidRecipe().recipe();
+    }
+
+    private @NotNull PlacedAsteroidRecipe getPlacedAsteroidRecipe() {
+        return controller.getAllRecipes().get(slot);
     }
 
     public @NotNull ItemStack getItem() {
-        return slot.getItem();
+        return getRecipe().map(AsteroidRecipe::icon).orElse(ItemStack.EMPTY);
     }
 
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float timeDelta) {
+       // Debug.log("Slot " + slot + " placed " + getPlacedAsteroidRecipe() + " recipe " + getRecipe().orElse(null) );
         if (focused) {
             RenderSystem.enableBlend();
             RenderSystem.enableDepthTest();
             guiGraphics.blit(SELECTOR, getX() - 1, getY() - 1, 0, 0, 18, 18, 18, 18);
             RenderSystem.disableBlend();
         }
-        guiGraphics.renderItem(slot.getItem(), getX(), getY());
+        guiGraphics.renderItem(getItem(), getX(), getY());
         if (isHover(mouseX, mouseY)) guiGraphics.fillGradient(RenderType.guiOverlay(), getX(), getY(), getX() + 16,
                 getY() + 16, 0x80ffffff, 0x80ffffff, 0);
     }
@@ -118,15 +137,15 @@ public final class AsteroidSlotWidget implements Renderable, GuiEventListener, N
 
     @Override
     public List<Component> content() {
-        List<Component> tooltip = parent.getMinecraft() != null ? Screen.getTooltipFromItem(parent.getMinecraft(), getItem()) : new ArrayList<>();
+        List<Component> tooltip = getRecipe().map(r -> new ArrayList<>(r.tooltips().stream().map(key -> (Component) Component.translatable(key)).toList())).orElse(new ArrayList<>());
 
-        MutableComponent distance = Component.translatable("tooltip.asteroid_drifter.full_distance", String.format("%,d", slot.getDist().get()));
+        MutableComponent distance = Component.translatable("tooltip.asteroid_drifter.full_distance", String.format("%,d", getPlacedAsteroidRecipe().distance()));
         distance.withStyle(TOOLTIP_COLOR);
 
-        Component fuel = controller.getRequired(slot.getDist().get());
+        Component fuel = controller.getRequired(getPlacedAsteroidRecipe().distance());
 
         String totalTime = FlyUtils.timeToString(FlyUtils.totalTime(
-                controller.maxSpeed(), slot.getDist().get()));
+                controller.maxSpeed(), getPlacedAsteroidRecipe().distance()));
         MutableComponent time = Component.translatable("tooltip.asteroid_drifter.time_required", totalTime).withStyle(TOOLTIP_COLOR);
 
         tooltip.add(distance);

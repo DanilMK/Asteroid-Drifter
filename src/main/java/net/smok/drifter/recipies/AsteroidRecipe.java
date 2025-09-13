@@ -4,7 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.teamresourceful.resourcefullib.common.codecs.recipes.ItemStackCodec;
 import com.teamresourceful.resourcefullib.common.recipe.CodecRecipe;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -13,7 +15,12 @@ import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.registries.Values;
 import org.jetbrains.annotations.NotNull;
 
-public record AsteroidRecipe(ResourceLocation id, ItemStack icon, ResourceLocation structure) implements CodecRecipe<ShipControllerBlockEntity> {
+import java.util.List;
+import java.util.Optional;
+
+public record AsteroidRecipe(ResourceLocation id, ItemStack icon, List<String> tooltips,
+                             Optional<ResourceLocation> structure, Optional<ResourceLocation> feature, int minDistance,
+                             int maxDistance) implements CodecRecipe<Container> {
 
 
 
@@ -22,9 +29,13 @@ public record AsteroidRecipe(ResourceLocation id, ItemStack icon, ResourceLocati
         return id;
     }
 
-    @Override
-    public boolean matches(ShipControllerBlockEntity container, Level level) {
+    @Override @Deprecated
+    public boolean matches(Container container, Level level) {
         return true;
+    }
+
+    public boolean matches(ShipControllerBlockEntity controllerBlock, int distance) {
+        return distance > minDistance & distance < maxDistance;
     }
 
     @Override
@@ -38,8 +49,14 @@ public record AsteroidRecipe(ResourceLocation id, ItemStack icon, ResourceLocati
     }
 
     public static Codec<AsteroidRecipe> codec(ResourceLocation id) {
-        return RecordCodecBuilder.create(instance -> instance.group(RecordCodecBuilder.point(id),
+        return RecordCodecBuilder.create(instance -> instance.group(
+                RecordCodecBuilder.point(id),
                 ItemStackCodec.CODEC.fieldOf("icon").forGetter(AsteroidRecipe::icon),
-                ResourceLocation.CODEC.fieldOf("structure").forGetter(AsteroidRecipe::structure)).apply(instance, AsteroidRecipe::new));
+                Codec.STRING.listOf().fieldOf("tooltips").forGetter(AsteroidRecipe::tooltips),
+                ResourceLocation.CODEC.optionalFieldOf("structure").forGetter(AsteroidRecipe::structure),
+                ResourceLocation.CODEC.optionalFieldOf("configured_feature").forGetter(AsteroidRecipe::feature),
+                Codec.INT.optionalFieldOf("min_distance", 0).forGetter(AsteroidRecipe::minDistance),
+                Codec.INT.optionalFieldOf("min_distance", Integer.MAX_VALUE).forGetter(AsteroidRecipe::maxDistance)
+        ).apply(instance, AsteroidRecipe::new));
     }
 }

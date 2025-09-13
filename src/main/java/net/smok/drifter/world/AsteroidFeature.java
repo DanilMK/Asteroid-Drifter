@@ -38,7 +38,7 @@ public class AsteroidFeature extends Feature<AsteroidFeatureConfiguration> {
         BlockStateConfiguration filler = context.config().filler();
         int size = context.config().size() / 2;
         WorldGenLevel level = context.level();
-        BlockPos origin = context.origin();
+        BlockPos origin = context.origin().below(size);
         RandomSource random = context.random();
 
 
@@ -48,23 +48,23 @@ public class AsteroidFeature extends Feature<AsteroidFeatureConfiguration> {
         MetaBalls.Ball ball = new MetaBalls.Ball(size, origin);
 
         HashMap<BlockPos, BlockState> placedBlocks = new HashMap<>();
-        WorldGenUtils.forEachCube(origin, size * 2, pos -> {
+        WorldGenUtils.forEachCube(origin, size, pos -> {
 
             double density = dots.apply(pos) * ball.apply(pos);
-            if (density < 0.5) return;
+            if (density < 0.75) return;
             placedBlocks.put(pos, filler.state);
         });
         if (placedBlocks.isEmpty()) return false;
 
         if (context.config().hasModifiers()) {
-            GenerationContext context1 = new GenerationContext(origin, context.config(), random, placedBlocks);
-            context.config().modifiers().forEach(modifierConfig -> modifierConfig.apply(context1));
+            GenerationContext ctx = new GenerationContext(origin, context.config(), random, placedBlocks);
+            context.config().modifiers().forEach(modifierConfig -> modifierConfig.apply(ctx));
         }
 
 
-        WorldGenUtils.forEachCube(origin, size * 2, pos -> {
+        WorldGenUtils.forEachCube(origin, size, pos -> {
             if (placedBlocks.containsKey(pos)) setBlock(level, pos, placedBlocks.get(pos));
-            else setBlock(level, pos, Blocks.AIR.defaultBlockState());
+            //else setBlock(level, pos, Blocks.AIR.defaultBlockState()); no need to paste air anymore
         });
         return true;
     }
