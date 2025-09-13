@@ -253,12 +253,14 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         savedDataSlots.forEach(savedValue -> savedValue.load(compoundTag));
 
         if (!compoundTag.contains("asteroids", Tag.TAG_LIST)) return;
-        ListTag asteroids = compoundTag.getList("asteroids", CompoundTag.TAG_COMPOUND);
-        for (int i = 0; i < asteroids.size() && i < this.asteroids.size(); i++) {
-            CompoundTag tag = (CompoundTag) asteroids.get(i);
+        ListTag recipeList = compoundTag.getList("asteroids", CompoundTag.TAG_COMPOUND);
+        for (int i = 0; i < recipeList.size() && i < this.asteroids.size(); i++) {
+            CompoundTag tag = (CompoundTag) recipeList.get(i);
             PlacedAsteroidRecipe placedAsteroidRecipe = PlacedAsteroidRecipe.loadData(tag);
             this.asteroids.set(i, placedAsteroidRecipe);
         }
+
+        if (level != null) asteroids.forEach(recipe -> recipe.setRecipe(level));
 
     }
 

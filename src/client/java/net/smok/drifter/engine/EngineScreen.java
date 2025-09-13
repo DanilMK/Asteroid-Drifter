@@ -8,8 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.smok.drifter.registries.Values;
 import net.smok.drifter.blocks.engine.EngineMenu;
-
-import java.util.Optional;
+import net.smok.drifter.widgets.Hovered;
 
 public class EngineScreen extends AbstractContainerScreen<EngineMenu> {
 
@@ -41,8 +40,7 @@ public class EngineScreen extends AbstractContainerScreen<EngineMenu> {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         renderTooltip(guiGraphics, mouseX, mouseY);
 
-        if (fluidWidget.isHover(mouseX, mouseY))
-            guiGraphics.renderTooltip(font, fluidWidget.content(), Optional.empty(), mouseX, mouseY);
+        Hovered.renderHover(guiGraphics, font, mouseX, mouseY, false, fluidWidget);
     }
 
     @Override

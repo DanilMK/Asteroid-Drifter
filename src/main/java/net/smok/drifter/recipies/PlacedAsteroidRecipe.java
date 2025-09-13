@@ -1,11 +1,14 @@
 package net.smok.drifter.recipies;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.smok.drifter.Debug;
+import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.registries.Values;
+import net.smok.drifter.utils.FlyUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,6 +19,8 @@ import java.util.Optional;
 
 public final class PlacedAsteroidRecipe {
     public static final PlacedAsteroidRecipe EMPTY = new PlacedAsteroidRecipe(new ResourceLocation("empty"), 0, 0, 0);
+
+
     private final @NotNull ResourceLocation recipeId;
     private final int x;
     private final int y;
@@ -107,6 +112,26 @@ public final class PlacedAsteroidRecipe {
                 "x=" + x + ", " +
                 "y=" + y + ", " +
                 "distance=" + distance + ']';
+    }
+
+
+    public List<Component> getTooltip(ShipControllerBlockEntity controller) {
+        List<Component> tooltip = recipe().map(r -> new ArrayList<>(r.tooltips().stream().map(t -> (Component) Component.translatable(t)).toList())).orElse(new ArrayList<>());
+
+        MutableComponent distance = Component.translatable("tooltip.asteroid_drifter.full_distance", String.format("%,d", distance()));
+        distance.withStyle(ChatFormatting.GRAY);
+
+        Component fuel = controller.getRequired(distance());
+
+        String totalTime = FlyUtils.timeToString(FlyUtils.totalTime(
+                controller.maxSpeed(), distance()));
+        MutableComponent time = Component.translatable("tooltip.asteroid_drifter.time_required", totalTime).withStyle(ChatFormatting.GRAY);
+
+        tooltip.add(distance);
+        if (fuel != null) tooltip.add(fuel);
+        tooltip.add(time);
+
+        return tooltip;
     }
 
 }

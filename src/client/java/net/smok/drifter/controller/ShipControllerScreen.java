@@ -12,13 +12,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.recipies.PlacedAsteroidRecipe;
 import net.smok.drifter.registries.Values;
 import net.smok.drifter.blocks.controller.ShipControllerMenu;
 import net.smok.drifter.network.NetworkHandler;
@@ -37,13 +35,11 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
     public static final int COLOR_EDGE = 0xFFFFFFFF, COLOR_FADE = 0xFF999999, FILL_COLOR = 0x69777777;
 
     private final ShipControllerMenu menu;
-    private final List<AsteroidSlotWidget> asteroids;
 
     private final List<Hovered> hoveredWidgets = new ArrayList<>();
     private final Player player;
 
 
-    private AsteroidFieldWidget asteroidField;
     private FuelWidget fuelWidget;
     private DistanceWidget distanceWidget;
     private SpeedWidget speedWidget;
@@ -53,6 +49,7 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
     private final AnimationHandler launchAnim;
     private final AnimationHandler landAnim;
     private final ShipControllerBlockEntity controller;
+    private FieldWidget fieldWidget;
 
     public ShipControllerScreen(ShipControllerMenu menu, Inventory inventory, Component component) {
         super(menu, inventory, component);
@@ -60,12 +57,6 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
         controller = menu.controller();
         player = inventory.player;
 
-        List<AsteroidSlotWidget> list = new ArrayList<>();
-        for (int i = 0; i < controller.getAllRecipes().size(); i++) {
-            AsteroidSlotWidget asteroidSlotWidget = new AsteroidSlotWidget(i, controller, this);
-            list.add(asteroidSlotWidget);
-        }
-        asteroids = list;
         initDriving = menu.controller().getRemainDistance() != 0;
 
         launchAnim = new AnimationHandler(60);
@@ -119,9 +110,6 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
         distanceWidget = addRenderableOnly(new DistanceWidget(menu.controller(),
                 centerX, distanceWidgetY, distanceWidgetRadius, initDriving, launchAnim, landAnim));
 
-        asteroidField = addRenderableOnly(new AsteroidFieldWidget(width, height, centerX, height / 2,
-                100, menu.controller(), asteroids, launchAnim, landAnim));
-
         speedWidget = addRenderableOnly(new SpeedWidget(menu.controller(),
                 width - 60, height - 60, 50, font));
 
@@ -134,17 +122,17 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
         rightButton = addRenderableWidget(new ShipMoveButtonWidget(centerX + shipWidgetWidth / 2 + 22, shipWidgetY - 9, 18, 18, 0, 0, 0,
                 new ResourceLocation(Values.MOD_ID, "textures/gui/controller/selector.png"), 18, 18, button -> moveRight(), Component.literal("D"), launchAnim, landAnim, menu.controller()));
 
-        asteroids.forEach(this::addWidget);
+        fieldWidget = addRenderableWidget(new FieldWidget(width / 2, height / 2, width, height, 100, launchAnim, landAnim, controller));
 
+        hoveredWidgets.clear();
         hoveredWidgets.add(shipWidget);
         hoveredWidgets.add(leftButton);
         hoveredWidgets.add(rightButton);
         hoveredWidgets.add(fuelWidget);
         hoveredWidgets.add(distanceWidget);
-        hoveredWidgets.addAll(asteroids);
         hoveredWidgets.add(speedWidget);
+        hoveredWidgets.add(fieldWidget);
 
-        if (initDriving) asteroids.get(controller.getSelectedAsteroid()).setSelected(true);
     }
 
     @Override
@@ -190,25 +178,11 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
     }
 
     private void launch() {
+        if (!fieldWidget.isFocused()) return;
 
-        int selected = -1;
-
-        for (int i = 0; i < asteroids.size(); i++) {
-            if (asteroids.get(i).isFocused()) {
-                selected = i;
-                asteroids.get(i).setFocused(false);
-                break;
-            }
-        }
-
-
-        if (selected > 0) {
-            ClientPlayNetworking.send(NetworkHandler.CONTROLLER_LAUNCH.getId(), NetworkHandler.CONTROLLER_LAUNCH.encode(menu.getBlockPos(), selected));
-            distanceWidget.launchAnim().start();
-            asteroids.get(selected).setSelected(true);
-        } else if (controller.getRemainDistance() > 0 && controller.getSpeed() == 0) {
-            ClientPlayNetworking.send(NetworkHandler.CONTROLLER_LAUNCH.getId(), NetworkHandler.CONTROLLER_LAUNCH.encode(menu.getBlockPos(), selected));
-        }
+        ClientPlayNetworking.send(NetworkHandler.CONTROLLER_LAUNCH.getId(), NetworkHandler.CONTROLLER_LAUNCH.encode(menu.getBlockPos(), fieldWidget.getSelected()));
+        distanceWidget.launchAnim().start();
+        //asteroids.get(selected).setSelected(true);
     }
 
     @Override
@@ -227,10 +201,6 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
         return super.keyPressed(i, j, k);
     }
 
-    @Override
-    public @NotNull ShipControllerMenu getMenu() {
-        return menu;
-    }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float deltaTime) {
@@ -244,29 +214,14 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
         else if (initDriving & landAnim.isNotFinished() & !landAnim.isStarted() & controller.getRemainDistance() <= 0)
         {
             landAnim.start();
-            asteroids.forEach(asteroidSlotWidget -> asteroidSlotWidget.setSelected(false));
         }
 
         super.render(guiGraphics, mouseX, mouseY, deltaTime);
 
+        if (fieldWidget.isFocused()) guiGraphics.renderTooltip(font, fieldWidget.content(),
+                Optional.empty(), fieldWidget.selectedX(), fieldWidget.selectedY());
+        else Hovered.renderHover(guiGraphics, font, mouseX, mouseY, true, hoveredWidgets);
 
-
-
-        if (getFocused() instanceof AsteroidSlotWidget slot) {
-            guiGraphics.renderTooltip(font, slot.content(), Optional.empty(), slot.getX() + 8, slot.getY());
-        } else {
-            for (Hovered hoveredWidget : hoveredWidgets) {
-                if (hoveredWidget.isHover(mouseX, mouseY)) {
-                    guiGraphics.renderTooltip(font, hoveredWidget.content(), Optional.empty(), mouseX, mouseY);
-                    break;
-                }
-            }
-        }
-/*
-
-        guiGraphics.drawCenteredString(font, "launch anim: " + launchAnim.getTime() + " AllTime:" + launchAnim.allTime() + " F:" + !launchAnim.isNotFinished(), width / 2, height / 2 - 10, COLOR_EDGE);
-        guiGraphics.drawCenteredString(font, "land anim: " + landAnim.getTime() + " AllTime:" + landAnim.allTime() + " F:" + !landAnim.isNotFinished(), width / 2, height / 2 + 10, COLOR_EDGE);
-*/
     }
 
     private void moveLeft() {

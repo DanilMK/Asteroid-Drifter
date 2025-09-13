@@ -2,6 +2,7 @@
   "type": "asteroid_drifter:asteroid",
   "icon": "asteroid_drifter:small_asteroid",
   "tooltips": [
+    "item.asteroid_drifter.small_asteroid"
   ],
   "configured_feature": "asteroid_drifter:small_asteroid"
 }
