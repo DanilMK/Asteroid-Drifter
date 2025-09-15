@@ -1,8 +1,9 @@
 {
 	"required": true,
-	"package": "net.smok.drifter.mixin.client",
+	"package": "net.smok.drifter.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"client": [
+		"PlanetsScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
