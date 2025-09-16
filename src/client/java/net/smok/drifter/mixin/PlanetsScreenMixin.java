@@ -4,7 +4,6 @@ import earth.terrarium.adastra.api.planets.Planet;
 import earth.terrarium.adastra.client.screens.PlanetsScreen;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
-import net.smok.drifter.Debug;
 import net.smok.drifter.registries.Values;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(PlanetsScreen.class)
 public abstract class PlanetsScreenMixin {
