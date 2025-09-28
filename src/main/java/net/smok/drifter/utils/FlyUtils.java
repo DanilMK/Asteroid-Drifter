@@ -60,4 +60,8 @@ public final class FlyUtils {
     public static float brakingTime(int maxSpeed) {
         return (float) maxSpeed / BRAKING;
     }
+
+    public static int speedToKm(int i) {
+        return i * 20 * 60;
+    }
 }

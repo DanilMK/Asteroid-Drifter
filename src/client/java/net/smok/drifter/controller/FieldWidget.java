@@ -15,7 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
-import net.smok.drifter.Debug;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.recipies.AsteroidRecipe;
 import net.smok.drifter.recipies.PlacedAsteroidRecipe;
@@ -136,17 +135,9 @@ public class FieldWidget extends AbstractWidget implements Hovered {
 
         CircleDrawer.drawSegment(bufferBuilder, getX(), getY(), radius, 100, COLOR_FADE, COLOR_FADE, 0, amount, 1);
         Pair<Double, Double> point = CircleDrawer.pointOnCircle(amount * 100, 100, radius, getX(), getY());
-        Pair<Double, Double> point1 = CircleDrawer.pointOnCircle(amount * 100 - 1, 100, radius, getX(), getY());
-        Pair<Double, Double> point2 = CircleDrawer.pointOnCircle(amount * 100 - 2, 100, radius, getX(), getY());
 
         bufferBuilder.vertex(getX(), getY(), 0.0).color(COLOR_EDGE).endVertex();
         bufferBuilder.vertex(point.getA(), point.getB(), 0.0).color(COLOR_EDGE).endVertex();
-
-        bufferBuilder.vertex(getX(), getY(), 0.0).color(COLOR_FADE).endVertex();
-        bufferBuilder.vertex(point1.getA(), point1.getB(), 0.0).color(COLOR_FADE).endVertex();
-
-        bufferBuilder.vertex(getX(), getY(), 0.0).color(COLOR_FADE).endVertex();
-        bufferBuilder.vertex(point2.getA(), point2.getB(), 0.0).color(COLOR_FADE).endVertex();
 
         tesselator.end();
     }
@@ -275,7 +266,7 @@ public class FieldWidget extends AbstractWidget implements Hovered {
     }
 
     public int getSelected() {
-        return selected;
+        return isFocused() ? selected : -1;
     }
 
     public int selectedX() {

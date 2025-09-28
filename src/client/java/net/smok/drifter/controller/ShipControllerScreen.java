@@ -46,6 +46,7 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
     private ShipWidget shipWidget;
     private ShipMoveButtonWidget leftButton, rightButton;
     private final boolean initDriving;
+    private boolean wasLaunched;
     private final AnimationHandler launchAnim;
     private final AnimationHandler landAnim;
     private final ShipControllerBlockEntity controller;
@@ -178,11 +179,7 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
     }
 
     private void launch() {
-        if (!fieldWidget.isFocused()) return;
-
         ClientPlayNetworking.send(NetworkHandler.CONTROLLER_LAUNCH.getId(), NetworkHandler.CONTROLLER_LAUNCH.encode(menu.getBlockPos(), fieldWidget.getSelected()));
-        distanceWidget.launchAnim().start();
-        //asteroids.get(selected).setSelected(true);
     }
 
     @Override
@@ -205,9 +202,14 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float deltaTime) {
         renderBackground(guiGraphics);
-        boolean inFly = controller.getRemainDistance() > 0 || landAnim.work();
-        leftButton.visible = inFly;
-        rightButton.visible = inFly;
+        if (!wasLaunched) {
+            if (controller.isLaunch()) {
+                wasLaunched = true;
+                if (controller.getRemainDistance() == controller.getTotalDistance()) launchAnim.start();
+            }
+        } else if (controller.isStand()) {
+            wasLaunched = false;
+        }
 
         if (launchAnim.work()) launchAnim.tick(deltaTime);
         if (landAnim.work()) landAnim.tick(deltaTime);
@@ -215,6 +217,9 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
         {
             landAnim.start();
         }
+        boolean inFly = controller.getRemainDistance() > 0 || landAnim.work();
+        leftButton.visible = inFly;
+        rightButton.visible = inFly;
 
         super.render(guiGraphics, mouseX, mouseY, deltaTime);
 
