@@ -17,8 +17,6 @@ public class EngineMenu extends ExtendedMenu {
         super(DrifterMenus.ENGINE_MENU.get(), id, playerInventory.player);
         this.enginePanelBlock = enginePanelBlock;
 
-        addSlot(new Slot(enginePanelBlock, EnginePanelBlockEntity.TANK_0, 101, 55));
-        addSlot(new Slot(enginePanelBlock, EnginePanelBlockEntity.SECOND_UPGRADE, 129, 55));
         addSlot(new Slot(enginePanelBlock, EnginePanelBlockEntity.BUCKET_INPUT, 30, 22));
         addSlot(new Slot(enginePanelBlock, EnginePanelBlockEntity.BUCKET_OUTPUT, 30, 52));
 
