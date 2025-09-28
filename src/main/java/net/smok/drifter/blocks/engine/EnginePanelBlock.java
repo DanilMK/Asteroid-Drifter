@@ -92,7 +92,7 @@ public class EnginePanelBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
         return blockEntityType == DrifterBlocks.ENGINE_PANEL_BLOCK_ENTITY.get() && level instanceof ServerLevel ?
-                (level1, blockPos, blockState, blockEntity) -> ((EnginePanelBlockEntity)blockEntity).tick((ServerLevel) level1, level1.getGameTime(), blockState, blockPos) :
+                (level1, blockPos, blockState, blockEntity) -> ((EnginePanelBlockEntity)blockEntity).tick((ServerLevel) level1, level1.getGameTime()) :
                 null;
     }
 }

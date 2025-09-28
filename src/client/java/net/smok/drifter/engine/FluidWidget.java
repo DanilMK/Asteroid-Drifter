@@ -6,6 +6,7 @@ import earth.terrarium.adastra.client.utils.GuiUtils;
 import earth.terrarium.adastra.common.utils.TooltipUtils;
 import earth.terrarium.botarium.common.fluid.base.FluidHolder;
 import earth.terrarium.botarium.common.fluid.utils.ClientFluidHooks;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -21,14 +22,12 @@ import java.util.List;
 
 public class FluidWidget extends AbstractWidget implements Hovered {
 
-    private final int slot;
     private final EnginePanelBlockEntity engine;
 
     protected long lastFluidAmount;
 
-    public FluidWidget(int x, int y, int slot, EnginePanelBlockEntity engine) {
+    public FluidWidget(int x, int y, EnginePanelBlockEntity engine) {
         super(x, y, 12, 46, Component.empty());
-        this.slot = slot;
         this.engine = engine;
     }
 
@@ -76,9 +75,7 @@ public class FluidWidget extends AbstractWidget implements Hovered {
         Pair<FluidHolder, Long> holderCapacityPair = engine.getFluidHolder();
         FluidHolder holder = holderCapacityPair.getA();
         long max = holderCapacityPair.getB();
-        long fluidAmount = holder.getFluidAmount();
-        long difference = fluidAmount - lastFluidAmount;
 
-        return List.of(TooltipUtils.getFluidComponent(holder, max), TooltipUtils.getFluidDifferenceComponent(difference));
+        return List.of(TooltipUtils.getFluidComponent(holder, max).copy().withStyle(ChatFormatting.WHITE), engine.fuelConsumption());
     }
 }

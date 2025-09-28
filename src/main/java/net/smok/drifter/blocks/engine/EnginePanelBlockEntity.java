@@ -1,26 +1,19 @@
 package net.smok.drifter.blocks.engine;
 
 import earth.terrarium.adastra.common.blockentities.base.BasicContainer;
-import earth.terrarium.adastra.common.config.MachineConfig;
 import earth.terrarium.adastra.common.utils.FluidUtils;
-import earth.terrarium.adastra.common.utils.ItemUtils;
-import earth.terrarium.botarium.common.fluid.FluidApi;
 import earth.terrarium.botarium.common.fluid.FluidConstants;
 import earth.terrarium.botarium.common.fluid.base.*;
-import earth.terrarium.botarium.common.fluid.impl.InsertOnlyFluidContainer;
-import earth.terrarium.botarium.common.fluid.impl.WrappedBlockFluidContainer;
-import earth.terrarium.botarium.common.fluid.impl.WrappedItemFluidContainer;
-import earth.terrarium.botarium.common.item.ItemStackHolder;
-import earth.terrarium.botarium.common.menu.ExtraDataMenuProvider;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
@@ -28,13 +21,12 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.smok.drifter.Debug;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
+import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.ShipBlock;
-import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.utils.BlockEntityPosition;
 import net.smok.drifter.utils.FlyUtils;
 import net.smok.drifter.utils.SavedDataSlot;
@@ -42,15 +34,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class EnginePanelBlockEntity extends ExtendedBlockEntity implements BasicContainer, WorldlyContainer,
         ShipBlock {
 
-    public static final int TANK_0 = 0;
-    public static final int SECOND_UPGRADE = 1;
-    public static final int BUCKET_INPUT = 2;
-    public static final int BUCKET_OUTPUT = 3;
+    public static final int SHAKING_TICKS = 40;
+    public static final int BUCKET_INPUT = 0;
+    public static final int BUCKET_OUTPUT = 1;
+    public static final Pair<FluidHolder, Long> EMPTY_HOLDER = new Pair<>(FluidHolder.empty(), 1L);
 
     private final NonNullList<ItemStack> itemContainer;
 
@@ -58,6 +51,15 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     private final SavedDataSlot<Integer> maxSpeed = SavedDataSlot.intValue("maxSpeed");
     private final SavedDataSlot<Integer> speed = SavedDataSlot.intValue("speed");
 
+    // Not configurable
+    private final BlockEntityPosition<TankBlockEntity> tank =
+            new BlockEntityPosition<>("tank", DrifterBlocks.TANK_BLOCK_ENTITY.get());
+    // Configurable. Save and load
+    private final BlockEntityPosition<ShipControllerBlockEntity> controller =
+            new BlockEntityPosition<>("controller", DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get());
+
+    private final HashSet<BlockPos> nuzzles = new HashSet<>();
+    private int shakingTicks;
 
 
     private final List<SavedDataSlot<?>> savedData = List.of(fuelEfficiency, maxSpeed, speed);
@@ -67,6 +69,7 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         itemContainer = NonNullList.withSize(4, ItemStack.EMPTY);
         maxSpeed.setValue(80);
         fuelEfficiency.setValue(20);
+        tank.setPos(getBlockPos().above());
     }
 
     @Override
@@ -76,16 +79,11 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
 
 
     public Pair<FluidHolder, Long> getFluidHolder() {
-        ItemStack item = getItem(TANK_0);
-        if (FluidUtils.hasFluid(item)) return new Pair<>(FluidUtils.getTank(item), FluidUtils.getTankCapacity(item));
-        return new Pair<>(FluidHolder.empty(), 1L);
-    }
-
-    private @NotNull WrappedBlockFluidContainer createContainer() {
-        return new WrappedBlockFluidContainer(this,
-                new InsertOnlyFluidContainer(value -> FluidConstants.fromMillibuckets(MachineConfig.deshTierFluidCapacity), 1,
-                        (integer, fluidHolder) -> true)
-        );
+        return tank.getBlock(level).map(tankBlockEntity ->
+                        new Pair<>(
+                                tankBlockEntity.getFluidContainer().getFirstFluid(),
+                                tankBlockEntity.getFluidContainer().getTankCapacity(0))
+                ).orElse(EMPTY_HOLDER);
     }
 
     @Override
@@ -127,6 +125,13 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         super.load(tag);
         ContainerHelper.loadAllItems(tag, itemContainer);
         savedData.forEach(savedDataSlot -> savedDataSlot.load(tag));
+        controller.load(tag);
+        nuzzles.clear();
+        if (tag.contains("nuzzles", CompoundTag.TAG_LIST)) {
+            for (Tag t : tag.getList("nuzzles", CompoundTag.TAG_COMPOUND)) {
+                nuzzles.add(NbtUtils.readBlockPos((CompoundTag) t));
+            }
+        }
     }
 
     @Override
@@ -134,6 +139,12 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         super.saveAdditional(tag);
         ContainerHelper.saveAllItems(tag, itemContainer);
         savedData.forEach(savedDataSlot -> savedDataSlot.save(tag));
+        controller.save(tag);
+        ListTag nuzzlesTag = new ListTag();
+        for (BlockPos nuzzle : nuzzles) {
+            nuzzlesTag.add(NbtUtils.writeBlockPos(nuzzle));
+        }
+        tag.put("nuzzles", nuzzlesTag);
     }
 
     public static boolean canPlace(int index, ItemStack item) {
@@ -144,84 +155,44 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         return true;
     }
 
-    public void tick(ServerLevel lvl, long gameTime, BlockState blockState, BlockPos blockPos) {
-        if (gameTime % 10L == 0) {
-
-            ItemStack item = getItem(TANK_0);
-            if (!item.isEmpty() && item.getItem() instanceof BotariumFluidItem<?>) {
-
-                if (moveFluid(this, BUCKET_INPUT, BUCKET_OUTPUT, TANK_0)) {
-                    setChanged();
+    public void tick(ServerLevel lvl, long gameTime) {
+        controller.executeIfPresentOrElse(level,
+                controllerBlock ->
+                {
+                    if (!controllerBlock.isStand()) speedTick(controllerBlock.getRemainDistance());
+                },
+                pos ->
+                {
+                    if (controller.pos() != null) controller.setPos(null);
+                    if (speed() > 0) speedTick(0);
                 }
+        );
 
-            }
-            //FluidUtils.moveItemToContainer(this, getFluidContainer(), BUCKET_INPUT, BUCKET_OUTPUT, 0);
-        }
-    }
-
-    private static boolean moveFluid(Container container, int bucketInSlot, int bucketOutSlot, int containerSlot) {
-        ItemStack bucketOut = container.getItem(bucketOutSlot);
-        ItemStack bucketIn = container.getItem(bucketInSlot);
-        ItemStack result = container.getItem(containerSlot);
-
-
-        if (bucketIn.isEmpty() || result.isEmpty()) return false;
-
-        ItemStackHolder inStackHolder = new ItemStackHolder(bucketIn.copyWithCount(1));
-        ItemStackHolder resultStackHolder = new ItemStackHolder(result.copyWithCount(1));
-
-        FluidContainer inFluidContainer = FluidContainer.of(inStackHolder);
-        FluidContainer resultFluidContainer = FluidContainer.of(resultStackHolder);
-
-        if (inFluidContainer == null || resultFluidContainer == null) return false;
-        FluidHolder amount = inFluidContainer.getFluids().get(0).copyHolder();
-        ItemStack filledStack = FluidUtils.getFilledStack(resultStackHolder, amount);
-        if (amount.isEmpty()) return false;
-
-        ItemStack outResult;
-        if (!bucketOut.isEmpty()) {
-            outResult = FluidUtils.getEmptyStack(inStackHolder, amount);
-            if (!ItemUtils.canAddItem(outResult, bucketOut)) return false;
-        }
-
-        if (FluidApi.moveFluid(inFluidContainer, resultFluidContainer, amount, true) == 0L) return false;
-        FluidApi.moveFluid(inFluidContainer, resultFluidContainer, amount, false);
-
-
-        outResult = inStackHolder.getStack();
-        if (bucketOut.isEmpty()) {
-            bucketIn.shrink(1);
-            container.setItem(BUCKET_OUTPUT, outResult);
-
-        } else if (ItemUtils.canAddItem(outResult, bucketOut)) {
-            bucketIn.shrink(1);
-            bucketOut.grow(1);
-        }
-        container.setItem(containerSlot, filledStack);
-
-        return true;
-
-    }
-
-    public void fuelTick(long gameTime) {
-        if (gameTime % fuelEfficiency.get() == 0) {
-            if (getFuel() > 0) {
-
-                ItemStack item = getItem(TANK_0);
-                ItemStack filledStack = FluidUtils.getEmptyStack(new ItemStackHolder(item), FluidUtils.getTank(item).copyWithAmount(81));
-                setItem(TANK_0, filledStack);
-
-
+        if (gameTime % 10L == 0) {
+            tank.executeIfPresent(lvl, tankBlockEntity ->
+            {
+                FluidUtils.moveItemToContainer(
+                        this, tankBlockEntity.getFluidContainer(), BUCKET_INPUT, BUCKET_OUTPUT, 0);
+                tankBlockEntity.setChanged();
                 setChanged();
             }
+            );
+            recountMaxSpeed();
         }
+
+        if (gameTime % fuelEfficiency.get() == 0 && speed() > 0) {
+            tank.getBlock(lvl).ifPresent(TankBlockEntity::decrease);
+        }
+
+
+        if (shakingTicks > 0) shakingTicks--;
     }
 
     public void speedTick(int remainDistance) {
         int maxSpeed = maxSpeed();
         int curSpeed = speed();
 
-        if (remainDistance < FlyUtils.brakingDistance(maxSpeed) || getFuel() <= 0) {
+        if (shakingTicks > 0 || remainDistance < FlyUtils.brakingDistance(maxSpeed) || getFuel() <= 0) {
             speed.setValue(Math.max(curSpeed - FlyUtils.BRAKING, 0));
             setChanged();
         } else if (curSpeed < maxSpeed) {
@@ -234,15 +205,52 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         speed.setValue(0);
     }
 
+    private void recountMaxSpeed() {
+        if (level == null || level.isClientSide) return;
+
+        HashMap<EngineNozzleBlock, AtomicInteger> counter = new HashMap<>();
+        for (BlockPos pos : new HashSet<>(nuzzles)) {
+            BlockState blockState = level.getBlockState(pos);
+            if (blockState.getBlock() instanceof EngineNozzleBlock nuzzle) {
+                if (!counter.containsKey(nuzzle)) {
+                    counter.put(nuzzle, new AtomicInteger(1));
+                } else {
+                    counter.get(nuzzle).incrementAndGet();
+                }
+            } else {
+                nuzzles.remove(pos);
+            }
+        }
+
+        double speed = counter.entrySet().stream().mapToDouble(pair -> Math.sqrt(pair.getValue().get()) * pair.getKey().getMaxSpeed()).sum();
+        int last = maxSpeed();
+        maxSpeed.setValue((int) speed);
+        if (last != maxSpeed()) {
+            shakeEngines();
+            setChanged();
+        }
+    }
+
+    private void shakeEngines() {
+        shakingTicks += SHAKING_TICKS;
+    }
+
 
     public long getFuel() {
-        return FluidUtils.getTank(getItem(TANK_0)).getFluidAmount();
+        return tank.getBlock(level).map(tankBlockEntity -> tankBlockEntity.getFluidContainer().getFirstFluid().getFluidAmount()).orElse(0L);
     }
 
     public long getFuelCapacity() {
-        return FluidUtils.getTankCapacity(getItem(TANK_0));
+        return tank.getBlock(level).map(tankBlockEntity -> tankBlockEntity.getFluidContainer().getTankCapacity(0)).orElse(1L);
     }
 
+    public Component getSpeed() {
+        return Component.translatable("tooltip.asteroid_drifter.speed_container", String.format("%,d", FlyUtils.speedToKm(speed())));
+    }
+
+    public Component getMaxSpeed() {
+        return Component.translatable("tooltip.asteroid_drifter.max_speed_container", String.format("%,d", FlyUtils.speedToKm(maxSpeed())));
+    }
 
     public Component getAmount() {
         return Component.literal(FluidConstants.toMillibuckets(getFuel())
@@ -276,7 +284,30 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         return speed.getValue();
     }
 
-    public List<SavedDataSlot<?>> getSavedData() {
-        return savedData;
+    public boolean stand() {
+        return controller.getBlock(level).map(ShipControllerBlockEntity::isStand).orElse(true);
+    }
+
+    @Override
+    public boolean bind(BlockPos pos, ShipBlock other) {
+        if (other instanceof ShipControllerBlockEntity) {
+            controller.setPos(pos);
+            return true;
+        }
+        if (other instanceof EngineNozzleBlock) {
+            if (nuzzles.add(pos)) {
+                recountMaxSpeed();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void clear() {
+        controller.setPos(null);
+        nuzzles.clear();
+        recountMaxSpeed();
+        setChanged();
     }
 }

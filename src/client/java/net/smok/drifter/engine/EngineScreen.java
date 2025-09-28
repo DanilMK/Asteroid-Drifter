@@ -10,9 +10,12 @@ import net.smok.drifter.registries.Values;
 import net.smok.drifter.blocks.engine.EngineMenu;
 import net.smok.drifter.widgets.Hovered;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EngineScreen extends AbstractContainerScreen<EngineMenu> {
 
-    private FluidWidget fluidWidget;
+    private final List<Hovered> hovers = new ArrayList<>();
 
     public EngineScreen(EngineMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -25,7 +28,11 @@ public class EngineScreen extends AbstractContainerScreen<EngineMenu> {
     protected void init() {
         super.init();
 
-        fluidWidget = addRenderableWidget(new FluidWidget(leftPos + 61, topPos + 22, 0, menu.getEnginePanelBlock()));
+        hovers.clear();
+        FluidWidget fluidWidget = addRenderableWidget(new FluidWidget(leftPos + 61, topPos + 22, menu.getEnginePanelBlock()));
+        hovers.add(addRenderableOnly(new SpeedWidget(menu.getEnginePanelBlock(), leftPos + 100, topPos + 18, 45, 315, font)));
+
+        hovers.add(fluidWidget);
     }
 
     @Override
@@ -39,8 +46,7 @@ public class EngineScreen extends AbstractContainerScreen<EngineMenu> {
         renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         renderTooltip(guiGraphics, mouseX, mouseY);
-
-        Hovered.renderHover(guiGraphics, font, mouseX, mouseY, false, fluidWidget);
+        Hovered.renderHover(guiGraphics, font, mouseX, mouseY, false, hovers);
     }
 
     @Override
