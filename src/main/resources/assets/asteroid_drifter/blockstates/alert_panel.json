@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
-      "model": "minecraft:block/cartography_table"
+    "facing=east": {
+      "model": "asteroid_drifter:block/alert_panel",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "asteroid_drifter:block/alert_panel"
+    },
+    "facing=south": {
+      "model": "asteroid_drifter:block/alert_panel",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "asteroid_drifter:block/alert_panel",
+      "y": 270
     }
   }
 }

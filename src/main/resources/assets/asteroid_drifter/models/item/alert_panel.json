@@ -1,3 +1,3 @@
 {
-  "parent": "minecraft:block/cartography_table"
+  "parent": "asteroid_drifter:block/alert_panel"
 }
