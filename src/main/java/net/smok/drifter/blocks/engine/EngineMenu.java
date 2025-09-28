@@ -1,13 +1,11 @@
 package net.smok.drifter.blocks.engine;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.smok.drifter.registries.DrifterMenus;
-import net.smok.drifter.menus.ExtendedMenu;
-import net.smok.drifter.utils.CustomDataSlot;
+import net.smok.drifter.utils.ExtendedMenu;
 import org.jetbrains.annotations.NotNull;
 
 public class EngineMenu extends ExtendedMenu {
@@ -25,7 +23,6 @@ public class EngineMenu extends ExtendedMenu {
         addSlot(new Slot(enginePanelBlock, EnginePanelBlockEntity.BUCKET_OUTPUT, 30, 52));
 
 
-        addCustomDataSlot(new EngineSlot(enginePanelBlock));
 
         addInventorySlots(playerInventory, 0, 0);
 
@@ -46,30 +43,4 @@ public class EngineMenu extends ExtendedMenu {
     }
 
 
-
-    private static class EngineSlot extends CustomDataSlot {
-        private final EnginePanelBlockEntity engine;
-        private int changeCount;
-
-
-        private EngineSlot(EnginePanelBlockEntity engine) {
-            this.engine = engine;
-        }
-
-        @Override
-        public boolean changed() {
-            return engine.getChangeCount() != changeCount;
-        }
-
-        @Override
-        public void sendData(CompoundTag data) {
-            engine.saveAdditional(data);
-            changeCount = engine.getChangeCount();
-        }
-
-        @Override
-        public void receiveData(CompoundTag data) {
-            engine.load(data);
-        }
-    }
 }

@@ -1,71 +1,19 @@
-package net.smok.drifter.menus;
+package net.smok.drifter.utils;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.smok.drifter.utils.CustomDataSlot;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public abstract class ExtendedMenu extends AbstractContainerMenu {
-    protected List<CustomDataSlot> customDataSlots = new ArrayList<>();
     protected final Player player;
 
     protected ExtendedMenu(@Nullable MenuType<?> menuType, int containerId, Player player) {
         super(menuType, containerId);
         this.player = player;
-    }
-
-    protected void addCustomDataSlot(CustomDataSlot slot) {
-        customDataSlots.add(slot);
-    }
-/*
-    @Override
-    public void sendAllDataToRemote() {
-        super.sendAllDataToRemote();
-        for (int i = 0; i < customDataSlots.size(); i++) {
-            CustomDataSlot slot = customDataSlots.get(i);
-            CompoundTag data = new CompoundTag();
-            slot.sendData(data);
-            if (player instanceof ServerPlayer serverPlayer) {
-                FriendlyByteBuf friendlyByteBuf = PacketByteBufs.create();
-                friendlyByteBuf.writeInt(i);
-                friendlyByteBuf.writeNbt(data);
-                ServerPlayNetworking.send(serverPlayer, CustomDataSlot.ID, friendlyByteBuf);
-            }
-        }
-    }*/
-
-    @Override
-    public void broadcastChanges() {
-        super.broadcastChanges();
-        for (int i = 0; i < customDataSlots.size(); i++) {
-            CustomDataSlot slot = customDataSlots.get(i);
-            if (slot.changed()) {
-                CompoundTag data = new CompoundTag();
-                slot.sendData(data);
-                if (player instanceof ServerPlayer serverPlayer) {
-                    FriendlyByteBuf friendlyByteBuf = PacketByteBufs.create();
-                    friendlyByteBuf.writeInt(i);
-                    friendlyByteBuf.writeNbt(data);
-                    ServerPlayNetworking.send(serverPlayer, CustomDataSlot.ID, friendlyByteBuf);
-                }
-            }
-        }
-    }
-
-    public void receiveData(int index, CompoundTag data) {
-        customDataSlots.get(index).receiveData(data);
     }
 
 

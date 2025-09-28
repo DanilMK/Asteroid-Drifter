@@ -7,12 +7,13 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public final class BlockEntityPosition<T extends BlockEntity> {
-    private BlockPos pos;
+    private @Nullable BlockPos pos;
     private final String name;
     private final BlockEntityType<T> blockEntityType;
 
@@ -21,7 +22,7 @@ public final class BlockEntityPosition<T extends BlockEntity> {
         this.blockEntityType = blockEntityType;
     }
 
-    public BlockPos pos() {
+    public @Nullable BlockPos pos() {
         return pos;
     }
 
@@ -29,7 +30,7 @@ public final class BlockEntityPosition<T extends BlockEntity> {
         return name;
     }
 
-    public void setPos(BlockPos pos) {
+    public void setPos(@Nullable BlockPos pos) {
         this.pos = pos;
     }
 
