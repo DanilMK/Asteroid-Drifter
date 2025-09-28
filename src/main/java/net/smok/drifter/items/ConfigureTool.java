@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.smok.drifter.blocks.ShipBlock;
 import org.jetbrains.annotations.NotNull;
@@ -57,25 +58,22 @@ public class ConfigureTool extends Item {
         ItemStack itemStack = context.getItemInHand();
         BlockPos blockPos = context.getClickedPos();
         Level level = context.getLevel();
-        boolean crouching = player.isCrouching();
+        boolean alt = player.isCrouching();
         BlockEntity blockEntity = level.getBlockEntity(blockPos);
-
-
+        Block block = level.getBlockState(blockPos).getBlock();
 
         if (blockEntity instanceof ShipBlock otherBlock) {
 
-            if (crouching) clearConfigure(otherBlock, player);
             addOrRemember(itemStack, level, blockPos, otherBlock, player);
             return InteractionResult.CONSUME;
-        } else {
-            if (blockEntity != null) cancelLink(player);
-            else if (crouching) {
-                forgetBlock(itemStack, player);
-                return InteractionResult.CONSUME;
-            }
-
-            return InteractionResult.PASS;
         }
+        if (block instanceof ShipBlock otherBlock) {
+
+            addOrRemember(itemStack, level, blockPos, otherBlock, player);
+            return InteractionResult.CONSUME;
+        }
+        cancelLink(player);
+        return InteractionResult.PASS;
     }
 
 
@@ -83,8 +81,11 @@ public class ConfigureTool extends Item {
         CompoundTag tag = itemStack.getOrCreateTag();
         if (tag.contains(CONFIG_BLOCK_KEY, CompoundTag.TAG_COMPOUND)) {
             BlockPos linkedPos = NbtUtils.readBlockPos(tag.getCompound(CONFIG_BLOCK_KEY));
-            BlockEntity blockEntity = level.getChunkAt(linkedPos).getBlockEntity(linkedPos);
-            if (blockEntity instanceof ShipBlock linkedBlock) {
+            if (level.getChunkAt(linkedPos).getBlockEntity(linkedPos) instanceof ShipBlock linkedBlock) {
+                addConfigure(linkedPos, otherPos, linkedBlock, otherBlock, player);
+                return;
+            }
+            if (level.getBlockState(linkedPos).getBlock() instanceof ShipBlock linkedBlock) {
                 addConfigure(linkedPos, otherPos, linkedBlock, otherBlock, player);
                 return;
             }
