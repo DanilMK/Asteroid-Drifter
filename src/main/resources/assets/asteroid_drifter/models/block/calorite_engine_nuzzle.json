@@ -1,0 +1,8 @@
+{
+  "parent": "asteroid_drifter:block/nuzzle",
+  "textures": {
+    "side": "asteroid_drifter:block/calorite_nuzzle_side",
+    "top": "asteroid_drifter:block/calorite_nuzzle_top",
+    "bottom": "asteroid_drifter:block/calorite_nuzzle_bottom"
+  }
+}

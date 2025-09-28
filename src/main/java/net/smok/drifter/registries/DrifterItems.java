@@ -12,6 +12,7 @@ import net.smok.drifter.Debug;
 import net.smok.drifter.items.ConfigureTool;
 import net.smok.drifter.items.FuelTank;
 
+@SuppressWarnings("unused")
 public final class DrifterItems {
     public static void init() {
         Debug.log("Asteroid Drifter Items Loaded!");
@@ -35,6 +36,8 @@ public final class DrifterItems {
     public static final RegistryEntry<Item> ENGINE_PANEL = ITEMS.register("engine_panel", () ->
             new BlockItem(DrifterBlocks.ENGINE_PANEL_BLOCK.get(), new Item.Properties()));
 
+
+
     public static final RegistryEntry<Item> SMALL_ASTEROID = ITEMS.register("small_asteroid", () ->
             new Item(new Item.Properties()));
 
@@ -53,11 +56,14 @@ public final class DrifterItems {
     public static final RegistryEntry<Item> LARGE_ORE_ASTEROID = ITEMS.register("large_ore_asteroid", () ->
             new Item(new Item.Properties()));
 
+
     public static final RegistryEntry<ConfigureTool> CONFIGURE_TOOL = ITEMS.register("configure_tool", () ->
             new ConfigureTool(new Item.Properties()));
 
+
     public static final RegistryEntry<FuelTank> FUEL_TANK = ITEMS.register("fuel_tank", () ->
             new FuelTank(new Item.Properties(), MachineConfig.steelTierFluidCapacity));
+
 
     public static final RegistryEntry<BlockItem> STEEL_TANK = ITEMS.register("steel_tank", () -> 
             new BlockItem(DrifterBlocks.STEEL_TANK_BLOCK.get(), new Item.Properties()));
@@ -71,4 +77,16 @@ public final class DrifterItems {
     public static final RegistryEntry<BlockItem> CALORITE_TANK = ITEMS.register("calorite_tank", () -> 
             new BlockItem(DrifterBlocks.CALORITE_TANK_BLOCK.get(), new Item.Properties()));
 
+
+    public static final RegistryEntry<BlockItem> STEEL_ENGINE_NUZZLE = ITEMS.register("steel_engine_nuzzle", () ->
+            new BlockItem(DrifterBlocks.STEEL_NUZZLE_BLOCK.get(), new Item.Properties()));
+
+    public static final RegistryEntry<BlockItem> DESH_ENGINE_NUZZLE = ITEMS.register("desh_engine_nuzzle", () ->
+            new BlockItem(DrifterBlocks.DESH_NUZZLE_BLOCK.get(), new Item.Properties()));
+
+    public static final RegistryEntry<BlockItem> OSTRUM_ENGINE_NUZZLE = ITEMS.register("ostrum_engine_nuzzle", () ->
+            new BlockItem(DrifterBlocks.OSTRUM_NUZZLE_BLOCK.get(), new Item.Properties()));
+
+    public static final RegistryEntry<BlockItem> CALORITE_ENGINE_NUZZLE = ITEMS.register("calorite_engine_nuzzle", () ->
+            new BlockItem(DrifterBlocks.CALORITE_NUZZLE_BLOCK.get(), new Item.Properties()));
 }

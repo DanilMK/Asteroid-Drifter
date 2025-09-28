@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "asteroid_drifter:block/steel_engine_nuzzle",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "asteroid_drifter:block/steel_engine_nuzzle",
+      "y": 90,
+      "x": 90
+    },
+    "facing=north": {
+      "model": "asteroid_drifter:block/steel_engine_nuzzle",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "asteroid_drifter:block/steel_engine_nuzzle",
+      "y": 180,
+      "x": 90
+    },
+    "facing=up": {
+      "model": "asteroid_drifter:block/steel_engine_nuzzle"
+    },
+    "facing=west": {
+      "model": "asteroid_drifter:block/steel_engine_nuzzle",
+      "y": 270,
+      "x": 90
+    }
+  }
+}

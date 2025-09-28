@@ -33,14 +33,13 @@ public final class DrifterBlocks {
     public static final ResourcefulRegistry<BlockEntityType<?>> BLOCK_ENTITY_TYPES = ResourcefulRegistries.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, Values.MOD_ID);
 
 
-    public static final String SHIP_FUEL_LOADER_KEY = "ship_fuel_loader";
-
     @NotNull
     private static BlockBehaviour.Properties steelProperties() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY)
                 .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
                 .requiresCorrectToolForDrops().strength(5f, 12f).sound(SoundType.COPPER);
     }
+    
     // Fluid tanks
     public static final RegistryEntry<TankBlock> STEEL_TANK_BLOCK = BLOCKS.register("steel_tank",
             () -> new TankBlock(steelProperties(), MachineConfig.steelTierFluidCapacity));
@@ -59,6 +58,19 @@ public final class DrifterBlocks {
             BLOCK_ENTITY_TYPES.register("tank_block_entity",
                     () -> RegistryHelpers.createBlockEntityType(TankBlockEntity::new,
                             STEEL_TANK_BLOCK.get(), OSTRUM_TANK_BLOCK.get(), DESH_TANK_BLOCK.get(), CALORITE_TANK_BLOCK.get()));
+
+    // Engine Nuzzles
+    public static final RegistryEntry<EngineNozzleBlock> STEEL_NUZZLE_BLOCK = BLOCKS.register("steel_engine_nuzzle",
+            () -> new EngineNozzleBlock(steelProperties(), 16));
+
+    public static final RegistryEntry<EngineNozzleBlock> DESH_NUZZLE_BLOCK = BLOCKS.register("desh_engine_nuzzle",
+            () -> new EngineNozzleBlock(steelProperties(), 32));
+
+    public static final RegistryEntry<EngineNozzleBlock> OSTRUM_NUZZLE_BLOCK = BLOCKS.register("ostrum_engine_nuzzle",
+            () -> new EngineNozzleBlock(steelProperties(), 64));
+
+    public static final RegistryEntry<EngineNozzleBlock> CALORITE_NUZZLE_BLOCK = BLOCKS.register("calorite_engine_nuzzle",
+            () -> new EngineNozzleBlock(steelProperties(), 128));
 
 
     // Engine block
