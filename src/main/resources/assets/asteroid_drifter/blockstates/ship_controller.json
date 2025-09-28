@@ -1,7 +1,34 @@
 {
   "variants": {
-    "": {
-      "model": "minecraft:block/crafting_table"
+    "facing=east,launch=true": {
+      "model": "asteroid_drifter:block/controller_block_launch",
+      "y": 90
+    },
+    "facing=north,launch=true": {
+      "model": "asteroid_drifter:block/controller_block_launch"
+    },
+    "facing=south,launch=true": {
+      "model": "asteroid_drifter:block/controller_block_launch",
+      "y": 180
+    },
+    "facing=west,launch=true": {
+      "model": "asteroid_drifter:block/controller_block_launch",
+      "y": 270
+    },
+    "facing=east,launch=false": {
+      "model": "asteroid_drifter:block/controller_block_stand",
+      "y": 90
+    },
+    "facing=north,launch=false": {
+      "model": "asteroid_drifter:block/controller_block_stand"
+    },
+    "facing=south,launch=false": {
+      "model": "asteroid_drifter:block/controller_block_stand",
+      "y": 180
+    },
+    "facing=west,launch=false": {
+      "model": "asteroid_drifter:block/controller_block_stand",
+      "y": 270
     }
   }
 }

@@ -26,7 +26,7 @@ public record ShipWidget(int x, int y, int width, ShipControllerBlockEntity cont
 
         if (isVisible()) {
             RenderSystem.enableBlend();
-            float amount = launchAnim.work() ? launchAnim.relativeTime() : landAnim.work() ? landAnim.relativeTime() : 1;
+            float amount = launchAnim.work() ? launchAnim.relativeTime() : landAnim.work() ? Math.max(0, 1 - landAnim.relativeTime() * 2) : 1;
 
             guiGraphics.blit(SHIP_TEXTURE, x - SHIP_SIZE / 2 + controller.getShipPosition() * width / 100, y - SHIP_SIZE / 2, 0, 0, SHIP_SIZE, (int) (SHIP_SIZE * amount), 24, 24);
 

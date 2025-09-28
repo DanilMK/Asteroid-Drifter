@@ -7,6 +7,9 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -102,9 +105,9 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         asteroids.forEach(recipe -> recipe.setRecipe(serverLevel));
         landLaunchHandler.destroyOnLaunch(serverLevel);
         if (isStand()) return;
+        if (serverLevel.getGameTime() % 80L == 0L) playSound(SoundEvents.BEACON_AMBIENT);
 
         // handle speed
-        engine.executeIfPresent(level, block -> block.speedTick(getRemainDistance()));
         save |= leftRightTick();
 
 
@@ -122,7 +125,6 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     private void movingTick(Level lvl, long gameTime) {
         remainDistance.setValue(getRemainDistance() - getSpeed());
         // handle fuel
-        engine.executeIfPresent(level, block -> block.fuelTick(gameTime));
 
         float leftTime = FlyUtils.leftTime(maxSpeed(), getRemainDistance(), getSpeed());
         if (getCollision() == Collision.NONE && gameTime % 120 == 0 && leftTime > ESCAPE_DANGER_TIME) { //todo increase
@@ -165,9 +167,9 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         if (!isStand()) return; // While we are driving we can't launch again
         if (getRemainDistance() > 0 && getSpeed() == 0) {
             if (engine.getBlock(level).map(e -> e.canLaunch(getRemainDistance())).orElse(false)) stand.setValue(false);
-            return;
         }
 
+        if (asteroid >= asteroids.size() || asteroid < 0) return;
         PlacedAsteroidRecipe recipe = asteroids.get(asteroid);
 
         if (recipe.recipe().isEmpty()) return; // We can't drive to empty asteroid
@@ -179,6 +181,8 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         remainDistance.setValue(getSelectedRecipe().distance());
         shipPosition.setValue(0);
         setChanged();
+        playSound(SoundEvents.BEACON_ACTIVATE);
+        setBlockStateLaunch(true);
     }
 
     public void createDanger(Collision danger, Level lvl) {
@@ -201,6 +205,9 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         engine.executeIfPresent(level, EnginePanelBlockEntity::resetSpeed);
         if (isInDanger()) pass();
         setChanged();
+        SoundEvent sound = SoundEvents.BEACON_DEACTIVATE;
+        playSound(sound);
+        setBlockStateLaunch(false);
     }
 
 
@@ -283,6 +290,14 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return asteroids.get(selectedAsteroid.getValue());
     }
 
+    private void playSound(SoundEvent beaconActivate) {
+        level.playSound(null, getBlockPos(), beaconActivate, SoundSource.BLOCKS, 2.0F, 0.5F);
+    }
+
+    private void setBlockStateLaunch(boolean launch) {
+        level.setBlock(getBlockPos(), getBlockState().setValue(ShipControllerBlock.LAUNCH, launch), 2);
+    }
+
     public Component getRequired(int distance) {
         return engine.getBlock(level).map(block -> block.getRequired(distance)).orElse(null);
     }
@@ -323,6 +338,10 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return stand.getValue();
     }
 
+    public boolean isLaunch() {
+        return !stand.getValue();
+    }
+
     public List<SavedDataSlot<?>> getDataSlots() {
         return savedDataSlots;
     }
@@ -337,7 +356,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
 
     @Override
-    public boolean bind(BlockPos pos, ShipBlock other) {
+    public boolean  bind(BlockPos pos, ShipBlock other) {
         if (other instanceof AlertPanelBlockEntity) {
             alertPanel.setPos(pos);
             return true;

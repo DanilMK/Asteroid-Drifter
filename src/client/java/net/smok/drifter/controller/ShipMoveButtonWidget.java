@@ -50,7 +50,7 @@ public class ShipMoveButtonWidget extends LabeledImageButton implements Hovered 
                               int textureDifference, int width, int height, int textureWidth, int textureHeight) {
 
         if (launchAnim.work() || landAnim.work()) {
-            float amount = launchAnim.work() ? launchAnim.relativeTime() : 1 - landAnim.relativeTime();
+            float amount = launchAnim.work() ? launchAnim.relativeTime() : Math.max(0, 1 - landAnim.relativeTime() * 2);
 
             super.renderTexture(guiGraphics, resourceLocation, x, y, uOffset, vOffset, textureDifference, width, (int) (height * amount), textureWidth, textureHeight);
         } else super.renderTexture(guiGraphics, resourceLocation, x, y, uOffset, vOffset, textureDifference, width, height, textureWidth, textureHeight);
