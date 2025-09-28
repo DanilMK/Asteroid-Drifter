@@ -49,7 +49,7 @@ public class TankBlockEntity extends BlockEntity implements BotariumFluidBlock<W
     @Override
     public void setChanged() {
         super.setChanged();
-        level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        if (level != null) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
     }
 
     @Override
