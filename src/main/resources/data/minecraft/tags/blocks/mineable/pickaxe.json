@@ -4,5 +4,10 @@
     "asteroid_drifter:alert_panel",
     "asteroid_drifter:engine_panel",
     "asteroid_drifter:ship_controller"
+    "asteroid_drifter:ship_controller",
+    "asteroid_drifter:steel_tank",
+    "asteroid_drifter:ostrum_tank",
+    "asteroid_drifter:desh_tank",
+    "asteroid_drifter:calorite_tank",
   ]
 }

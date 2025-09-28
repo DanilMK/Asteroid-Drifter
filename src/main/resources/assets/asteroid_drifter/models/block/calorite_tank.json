@@ -1,0 +1,7 @@
+{
+  "parent": "asteroid_drifter:block/tank",
+  "textures": {
+    "side": "asteroid_drifter:block/calorite_tank_side",
+    "top":  "asteroid_drifter:block/calorite_tank_top"
+  }
+}

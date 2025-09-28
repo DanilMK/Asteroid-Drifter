@@ -4,13 +4,8 @@ import com.teamresourceful.resourcefullib.common.registry.RegistryEntry;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistries;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistry;
 import earth.terrarium.adastra.common.config.MachineConfig;
-import earth.terrarium.adastra.common.items.TooltipBlockItem;
-import earth.terrarium.adastra.common.utils.FluidUtils;
-import earth.terrarium.botarium.common.fluid.FluidConstants;
 import earth.terrarium.botarium.common.registry.fluid.FluidBucketItem;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.smok.drifter.Debug;
@@ -63,4 +58,17 @@ public final class DrifterItems {
 
     public static final RegistryEntry<FuelTank> FUEL_TANK = ITEMS.register("fuel_tank", () ->
             new FuelTank(new Item.Properties(), MachineConfig.steelTierFluidCapacity));
+
+    public static final RegistryEntry<BlockItem> STEEL_TANK = ITEMS.register("steel_tank", () -> 
+            new BlockItem(DrifterBlocks.STEEL_TANK_BLOCK.get(), new Item.Properties()));
+
+    public static final RegistryEntry<BlockItem> DESH_TANK = ITEMS.register("desh_tank", () ->
+            new BlockItem(DrifterBlocks.DESH_TANK_BLOCK.get(), new Item.Properties()));
+
+    public static final RegistryEntry<BlockItem> OSTRUM_TANK = ITEMS.register("ostrum_tank", () ->
+            new BlockItem(DrifterBlocks.OSTRUM_TANK_BLOCK.get(), new Item.Properties()));
+
+    public static final RegistryEntry<BlockItem> CALORITE_TANK = ITEMS.register("calorite_tank", () -> 
+            new BlockItem(DrifterBlocks.CALORITE_TANK_BLOCK.get(), new Item.Properties()));
+
 }

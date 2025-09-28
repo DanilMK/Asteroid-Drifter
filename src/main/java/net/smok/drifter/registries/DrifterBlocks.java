@@ -4,6 +4,7 @@ import com.teamresourceful.resourcefullib.common.registry.RegistryEntry;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistries;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistry;
 import earth.terrarium.adastra.common.blocks.lamps.IndustrialLampBlock;
+import earth.terrarium.adastra.common.config.MachineConfig;
 import earth.terrarium.botarium.common.registry.RegistryHelpers;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
@@ -19,8 +20,7 @@ import net.smok.drifter.blocks.alert.AlertPanelBlock;
 import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerBlock;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.blocks.engine.EnginePanelBlock;
-import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
+import net.smok.drifter.blocks.engine.*;
 import org.jetbrains.annotations.NotNull;
 
 public final class DrifterBlocks {
@@ -41,6 +41,24 @@ public final class DrifterBlocks {
                 .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
                 .requiresCorrectToolForDrops().strength(5f, 12f).sound(SoundType.COPPER);
     }
+    // Fluid tanks
+    public static final RegistryEntry<TankBlock> STEEL_TANK_BLOCK = BLOCKS.register("steel_tank",
+            () -> new TankBlock(steelProperties(), MachineConfig.steelTierFluidCapacity));
+
+    public static final RegistryEntry<TankBlock> OSTRUM_TANK_BLOCK = BLOCKS.register("ostrum_tank",
+            () -> new TankBlock(steelProperties(), MachineConfig.ostrumTierFluidCapacity));
+
+    public static final RegistryEntry<TankBlock> DESH_TANK_BLOCK = BLOCKS.register("desh_tank",
+            () -> new TankBlock(steelProperties(), MachineConfig.deshTierFluidCapacity));
+
+    public static final RegistryEntry<TankBlock> CALORITE_TANK_BLOCK = BLOCKS.register("calorite_tank",
+            () -> new TankBlock(steelProperties(), MachineConfig.steelTierFluidCapacity * 5));
+
+
+    public static final RegistryEntry<BlockEntityType<TankBlockEntity>> TANK_BLOCK_ENTITY =
+            BLOCK_ENTITY_TYPES.register("tank_block_entity",
+                    () -> RegistryHelpers.createBlockEntityType(TankBlockEntity::new,
+                            STEEL_TANK_BLOCK.get(), OSTRUM_TANK_BLOCK.get(), DESH_TANK_BLOCK.get(), CALORITE_TANK_BLOCK.get()));
 
 
     // Engine block
