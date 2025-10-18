@@ -8,6 +8,7 @@ import earth.terrarium.botarium.common.registry.fluid.FluidBucketItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.smok.drifter.Debug;
 import net.smok.drifter.items.ConfigureTool;
 import net.smok.drifter.items.FuelTank;
@@ -35,6 +36,9 @@ public final class DrifterItems {
 
     public static final RegistryEntry<Item> ENGINE_PANEL = ITEMS.register("engine_panel", () ->
             new BlockItem(DrifterBlocks.ENGINE_PANEL_BLOCK.get(), new Item.Properties()));
+
+    public static final RegistryEntry<Item> SHIP_STRUCTURE = ITEMS.register("ship_structure_block", () ->
+            new BlockItem(DrifterBlocks.SHIP_STRUCTURE_BLOCK.get(), new Item.Properties()));
 
 
 

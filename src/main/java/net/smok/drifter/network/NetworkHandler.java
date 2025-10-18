@@ -12,6 +12,7 @@ import net.smok.drifter.registries.Values;
 import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -23,6 +24,14 @@ public final class NetworkHandler {
         ALERT_CHANGE_DANGER_COLOR.register();
         CREATIVE_SHIP_CONTROL.register();
     }
+
+    public static final ServerBoundPackets.@NotNull ServerBoundPacket4<BlockPos, BlockPos, Boolean, Boolean> SHIP_STRUCTURE_COMMIT =
+            ServerBoundPackets.of(new ResourceLocation(Values.MOD_ID, "ship_structure_commit"),
+                    ServerBoundPackets.BLOCK_POS_CODEC, ServerBoundPackets.BLOCK_POS_CODEC, ServerBoundPackets.BOOLEAN_CODEC, ServerBoundPackets.BOOLEAN_CODEC,
+                        (server, player, level, value1, value2, value3, value4) -> level.getBlockEntity(value1, DrifterBlocks.SHIP_STRUCTURE_BLOCK_ENTITY.get())
+                                .ifPresent(block -> block.setFromMenu(player, value2, value3, value4))
+            ).register();
+
 
 
     public static final BiRegisteredServerReceiver<BlockPos, Integer> CREATIVE_SHIP_CONTROL =

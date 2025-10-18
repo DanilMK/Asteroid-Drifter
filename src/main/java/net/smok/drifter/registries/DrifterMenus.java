@@ -16,6 +16,8 @@ import net.smok.drifter.blocks.engine.EngineMenu;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerMenu;
+import net.smok.drifter.blocks.structure.ShipStructureBlockEntity;
+import net.smok.drifter.blocks.structure.ShipStructureBlockMenu;
 import org.apache.commons.lang3.function.TriFunction;
 
 public final class DrifterMenus {
@@ -33,6 +35,8 @@ public final class DrifterMenus {
     public static final RegistryEntry<MenuType<EngineMenu>> ENGINE_MENU =
             registerMenu("engine_menu", EngineMenu::new, EnginePanelBlockEntity.class);
 
+    public static final RegistryEntry<MenuType<ShipStructureBlockMenu>> SHIP_STRUCTURE_MENU =
+            registerMenu("ship_structure_menu", ShipStructureBlockMenu::new, ShipStructureBlockEntity.class);
 
 
     private static <T extends AbstractContainerMenu, V extends BlockEntity> RegistryEntry<MenuType<T>> registerMenu(

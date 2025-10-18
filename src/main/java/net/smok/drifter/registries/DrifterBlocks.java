@@ -13,7 +13,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
-import net.smok.drifter.Debug;
 import net.smok.drifter.blocks.alert.AlertLampBlock;
 import net.smok.drifter.blocks.alert.AlertLampBlockEntity;
 import net.smok.drifter.blocks.alert.AlertPanelBlock;
@@ -21,11 +20,12 @@ import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerBlock;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.blocks.engine.*;
+import net.smok.drifter.blocks.structure.ShipStructureBlock;
+import net.smok.drifter.blocks.structure.ShipStructureBlockEntity;
 import org.jetbrains.annotations.NotNull;
 
 public final class DrifterBlocks {
     public static void init() {
-        Debug.log("Asteroid Drifter blocks loaded!");
     }
 
 
@@ -39,7 +39,16 @@ public final class DrifterBlocks {
                 .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
                 .requiresCorrectToolForDrops().strength(5f, 12f).sound(SoundType.COPPER);
     }
-    
+
+    // Structure Block
+    public static final RegistryEntry<ShipStructureBlock> SHIP_STRUCTURE_BLOCK = BLOCKS.register("ship_structure_block",
+            () -> new ShipStructureBlock(steelProperties()));
+
+    public static final RegistryEntry<BlockEntityType<ShipStructureBlockEntity>> SHIP_STRUCTURE_BLOCK_ENTITY =
+            BLOCK_ENTITY_TYPES.register("ship_structure_block",
+                    () -> RegistryHelpers.createBlockEntityType(ShipStructureBlockEntity::new, SHIP_STRUCTURE_BLOCK.get()));
+
+
     // Fluid tanks
     public static final RegistryEntry<TankBlock> STEEL_TANK_BLOCK = BLOCKS.register("steel_tank",
             () -> new TankBlock(steelProperties(), MachineConfig.steelTierFluidCapacity));

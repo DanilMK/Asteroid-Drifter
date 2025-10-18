@@ -9,12 +9,15 @@ import earth.terrarium.botarium.common.item.ItemStackHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.blocks.engine.TankBlockEntity;
 import net.smok.drifter.registries.DrifterBlocks;
@@ -116,5 +119,64 @@ public final class ExtraUtils {
 
         return true;
 
+    }
+
+    public static LevelChunk @NotNull [] chunks3x3(@NotNull Level level, @NotNull BlockPos blockPos) {
+        LevelChunk chunk = level.getChunkAt(blockPos);
+        ChunkPos chunkPos = chunk.getPos();
+
+        return new LevelChunk[] {
+                chunk,
+                level.getChunk(chunkPos.x - 1, chunkPos.z - 1),
+                level.getChunk(chunkPos.x - 1, chunkPos.z),
+                level.getChunk(chunkPos.x - 1, chunkPos.z + 1),
+                level.getChunk(chunkPos.x, chunkPos.z - 1),
+                level.getChunk(chunkPos.x, chunkPos.z + 1),
+                level.getChunk(chunkPos.x + 1, chunkPos.z - 1),
+                level.getChunk(chunkPos.x + 1, chunkPos.z),
+                level.getChunk(chunkPos.x + 1, chunkPos.z + 1)
+        };
+    }
+
+    public static LevelChunk @NotNull [] chunks5x5(@NotNull Level level, @NotNull BlockPos blockPos) {
+        LevelChunk chunk = level.getChunkAt(blockPos);
+        ChunkPos chunkPos = chunk.getPos();
+
+        return new LevelChunk[] {
+                chunk,
+                level.getChunk(chunkPos.x - 1, chunkPos.z - 1),
+                level.getChunk(chunkPos.x - 1, chunkPos.z),
+                level.getChunk(chunkPos.x - 1, chunkPos.z + 1),
+                level.getChunk(chunkPos.x, chunkPos.z - 1),
+                level.getChunk(chunkPos.x, chunkPos.z + 1),
+                level.getChunk(chunkPos.x + 1, chunkPos.z - 1),
+                level.getChunk(chunkPos.x + 1, chunkPos.z),
+                level.getChunk(chunkPos.x + 1, chunkPos.z + 1),
+                level.getChunk(chunkPos.x - 2, chunkPos.z - 2),
+                level.getChunk(chunkPos.x - 2, chunkPos.z - 1),
+                level.getChunk(chunkPos.x - 2, chunkPos.z),
+                level.getChunk(chunkPos.x - 2, chunkPos.z + 1),
+                level.getChunk(chunkPos.x - 2, chunkPos.z + 2),
+                level.getChunk(chunkPos.x - 1, chunkPos.z - 2),
+                level.getChunk(chunkPos.x - 1, chunkPos.z + 2),
+                level.getChunk(chunkPos.x, chunkPos.z - 2),
+                level.getChunk(chunkPos.x, chunkPos.z + 2),
+                level.getChunk(chunkPos.x + 1, chunkPos.z - 2),
+                level.getChunk(chunkPos.x + 1, chunkPos.z + 2),
+                level.getChunk(chunkPos.x + 2, chunkPos.z - 2),
+                level.getChunk(chunkPos.x + 2, chunkPos.z - 1),
+                level.getChunk(chunkPos.x + 2, chunkPos.z),
+                level.getChunk(chunkPos.x + 2, chunkPos.z + 1),
+                level.getChunk(chunkPos.x + 2, chunkPos.z + 2)
+        };
+    }
+
+    public static float @NotNull [] colorIntToFloats(int color) {
+        float r = (float) FastColor.ARGB32.red(color) / 255.0F;
+        float g = (float) FastColor.ARGB32.green(color) / 255.0F;
+        float b = (float) FastColor.ARGB32.blue(color) / 255.0F;
+        float a = (float) FastColor.ARGB32.alpha(color) / 255.0F;
+
+        return new float[]{r, g, b, a};
     }
 }
