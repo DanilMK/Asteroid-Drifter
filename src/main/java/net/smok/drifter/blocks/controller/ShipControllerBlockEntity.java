@@ -1,11 +1,14 @@
 package net.smok.drifter.blocks.controller;
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -20,16 +23,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.smok.drifter.Debug;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
+import net.smok.drifter.blocks.controller.collision.Collision;
 import net.smok.drifter.blocks.controller.extras.SimpleAsteroidFieldGenerator;
 import net.smok.drifter.blocks.controller.extras.SimpleLandLaunchHandler;
+import net.smok.drifter.blocks.structure.ShipStructure;
 import net.smok.drifter.recipies.PlacedAsteroidRecipe;
+import net.smok.drifter.registries.CollisionRegistries;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.blocks.ShipBlock;
 import net.smok.drifter.utils.BlockEntityPosition;
 import net.smok.drifter.utils.FlyUtils;
 import net.smok.drifter.utils.SavedDataSlot;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,13 +59,13 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     private final SavedDataSlot<Integer> selectedAsteroid = SavedDataSlot.intValue("selectedAsteroid");
     private final SavedDataSlot<Integer> shipPosition = SavedDataSlot.intValue("shipPosition", -50, 50);
     private final SavedDataSlot<Integer> dangerPosition = SavedDataSlot.intValue("dangerPosition", -50, 50);
-    private final SavedDataSlot<Collision> collisionType = createDangerTypeValue();
+    private final SavedDataSlot<Pair<ResourceLocation, Collision>> collisionType = Collision.createSavedData();
     private final SavedDataSlot<Integer> escapeDangerTime = SavedDataSlot.intValue("escapeDangerTime", 0, ESCAPE_DANGER_TIME); // in ticks
     private final SavedDataSlot<Boolean> stand = SavedDataSlot.booleanValue("stand");
     private int shipMoving;
 
     private final AsteroidFieldGenerator asteroidFieldGenerator;
-    private final LandLaunchHandler landLaunchHandler;
+    private LandLaunchHandler landLaunchHandler;
 
 
     private final BlockEntityPosition<AlertPanelBlockEntity> alertPanel =
@@ -76,7 +81,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     public ShipControllerBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get(), blockPos, blockState);
         asteroidFieldGenerator = new SimpleAsteroidFieldGenerator();
-        landLaunchHandler = new SimpleLandLaunchHandler(getBlockPos(), 25);
+        landLaunchHandler = new SimpleLandLaunchHandler(getBlockPos(), 25, 4);
 
         stand.setValue(true);
     }
@@ -127,16 +132,16 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         // handle fuel
 
         float leftTime = FlyUtils.leftTime(maxSpeed(), getRemainDistance(), getSpeed());
-        if (getCollision() == Collision.NONE && gameTime % 120 == 0 && leftTime > ESCAPE_DANGER_TIME) { //todo increase
+        if (getCollision() == null && gameTime % 120 == 0 && leftTime > ESCAPE_DANGER_TIME) { //todo increase
             int chance = lvl.getRandom().nextInt(0, 100);
-            if (chance < 5) createDanger(Collision.of(lvl.getRandom().nextInt(1, 3)), lvl);
+            if (chance < 5) createDanger(lvl.random, lvl);
         }
 
-        if (getCollision() != Collision.NONE) {
+        if (getCollision() != null) {
             if (escapeDangerTime.getValue() > 0) {
                 escapeDangerTime.setValue(escapeDangerTime.getValue() - 1);
                 if (isInDanger() && gameTime % 20L == 0L) alertPanel.executeIfPresent(lvl, alertPanelBlock ->
-                        alertPanelBlock.startDanger(getCollision()));
+                        alertPanelBlock.startDanger(getCollision().getSecond()));
 
             } else if (isInDanger()) crush();
             else pass();
@@ -153,13 +158,18 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
     private void pass() {
         Debug.log("Pass danger on " + level);
-        collisionType.setValue(Collision.NONE);
+        collisionType.setValue(null);
         setChanged();
     }
 
     private void crush() {
         Debug.log("Crush " + getCollision() + " on " + level);
-        collisionType.setValue(Collision.NONE);
+
+        if (level != null)
+            ShipStructure.findStructure(level, getBlockPos())
+                    .ifPresent(shipStructure -> collisionType.getValue().getSecond().applyCollision(level, shipStructure));
+
+        collisionType.setValue(null);
         setChanged();
     }
 
@@ -185,19 +195,23 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         setBlockStateLaunch(true);
     }
 
-    public void createDanger(Collision danger, Level lvl) {
+    public void createDanger(RandomSource random, Level lvl) {
         if (isStand()) return; // can't handle danger in standing position
-        if (getCollision() != Collision.NONE) return;
+        if (getCollision() != null) return;
         dangerPosition.setValue(shipPosition.getValue());
-        collisionType.setValue(danger);
+        collisionType.setValue(CollisionRegistries.getRandomCollision(random));
         escapeDangerTime.setValue(ESCAPE_DANGER_TIME);
         alertPanel.executeIfPresent(lvl, alertPanelBlock ->
-                alertPanelBlock.startDanger(getCollision()));
+                alertPanelBlock.startDanger(getCollision().getSecond()));
     }
 
     public void land() {
         if (getRemainDistance() < 100) {
-            if (level instanceof ServerLevel serverLevel) asteroids.get(getSelectedAsteroid()).recipe().ifPresent(recipe -> landLaunchHandler.placeOnLand(serverLevel, recipe));
+            if (level instanceof ServerLevel serverLevel) asteroids.get(getSelectedAsteroid()).recipe().ifPresent(recipe -> {
+                landLaunchHandler = new SimpleLandLaunchHandler(getBlockPos(),
+                        ShipStructure.findStructure(level, getBlockPos()).map(value -> value.getBigBoxMin().getY()).orElse(25), recipe.size());
+                landLaunchHandler.placeOnLand(serverLevel, recipe);
+            });
             remainDistance.setValue(0);
             createNewAsteroids();
         }
@@ -212,15 +226,9 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
 
     public boolean isInDanger() {
-        return getCollision() != Collision.NONE &&
+        return getCollision() != null &&
                 shipPosition.getValue() > (dangerPosition.getValue() - DANGER_HALF_SIZE) &&
                 shipPosition.getValue() < (dangerPosition.getValue() + DANGER_HALF_SIZE);
-    }
-
-    public static boolean isInDanger(Collision collision, int shipPosition, int dangerPosition) {
-        return collision != Collision.NONE &&
-                shipPosition > (dangerPosition - DANGER_HALF_SIZE) &&
-                shipPosition < (dangerPosition + DANGER_HALF_SIZE);
     }
 
     public void createNewAsteroids() {
@@ -302,10 +310,6 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return engine.getBlock(level).map(block -> block.getRequired(distance)).orElse(null);
     }
 
-    public long getFuel() {
-        return engine.getBlock(level).map(EnginePanelBlockEntity::getFuel).orElse(0L);
-    }
-
     public int getTotalDistance() {
         return getSelectedRecipe().distance();
     }
@@ -330,10 +334,6 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return engine.getBlock(level).map(EnginePanelBlockEntity::maxSpeed).orElse(1);
     }
 
-    public int getFuelEfficiency() {
-        return engine.getBlock(level).map(EnginePanelBlockEntity::getFuelEfficiency).orElse(0);
-    }
-
     public Boolean isStand() {
         return stand.getValue();
     }
@@ -350,7 +350,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return shipPosition.getValue();
     }
 
-    public Collision getCollision() {
+    public Pair<ResourceLocation, Collision> getCollision() {
         return collisionType.getValue();
     }
 
@@ -378,50 +378,15 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return asteroids;
     }
 
-    public enum Collision {
-        NONE(0), BIG(1), SMALL(2);
-        public final int type;
-
-        Collision(int type) {
-            this.type = type;
-        }
-
-        static Collision of(int value) {
-            return switch (value) {
-                case 0 -> NONE;
-                case 1 -> BIG;
-                case 2 -> SMALL;
-                default -> throw new IllegalStateException("Unexpected value: " + value);
-            };
-        }
-    }
-
-    @Contract(value = " -> new", pure = true)
-    private static @NotNull SavedDataSlot<Collision> createDangerTypeValue() {
-        return new SavedDataSlot<>(Collision.NONE) {
-            @Override
-            public void load(CompoundTag compoundTag) {
-                set(compoundTag.getInt("dangerType"));
-            }
-
-            @Override
-            public void save(CompoundTag compoundTag) {
-                compoundTag.putInt("dangerType", get());
-            }
-
-            @Override
-            public int get() {
-                return getValue().type;
-            }
-
-            @Override
-            public void set(int i) {
-                setValue(Collision.of(i));
-            }
-        };
-    }
-
     public BlockEntityPosition<EnginePanelBlockEntity> getEnginePanelBlock() {
         return engine;
+    }
+
+    public Direction forward() {
+        return getBlockState().getValue(ShipControllerBlock.FACING);
+    }
+
+    public Direction backward() {
+        return getBlockState().getValue(ShipControllerBlock.FACING).getOpposite();
     }
 }

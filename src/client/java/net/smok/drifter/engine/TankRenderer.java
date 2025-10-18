@@ -19,9 +19,9 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import net.smok.drifter.blocks.engine.TankBlockEntity;
 import net.smok.drifter.registries.Values;
+import net.smok.drifter.utils.ExtraUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
@@ -71,7 +71,8 @@ public class TankRenderer implements BlockEntityRenderer<TankBlockEntity> {
         FluidHolder holder = blockEntity.getFluidContainer().getFirstFluid();
         float amount = (float) holder.getFluidAmount() / blockEntity.getFluidContainer().getTankCapacity(0);
         VertexConsumer consumer = getConsumer(buffer, holder);
-        float[] colors = getColors(holder);
+
+        float[] colors = ExtraUtils.colorIntToFloats(ClientFluidHooks.getFluidColor(holder));
 
         for (ModelPart side : sides) {
             side.yScale = amount;
@@ -88,13 +89,4 @@ public class TankRenderer implements BlockEntityRenderer<TankBlockEntity> {
         return material.buffer(buffer, RenderType::entityTranslucent);
     }
 
-    private static float[] getColors(FluidHolder holder) {
-        int color = ClientFluidHooks.getFluidColor(holder);
-
-        float r = (float) FastColor.ARGB32.red(color) / 255.0F;
-        float g = (float) FastColor.ARGB32.green(color) / 255.0F;
-        float b = (float) FastColor.ARGB32.blue(color) / 255.0F;
-
-        return new float[] {r, g, b};
-    }
 }

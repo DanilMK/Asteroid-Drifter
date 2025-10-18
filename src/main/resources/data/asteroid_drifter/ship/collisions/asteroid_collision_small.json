@@ -1,0 +1,8 @@
+{
+  "collision_type": "asteroid_drifter:asteroid",
+  "color": 16744319,
+  "min_amount": 3,
+  "max_amount": 7,
+  "min_power": 3,
+  "max_power": 5
+}

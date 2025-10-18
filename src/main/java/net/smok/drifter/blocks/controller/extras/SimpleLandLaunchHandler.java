@@ -18,21 +18,23 @@ import net.smok.drifter.recipies.AsteroidRecipe;
 
 public class SimpleLandLaunchHandler implements LandLaunchHandler {
 
+    private static final int CHUNK_SIZE = 16;
+
     public final int blockOffset;
     private final BlockPos controllerPos;
-    private final int max = 4;
-    private final int chunkSize = 16;
+    private final int max;
 
     private int cx;
     private int cy;
     private int cz;
 
-    public SimpleLandLaunchHandler(BlockPos controllerPos, int blockOffset) {
+    public SimpleLandLaunchHandler(BlockPos controllerPos, int blockOffset, int max) {
         this.controllerPos = controllerPos;
         this.blockOffset = blockOffset;
-        cx = max + 1;
-        cy = max + 1;
-        cz = max + 1;
+        this.max = max;
+        cx = this.max + 1;
+        cy = this.max + 1;
+        cz = this.max + 1;
     }
 
     @Override
@@ -61,15 +63,15 @@ public class SimpleLandLaunchHandler implements LandLaunchHandler {
     @Override
     public void destroyOnLaunch(ServerLevel serverLevel) {
         if (cx > max || cy > max || cz > max) return;
-        BlockPos point = controllerPos.offset(cx * chunkSize, 0, cz * chunkSize);
+        BlockPos point = controllerPos.offset(cx * CHUNK_SIZE, 0, cz * CHUNK_SIZE);
         ChunkAccess chunk = serverLevel.getChunk(point);
         ChunkPos chunkPos = chunk.getPos();
         BlockState air = Blocks.AIR.defaultBlockState();
-        int dy = controllerPos.getY() + (cy - max) * chunkSize - blockOffset - chunkSize;
+        int dy = controllerPos.getY() + (cy - max) * CHUNK_SIZE - blockOffset - CHUNK_SIZE;
 
-        for (int x = 0; x < chunkSize; x++) {
-            for (int y = 0; y < chunkSize; y++) {
-                for (int z = 0; z < chunkSize; z++) {
+        for (int x = 0; x < CHUNK_SIZE; x++) {
+            for (int y = 0; y < CHUNK_SIZE; y++) {
+                for (int z = 0; z < CHUNK_SIZE; z++) {
                     BlockPos pos = chunkPos.getBlockAt(x, y + dy, z);
                     BlockEntity blockEntity = chunk.getBlockEntity(pos);
                     if (blockEntity instanceof Container container) {

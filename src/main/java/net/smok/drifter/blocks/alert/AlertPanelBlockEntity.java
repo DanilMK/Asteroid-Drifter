@@ -12,9 +12,10 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.smok.drifter.blocks.controller.SpaceCollision;
+import net.smok.drifter.blocks.controller.collision.Collision;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.ShipBlock;
-import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.utils.SavedDataSlot;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -87,11 +88,16 @@ public class AlertPanelBlockEntity extends BlockEntity implements ExtraDataMenuP
         setChanged();
     }
 
-    public void startDanger(ShipControllerBlockEntity.Collision collision) {
+    public void startDanger(SpaceCollision collision) {
         switch (collision) {
-            case BIG -> bigCollision.active.setValue(true);
-            case SMALL -> smallCollision.active.setValue(true);
+            case ONE_BIG -> bigCollision.active.setValue(true);
+            case ONE_SMALL -> smallCollision.active.setValue(true);
         }
+        setChanged();
+    }
+
+    public void startDanger(Collision collision) {
+        dangers.get(0).active.setValue(true);
         setChanged();
     }
 

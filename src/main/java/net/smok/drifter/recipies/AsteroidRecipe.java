@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Optional;
 
-public record AsteroidRecipe(ResourceLocation id, ItemStack icon, List<String> tooltips,
+public record AsteroidRecipe(ResourceLocation id, ItemStack icon, List<String> tooltips, int size,
                              Optional<ResourceLocation> structure, Optional<ResourceLocation> feature, int minDistance,
                              int maxDistance) implements CodecRecipe<Container> {
 
@@ -53,6 +53,7 @@ public record AsteroidRecipe(ResourceLocation id, ItemStack icon, List<String> t
                 RecordCodecBuilder.point(id),
                 ItemStackCodec.CODEC.fieldOf("icon").forGetter(AsteroidRecipe::icon),
                 Codec.STRING.listOf().fieldOf("tooltips").forGetter(AsteroidRecipe::tooltips),
+                Codec.INT.fieldOf("size").forGetter(AsteroidRecipe::size),
                 ResourceLocation.CODEC.optionalFieldOf("structure").forGetter(AsteroidRecipe::structure),
                 ResourceLocation.CODEC.optionalFieldOf("configured_feature").forGetter(AsteroidRecipe::feature),
                 Codec.INT.optionalFieldOf("min_distance", 0).forGetter(AsteroidRecipe::minDistance),
