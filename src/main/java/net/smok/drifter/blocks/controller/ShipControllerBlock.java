@@ -25,11 +25,12 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.smok.drifter.blocks.BasicEntityBlock;
 import net.smok.drifter.registries.DrifterBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ShipControllerBlock extends BaseEntityBlock {
+public class ShipControllerBlock extends BasicEntityBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LAUNCH = BooleanProperty.create("launch");
@@ -45,23 +46,10 @@ public class ShipControllerBlock extends BaseEntityBlock {
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(LAUNCH, false));
     }
 
-    @Override
-    public @NotNull RenderShape getRenderShape(BlockState blockState) {
-        return RenderShape.MODEL;
-    }
-
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
         return new ShipControllerBlockEntity(blockPos, blockState);
-    }
-
-    @Override
-    public InteractionResult use(BlockState blockState, @NotNull Level level, BlockPos blockPos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
-        if (level.isClientSide) return InteractionResult.SUCCESS;
-
-        MenuHooks.openMenu((ServerPlayer) player, (ExtraDataMenuProvider) blockState.getMenuProvider(level, blockPos));
-        return InteractionResult.CONSUME;
     }
 
     @Override
