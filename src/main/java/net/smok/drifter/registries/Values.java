@@ -1,25 +1,25 @@
 package net.smok.drifter.registries;
 
 import com.mojang.serialization.Codec;
+import com.teamresourceful.resourcefulconfig.common.config.Configurator;
 import com.teamresourceful.resourcefullib.common.recipe.CodecRecipeSerializer;
 import com.teamresourceful.resourcefullib.common.registry.RegistryEntry;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistries;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistry;
 import earth.terrarium.botarium.common.registry.fluid.*;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.material.Fluid;
 import net.smok.drifter.AlertEffect;
 import net.smok.drifter.Debug;
-import net.smok.drifter.recipies.AsteroidRecipe;
+import net.smok.drifter.DrifterConfig;
+import net.smok.drifter.data.recipies.AsteroidRecipe;
 import net.smok.drifter.world.AsteroidFeature;
 
 import java.util.function.Function;
@@ -28,10 +28,12 @@ public final class Values {
     public static void init() {
 
         SHIP_FUEL.setBucket(DrifterItems.SHIP_FUEL_BUCKET);
+        CONFIGURATOR.registerConfig(DrifterConfig.class);
         Debug.log("Asteroid Drifter Values loaded!");
     }
 
     public static final String MOD_ID = "asteroid_drifter";
+    public static final Configurator CONFIGURATOR = new Configurator();
     public static final ResourceLocation ASTEROID_DIMENSION = new ResourceLocation(MOD_ID, "asteroids");
 
     public static final ResourcefulRegistry<RecipeSerializer<?>> RECIPE_SERIALIZERS = ResourcefulRegistries.create(BuiltInRegistries.RECIPE_SERIALIZER, MOD_ID);

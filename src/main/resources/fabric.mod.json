@@ -22,6 +22,9 @@
 		],
 		"fabric-datagen": [
 			"net.smok.drifter.AsteroidDrifterDataGenerator"
+		],
+		"modmenu": [
+			"net.smok.drifter.ModMenuConfig"
 		]
 	},
 	"mixins": [
