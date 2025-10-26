@@ -41,7 +41,6 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
 
 
     private FuelWidget fuelWidget;
-    private DistanceWidget distanceWidget;
     private SpeedWidget speedWidget;
     private ShipWidget shipWidget;
     private ShipMoveButtonWidget leftButton, rightButton;
@@ -50,7 +49,7 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
     private final AnimationHandler launchAnim;
     private final AnimationHandler landAnim;
     private final ShipControllerBlockEntity controller;
-    private FieldWidget fieldWidget;
+    private PathWidget fieldWidget;
 
     public ShipControllerScreen(ShipControllerMenu menu, Inventory inventory, Component component) {
         super(menu, inventory, component);
@@ -108,11 +107,10 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
 
         fuelWidget = addRenderableOnly(new FuelWidget(menu.getEngineBlockEntity(), 60, height - 60, 50, font));
 
-        distanceWidget = addRenderableOnly(new DistanceWidget(menu.controller(),
-                centerX, distanceWidgetY, distanceWidgetRadius, initDriving, launchAnim, landAnim));
 
         speedWidget = addRenderableOnly(new SpeedWidget(menu.controller(),
                 width - 60, height - 60, 50, font));
+/*
 
         shipWidget = addRenderableOnly(new ShipWidget(centerX, shipWidgetY, shipWidgetWidth,
                 menu.controller(), launchAnim, landAnim, new AnimationHandler(20)));
@@ -122,15 +120,15 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
 
         rightButton = addRenderableWidget(new ShipMoveButtonWidget(centerX + shipWidgetWidth / 2 + 22, shipWidgetY - 9, 18, 18, 0, 0, 0,
                 new ResourceLocation(Values.MOD_ID, "textures/gui/controller/selector.png"), 18, 18, button -> moveRight(), Component.literal("D"), launchAnim, landAnim, menu.controller()));
+*/
 
-        fieldWidget = addRenderableWidget(new FieldWidget(width / 2, height / 2, width, height, 100, launchAnim, landAnim, controller));
+        fieldWidget = addRenderableWidget(new PathWidget(controller, launchAnim, landAnim, width / 2, height / 2));
 
-        hoveredWidgets.clear();
+        hoveredWidgets.clear();/*
         hoveredWidgets.add(shipWidget);
         hoveredWidgets.add(leftButton);
-        hoveredWidgets.add(rightButton);
+        hoveredWidgets.add(rightButton);*/
         hoveredWidgets.add(fuelWidget);
-        hoveredWidgets.add(distanceWidget);
         hoveredWidgets.add(speedWidget);
         hoveredWidgets.add(fieldWidget);
 
@@ -216,10 +214,10 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
         else if (initDriving & landAnim.isNotFinished() & !landAnim.isStarted() & controller.getRemainDistance() <= 0)
         {
             landAnim.start();
-        }
+        }/*
         boolean inFly = controller.getRemainDistance() > 0 || landAnim.work();
         leftButton.visible = inFly;
-        rightButton.visible = inFly;
+        rightButton.visible = inFly;*/
 
         super.render(guiGraphics, mouseX, mouseY, deltaTime);
 

@@ -1,33 +1,38 @@
-package net.smok.drifter.blocks.controller.collision;
+package net.smok.drifter.data.events;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.blocks.structure.ShipStructure;
 import net.smok.drifter.entities.CollidedAsteroid;
-import net.smok.drifter.registries.CollisionRegistries;
+import net.smok.drifter.registries.ShipEventRegistries;
 import net.smok.drifter.registries.DrifterEntities;
 import org.jetbrains.annotations.NotNull;
 
-public record AsteroidCollision(int iconColor, int minAmount, int maxAmount, int minPower, int maxPower) implements Collision {
+public record AsteroidCollision(ResourceLocation id, int iconColor, int minAmount, int maxAmount, int minPower, int maxPower) implements ShipEvent {
 
-    public static final Codec<AsteroidCollision> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.INT.fieldOf("color").forGetter(AsteroidCollision::iconColor),
-            Codec.INT.fieldOf("min_amount").forGetter(AsteroidCollision::minAmount),
-            Codec.INT.fieldOf("max_amount").forGetter(AsteroidCollision::maxAmount),
-            Codec.INT.fieldOf("min_power").forGetter(AsteroidCollision::minPower),
-            Codec.INT.fieldOf("max_power").forGetter(AsteroidCollision::maxPower)
-    ).apply(instance, AsteroidCollision::new));
+    public static Codec<AsteroidCollision> codec(ResourceLocation id) {
+        return RecordCodecBuilder.create(instance -> instance.group(
+                instance.point(id),
+                Codec.INT.fieldOf("color").forGetter(AsteroidCollision::iconColor),
+                Codec.INT.fieldOf("min_amount").forGetter(AsteroidCollision::minAmount),
+                Codec.INT.fieldOf("max_amount").forGetter(AsteroidCollision::maxAmount),
+                Codec.INT.fieldOf("min_power").forGetter(AsteroidCollision::minPower),
+                Codec.INT.fieldOf("max_power").forGetter(AsteroidCollision::maxPower)
+        ).apply(instance, AsteroidCollision::new));
+    }
+
 
     @Override
-    public CollisionType<?> getType() {
-        return CollisionRegistries.ASTEROID_COLLISION_TYPE;
+    public ShipEventType<?> getType() {
+        return ShipEventRegistries.ASTEROID_COLLISION_TYPE;
     }
 
     @Override

@@ -64,4 +64,8 @@ public final class FlyUtils {
     public static int speedToKm(int i) {
         return i * 20 * 60;
     }
+
+    public static int fuelToDistance(int fuelCostMb) {
+        return fuelCostMb; // todo
+    }
 }

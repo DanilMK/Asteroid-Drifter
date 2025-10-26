@@ -3,7 +3,6 @@ package net.smok.drifter.blocks.controller;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -23,12 +22,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.smok.drifter.Debug;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
-import net.smok.drifter.blocks.controller.collision.Collision;
-import net.smok.drifter.blocks.controller.extras.SimpleAsteroidFieldGenerator;
+import net.smok.drifter.blocks.controller.extras.ComplexPathGenerator;
+import net.smok.drifter.data.events.ShipEvent;
+import net.smok.drifter.blocks.controller.extras.SimplePathGenerator;
 import net.smok.drifter.blocks.controller.extras.SimpleLandLaunchHandler;
 import net.smok.drifter.blocks.structure.ShipStructure;
-import net.smok.drifter.recipies.PlacedAsteroidRecipe;
-import net.smok.drifter.registries.CollisionRegistries;
+import net.smok.drifter.data.recipies.Path;
+import net.smok.drifter.registries.ShipEventRegistries;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.blocks.ShipBlock;
@@ -38,7 +38,9 @@ import net.smok.drifter.utils.SavedDataSlot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ShipControllerBlockEntity extends ExtendedBlockEntity implements ShipBlock {
 
@@ -51,7 +53,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
 
     // Asteroids
-    private final List<PlacedAsteroidRecipe> asteroids = NonNullList.withSize(ASTEROIDS_AMOUNT, PlacedAsteroidRecipe.EMPTY);
+    private final List<Path> paths = new ArrayList<>();
 
 
     // Local data
@@ -59,12 +61,13 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     private final SavedDataSlot<Integer> selectedAsteroid = SavedDataSlot.intValue("selectedAsteroid");
     private final SavedDataSlot<Integer> shipPosition = SavedDataSlot.intValue("shipPosition", -50, 50);
     private final SavedDataSlot<Integer> dangerPosition = SavedDataSlot.intValue("dangerPosition", -50, 50);
-    private final SavedDataSlot<Pair<ResourceLocation, Collision>> collisionType = Collision.createSavedData();
+    private final SavedDataSlot<Pair<ResourceLocation, ShipEvent>> collisionType = ShipEvent.createSavedData();
     private final SavedDataSlot<Integer> escapeDangerTime = SavedDataSlot.intValue("escapeDangerTime", 0, ESCAPE_DANGER_TIME); // in ticks
     private final SavedDataSlot<Boolean> stand = SavedDataSlot.booleanValue("stand");
+    private final SavedDataSlot<Integer> completedEvents = SavedDataSlot.intValue("completedEvents");
     private int shipMoving;
 
-    private final AsteroidFieldGenerator asteroidFieldGenerator;
+    private final PathGenerator pathGenerator;
     private LandLaunchHandler landLaunchHandler;
 
 
@@ -75,12 +78,12 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
 
     private final List<SavedDataSlot<?>> savedDataSlots = List.of(remainDistance, selectedAsteroid,
-            shipPosition, dangerPosition, collisionType, escapeDangerTime, stand);
+            shipPosition, dangerPosition, collisionType, escapeDangerTime, stand, completedEvents);
 
 
     public ShipControllerBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get(), blockPos, blockState);
-        asteroidFieldGenerator = new SimpleAsteroidFieldGenerator();
+        pathGenerator = new ComplexPathGenerator();
         landLaunchHandler = new SimpleLandLaunchHandler(getBlockPos(), 25, 4);
 
         stand.setValue(true);
@@ -102,12 +105,12 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     }
 
     public void tick(Level clientLevel) {
-        asteroids.forEach(recipe -> recipe.setRecipe(clientLevel));
+        //asteroids.forEach(recipe -> recipe.setRecipe(clientLevel));
     }
 
     public void tick(ServerLevel serverLevel) {
         boolean save = false;
-        asteroids.forEach(recipe -> recipe.setRecipe(serverLevel));
+        //asteroids.forEach(recipe -> recipe.setRecipe(serverLevel));
         landLaunchHandler.destroyOnLaunch(serverLevel);
         if (isStand()) return;
         if (serverLevel.getGameTime() % 80L == 0L) playSound(SoundEvents.BEACON_AMBIENT);
@@ -179,10 +182,10 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
             if (engine.getBlock(level).map(e -> e.canLaunch(getRemainDistance())).orElse(false)) stand.setValue(false);
         }
 
-        if (asteroid >= asteroids.size() || asteroid < 0) return;
-        PlacedAsteroidRecipe recipe = asteroids.get(asteroid);
+        if (asteroid >= paths.size() || asteroid < 0) return;
+        Path recipe = paths.get(asteroid);
 
-        if (recipe.recipe().isEmpty()) return; // We can't drive to empty asteroid
+        if (recipe.getRecipe(level).isEmpty()) return; // We can't drive to empty asteroid todo peredelat
         if (!engine.getBlock(level).map(e -> e.canLaunch(recipe.distance())).orElse(false)) return; // We can't launch if not enough fuel
 
         stand.setValue(false);
@@ -198,22 +201,34 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     public void createDanger(RandomSource random, Level lvl) {
         if (isStand()) return; // can't handle danger in standing position
         if (getCollision() != null) return;
+
+        Optional<ShipEvent> event = getSelectedRecipe().startEvent(getRemainDistance(), getCompletedEvents());
+        if (event.isPresent()) {
+            Optional<ShipStructure> structure = ShipStructure.findStructure(lvl, getBlockPos());
+            structure.ifPresent(shipStructure -> event.get().applyCollision(lvl, shipStructure));
+            completedEvents.setValue(completedEvents.getValue() + 1);
+        }
+
+        collisionType.setValue(ShipEventRegistries.getRandomCollision(random));
+        if (collisionType.getValue() == null) return;
         dangerPosition.setValue(shipPosition.getValue());
-        collisionType.setValue(CollisionRegistries.getRandomCollision(random));
         escapeDangerTime.setValue(ESCAPE_DANGER_TIME);
         alertPanel.executeIfPresent(lvl, alertPanelBlock ->
                 alertPanelBlock.startDanger(getCollision().getSecond()));
     }
 
+
     public void land() {
+        if (isStand()) return;
         if (getRemainDistance() < 100) {
-            if (level instanceof ServerLevel serverLevel) asteroids.get(getSelectedAsteroid()).recipe().ifPresent(recipe -> {
+            if (level instanceof ServerLevel serverLevel) paths.get(getSelectedAsteroid()).getRecipe(level).ifPresent(recipe -> {
                 landLaunchHandler = new SimpleLandLaunchHandler(getBlockPos(),
                         ShipStructure.findStructure(level, getBlockPos()).map(value -> value.getBigBoxMin().getY()).orElse(25), recipe.size());
                 landLaunchHandler.placeOnLand(serverLevel, recipe);
             });
             remainDistance.setValue(0);
-            createNewAsteroids();
+            reRollPaths();
+            completedEvents.setValue(0);
         }
         stand.setValue(true);
         engine.executeIfPresent(level, EnginePanelBlockEntity::resetSpeed);
@@ -231,13 +246,13 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
                 shipPosition.getValue() < (dangerPosition.getValue() + DANGER_HALF_SIZE);
     }
 
-    public void createNewAsteroids() {
-        if (!isStand()) return; // While we are driving we can't recreate asteroids
+    public void reRollPaths() {
+        if (isLaunch()) return; // While we are driving we can't recreate asteroids
         if (level == null) return;
         RandomSource random = level.getRandom();
 
-        asteroids.clear();
-        asteroidFieldGenerator.genAsteroidField(this, random, asteroids);
+        paths.clear();
+        pathGenerator.genAsteroidField(this, random, paths);
 
         setChanged();
     }
@@ -250,7 +265,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
     public void creativeControl(int command) {
         switch (command) {
-            case 0 -> createNewAsteroids();
+            case 0 -> reRollPaths();
             case 1 -> land();
             case 2 -> {
                 remainDistance.setValue(0);
@@ -266,16 +281,17 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         engine.load(compoundTag);
 
         savedDataSlots.forEach(savedValue -> savedValue.load(compoundTag));
+        paths.clear();
 
         if (!compoundTag.contains("asteroids", Tag.TAG_LIST)) return;
         ListTag recipeList = compoundTag.getList("asteroids", CompoundTag.TAG_COMPOUND);
-        for (int i = 0; i < recipeList.size() && i < this.asteroids.size(); i++) {
-            CompoundTag tag = (CompoundTag) recipeList.get(i);
-            PlacedAsteroidRecipe placedAsteroidRecipe = PlacedAsteroidRecipe.loadData(tag);
-            this.asteroids.set(i, placedAsteroidRecipe);
+        for (Tag value : recipeList) {
+            CompoundTag tag = (CompoundTag) value;
+            Path element = Path.loadData(tag);
+            if (element != null) paths.add(element);
         }
 
-        if (level != null) asteroids.forEach(recipe -> recipe.setRecipe(level));
+        //if (level != null) asteroids.forEach(recipe -> recipe.setRecipe(level));
 
     }
 
@@ -288,14 +304,18 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         savedDataSlots.forEach(savedValue -> savedValue.save(compoundTag));
 
         ListTag asteroids = new ListTag();
-        this.asteroids.forEach(placedAsteroidRecipe -> asteroids.add(placedAsteroidRecipe.saveData()));
+        this.paths.forEach(placedAsteroidRecipe -> asteroids.add(placedAsteroidRecipe.saveData()));
 
         compoundTag.put("asteroids", asteroids);
     }
 
 
-    public PlacedAsteroidRecipe getSelectedRecipe() {
-        return asteroids.get(selectedAsteroid.getValue());
+    public Path getSelectedRecipe() {
+        return paths.get(selectedAsteroid.getValue());
+    }
+
+    public int getCompletedEvents() {
+        return completedEvents.getValue();
     }
 
     private void playSound(SoundEvent beaconActivate) {
@@ -350,7 +370,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return shipPosition.getValue();
     }
 
-    public Pair<ResourceLocation, Collision> getCollision() {
+    public Pair<ResourceLocation, ShipEvent> getCollision() {
         return collisionType.getValue();
     }
 
@@ -374,8 +394,8 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         engine.setPos(null);
     }
 
-    public List<PlacedAsteroidRecipe> getAllRecipes() {
-        return asteroids;
+    public List<Path> getAllRecipes() {
+        return paths;
     }
 
     public BlockEntityPosition<EnginePanelBlockEntity> getEnginePanelBlock() {

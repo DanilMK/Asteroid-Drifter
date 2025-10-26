@@ -16,8 +16,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.recipies.AsteroidRecipe;
-import net.smok.drifter.recipies.PlacedAsteroidRecipe;
+import net.smok.drifter.data.recipies.AsteroidRecipe;
+import net.smok.drifter.data.recipies.Path;
+import net.smok.drifter.data.recipies.PlacedAsteroidRecipe;
 import net.smok.drifter.registries.Values;
 import net.smok.drifter.widgets.AnimationHandler;
 import net.smok.drifter.widgets.CircleDrawer;
@@ -53,7 +54,7 @@ public class FieldWidget extends AbstractWidget implements Hovered {
 
     @Override
     protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-
+/*
         if (controller.getRemainDistance() <= 0) {
             if (landAnim.work()) {
                 float time = landAnim.relativeTime();
@@ -73,29 +74,29 @@ public class FieldWidget extends AbstractWidget implements Hovered {
                 forEachAsteroid(recipe -> renderItemToScreen(guiGraphics, recipe, recipe.x(), recipe.y()));
             }
         } else if (launchAnim.work()) {
-            PlacedAsteroidRecipe asteroid = controller.getSelectedRecipe();
+            Path path = controller.getSelectedRecipe();
 
-            int x = toScreenX(asteroid.x());
-            int y = toScreenY(asteroid.y());
+            int x = toScreenX(path.x());
+            int y = toScreenY(path.y());
             float time = launchAnim.relativeTime() * 2;
 
             if (time < 1f) {
                 drawCross(guiGraphics, x, y, time);
-                renderItem(guiGraphics, asteroid, x, y);
+                renderItem(guiGraphics, path, x, y);
             } else {
                 time--;
                 int x1 = (int) CircleDrawer.lerp(time, 0, 1, x, getX());
                 int y1 = (int) CircleDrawer.lerp(time, 0, 1, y, getY());
 
                 drawCross(guiGraphics, x1, y1);
-                renderItem(guiGraphics, asteroid, x1, y1);
+                renderItem(guiGraphics, path, x1, y1);
             }
 
         } else {
 
             drawCross(guiGraphics, getX(), getY());
             renderItem(guiGraphics, controller.getSelectedRecipe(), getX(), getY());
-        }
+        }*/
     }
 
     private void drawCross(GuiGraphics guiGraphics, int x, int y, float size) {
@@ -171,7 +172,7 @@ public class FieldWidget extends AbstractWidget implements Hovered {
     }
 
     private void forEachAsteroid(Consumer<PlacedAsteroidRecipe> function) {
-        controller.getAllRecipes().forEach(function);
+        //controller.getAllRecipes().forEach(function);
     }
 
 
@@ -179,7 +180,7 @@ public class FieldWidget extends AbstractWidget implements Hovered {
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {}
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {/*
         if (isActive() && visible && controller.isStand()) {
             List<PlacedAsteroidRecipe> allRecipes = controller.getAllRecipes();
             for (int i = 0; i < allRecipes.size(); i++) {
@@ -195,7 +196,7 @@ public class FieldWidget extends AbstractWidget implements Hovered {
                     return true;
                 }
             }
-        }
+        }*/
         return false;
     }
 
@@ -232,7 +233,7 @@ public class FieldWidget extends AbstractWidget implements Hovered {
     }
 
     @Override
-    public boolean appendContent(List<Component> contents, int mouseX, int mouseY) {
+    public boolean appendContent(List<Component> contents, int mouseX, int mouseY) {/*
         if (controller.isStand()) {
             boolean b = false;
             for (PlacedAsteroidRecipe recipe : controller.getAllRecipes()) {
@@ -249,12 +250,12 @@ public class FieldWidget extends AbstractWidget implements Hovered {
                 contents.addAll(controller.getSelectedRecipe().getTooltip(controller));
                 return true;
             }
-        }
+        }*/
         return false;
     }
 
     private PlacedAsteroidRecipe getSelectedRecipe() {
-        return controller.getAllRecipes().get(selected);
+        return null; //controller.getAllRecipes().get(selected);
     }
 
     private int toScreenY(int itemY) {

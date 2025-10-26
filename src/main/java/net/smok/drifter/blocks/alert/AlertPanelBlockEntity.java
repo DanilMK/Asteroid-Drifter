@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.smok.drifter.blocks.controller.SpaceCollision;
-import net.smok.drifter.blocks.controller.collision.Collision;
+import net.smok.drifter.data.events.ShipEvent;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.ShipBlock;
 import net.smok.drifter.utils.SavedDataSlot;
@@ -96,7 +96,7 @@ public class AlertPanelBlockEntity extends BlockEntity implements ExtraDataMenuP
         setChanged();
     }
 
-    public void startDanger(Collision collision) {
+    public void startDanger(ShipEvent shipEvent) {
         dangers.get(0).active.setValue(true);
         setChanged();
     }

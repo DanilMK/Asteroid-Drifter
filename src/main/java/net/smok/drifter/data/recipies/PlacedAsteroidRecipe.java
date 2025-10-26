@@ -1,4 +1,4 @@
-package net.smok.drifter.recipies;
+package net.smok.drifter.data.recipies;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -133,5 +133,4 @@ public final class PlacedAsteroidRecipe {
 
         return tooltip;
     }
-
 }

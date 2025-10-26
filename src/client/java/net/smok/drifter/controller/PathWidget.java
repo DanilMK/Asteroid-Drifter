@@ -1,0 +1,319 @@
+package net.smok.drifter.controller;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.Axis;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
+import net.smok.drifter.data.recipies.AsteroidRecipe;
+import net.smok.drifter.data.recipies.Path;
+import net.smok.drifter.registries.Values;
+import net.smok.drifter.utils.FlyUtils;
+import net.smok.drifter.widgets.AnimationHandler;
+import net.smok.drifter.widgets.Hovered;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
+
+
+public final class PathWidget implements Renderable, Hovered, GuiEventListener, NarratableEntry {
+
+    private static final ResourceLocation DANGER_ICON = new ResourceLocation(Values.MOD_ID, "textures/gui/controller/selector.png");
+    private static final ResourceLocation SHIP_ICON = new ResourceLocation(Values.MOD_ID, "textures/gui/controller/ship.png");
+    private static final ResourceLocation SELECTOR_ICON = new ResourceLocation(Values.MOD_ID, "textures/gui/controller/selector.png");
+
+    private final ShipControllerBlockEntity controller;
+    private final Level level;
+    private final AnimationHandler startAnim;
+    private final AnimationHandler endAnim;
+    private final int centerX, centerY;
+    private final float scale;
+
+    private Path selectedPath;
+    private boolean focused;
+
+
+
+    public PathWidget(ShipControllerBlockEntity controller, AnimationHandler startAnim, AnimationHandler endAnim, int centerX, int centerY) {
+        this.controller = controller;
+        this.level = controller.getLevel();
+        this.startAnim = startAnim;
+        this.endAnim = endAnim;
+        this.centerX = centerX;
+        this.centerY = centerY;
+        this.scale = (centerY - 40) / 120f;
+    }
+
+
+    @Override
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        if (controller.getRemainDistance() > 0) {
+            Path recipe = controller.getSelectedRecipe();
+            renderPathLine(recipe);
+            renderRecipe(guiGraphics, recipe);
+            renderShip(guiGraphics, recipe, controller.getRemainDistance(), controller.getTotalDistance());
+
+        } else {
+            renderSelection(guiGraphics);
+            controller.getAllRecipes().forEach(path -> renderRecipe(guiGraphics, path));
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (controller.getRemainDistance() > 0) {
+            if (isShiHovered((int) mouseX, (int) mouseY, controller.getSelectedRecipe())) {
+
+                Minecraft.getInstance().getSoundManager()
+                        .play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_BIT, 1.3348398f));
+                selectedPath = controller.getSelectedRecipe();
+                return true;
+            }
+            return false;
+        }
+        Optional<Path> first = hoveredPath((int) mouseX, (int) mouseY).min(Comparator.comparing(path -> {
+            double x = mouseX - screenX(path);
+            double y = mouseY - screenY(path);
+            return x * x + y * y;
+        }));
+        if (first.isPresent()) Minecraft.getInstance().getSoundManager()
+                .play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_BIT, 1.3348398f));
+
+        selectedPath = first.orElse(null);
+        return first.isPresent();
+    }
+
+    @Override
+    public boolean appendContent(List<Component> contents, int mouseX, int mouseY) {
+        if (controller.getRemainDistance() > 0) {
+            Path path = controller.getSelectedRecipe();
+            if (isPathHovered(mouseX, mouseY, path) || isShiHovered(mouseX, mouseY, path)) {
+                path.getRecipe(level).ifPresent(recipe -> {
+                    recipe.appendContent(contents);
+                    contents.add(Component.translatable("tooltip.asteroid_drifter.remain_distance", String.format("%,d", controller.getRemainDistance()), String.format("%,d", controller.getTotalDistance())));
+                });
+                return true;
+            }
+            return false;
+        }
+
+        AtomicBoolean bl = new AtomicBoolean(false);
+        hoveredPath(mouseX, mouseY).forEach(path -> {
+            Optional<AsteroidRecipe> recipeOptional = path.getRecipe(level);
+            if (recipeOptional.isPresent()) {
+                AsteroidRecipe recipe = recipeOptional.get();
+                if (bl.get()) contents.add(Component.empty());
+                pathTooltip(contents, path, recipe);
+
+                bl.set(true);
+            }
+        });
+        return bl.get();
+    }
+
+    @Override
+    public boolean isHover(int mouseX, int mouseY) {
+        return hoveredPath(mouseX, mouseY).findAny().isPresent();
+    }
+
+    @Override
+    public List<Component> content() {
+        Optional<AsteroidRecipe> recipe = selectedPath.getRecipe(level);
+        if (recipe.isEmpty()) return List.of();
+        ArrayList<Component> contents = new ArrayList<>();
+        pathTooltip(contents, selectedPath, recipe.get());
+        return contents;
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+        this.focused = focused;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return focused;
+    }
+
+    private void pathTooltip(List<Component> contents, Path path, AsteroidRecipe recipe) {
+        recipe.appendContent(contents);
+
+
+        MutableComponent distance = Component.translatable("tooltip.asteroid_drifter.full_distance", String.format("%,d", path.distance()));
+        distance.withStyle(ChatFormatting.GRAY);
+
+        Component fuel = controller.getRequired(path.distance());
+
+        String totalTime = FlyUtils.timeToString(FlyUtils.totalTime(
+                controller.maxSpeed(), path.distance()));
+        MutableComponent time = Component.translatable("tooltip.asteroid_drifter.time_required", totalTime).withStyle(ChatFormatting.GRAY);
+
+        contents.add(distance);
+        if (fuel != null) contents.add(fuel);
+        contents.add(time);
+    }
+
+    private Stream<Path> hoveredPath(int mouseX, int mouseY) {
+        return controller.getAllRecipes().stream().filter(path -> isPathHovered(mouseX, mouseY, path));
+    }
+
+    private boolean isPathHovered(int mouseX, int mouseY, Path path) {
+        int x = screenX(path);
+        int y = screenY(path);
+        return Hovered.isHover(x - 9, y - 9, x + 9, y + 9, mouseX, mouseY);
+    }
+
+    private boolean isShiHovered(int mouseX, int mouseY, Path path) {
+        int x = (int) Mth.lerp(1d - (double) controller.getRemainDistance() / controller.getTotalDistance(), centerX, screenX(path));
+        int y = (int) Mth.lerp(1d - (double) controller.getRemainDistance() / controller.getTotalDistance(), centerY, screenY(path));
+        return Hovered.isHover(x - 12, y - 12, x + 12, y + 12, mouseX, mouseY);
+    }
+
+    private void renderShip(GuiGraphics guiGraphics, Path path, int remainDist, int totalDis) {
+        double x = Mth.lerp(1d - (double) remainDist / totalDis, centerX, screenX(path));
+        double y = Mth.lerp(1d - (double) remainDist / totalDis, centerY, screenY(path));
+        PoseStack pose = guiGraphics.pose();
+        pose.pushPose();
+        pose.translate(x, y, 0);
+        pose.mulPose(Axis.ZP.rotation(
+                path.x() > 0 ?
+                (float) (Math.atan((double) path.y() / path.x())) :
+                (float) (Math.atan((double) path.y() / path.x()) + Math.PI)
+        ));
+        RenderSystem.enableBlend();
+        guiGraphics.blit(SHIP_ICON, -12, -12, 0, 0, 24, 24, 24, 24);
+        RenderSystem.disableBlend();
+        pose.popPose();
+    }
+
+    private void renderPathLine(Path path) {
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.getBuilder();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+
+        float x = screenX(path), y = screenY(path);
+        if (startAnim.work()) {
+            x = Mth.lerp(startAnim.relativeTime(), centerX, x);
+            y = Mth.lerp(startAnim.relativeTime(), centerY, y);
+        }
+
+        renderDashedPathLine(bufferBuilder, centerX - 0.3f, centerY, x - 0.3f, y, 5, ShipControllerScreen.COLOR_FADE, 20);
+        renderDashedPathLine(bufferBuilder, centerX, centerY - 0.5f, x, y - 0.3f, 5, ShipControllerScreen.COLOR_FADE, 20);
+        renderDashedPathLine(bufferBuilder, centerX + 0.3f, centerY, x + 0.3f, y, 5, ShipControllerScreen.COLOR_FADE, 20);
+        renderDashedPathLine(bufferBuilder, centerX, centerY + 0.3f, x, y + 0.3f, 5, ShipControllerScreen.COLOR_FADE, 20);
+        renderDashedPathLine(bufferBuilder, centerX, centerY, x, y, 5, ShipControllerScreen.COLOR_FADE, 20);
+        tesselator.end();
+    }
+
+    private static void renderDashedPathLine(BufferBuilder bufferBuilder, float startX, float startY, float endX, float endY, float dash, int color, float cycleTime) {
+        double dx = endX - startX;
+        double dy = endY - startY;
+        double r = Math.sqrt(dx * dx + dy * dy);
+
+        double normalX = dx * dash / r;
+        double normalY = dy * dash / r;
+
+        double shift = getTime() % cycleTime / cycleTime;
+
+        double px = startX + shift * normalX * 2 - normalX * 0.75;
+        double py = startY + shift * normalY * 2 - normalY * 0.75;
+
+
+
+        bufferBuilder.vertex(startX, startY, 0.0).color(color).endVertex();
+        int i = 0;
+        for (double p = 0; p < r - dash * 2; p += dash) {
+            px += normalX;
+            py += normalY;
+            bufferBuilder.vertex(px, py, 0.0).color(color).endVertex();
+            i++;
+        }
+        if (i % 2 == 0) bufferBuilder.vertex(endX, endY, 0.0).color(color).endVertex();
+    }
+
+    private void renderSelection(GuiGraphics guiGraphics) {
+        if (isFocused()) {
+            RenderSystem.enableBlend();
+            guiGraphics.blit(SELECTOR_ICON, screenX(selectedPath) - 9, screenY(selectedPath) - 9, 0, 0, 18, 18, 18, 18);
+            RenderSystem.disableBlend();
+        }
+    }
+
+    private void renderRecipe(GuiGraphics guiGraphics, Path path) {
+        Optional<AsteroidRecipe> recipeOptional = path.getRecipe(level);
+        if (recipeOptional.isEmpty()) return;
+        AsteroidRecipe recipe = recipeOptional.get();
+        int x = screenX(path);
+        int y = screenY(path);
+
+
+        PoseStack pose = guiGraphics.pose();
+        pose.pushPose();
+        pose.translate(x, y, 0);
+        pose.mulPose(Axis.ZP.rotationDegrees(getTime() + path.distance()));
+
+        ItemStack icon = recipe.icon();
+        guiGraphics.renderItem(icon, -8, -8);
+        pose.popPose();
+    }
+
+    private static float getTime() {
+        return Util.getMillis() / 100.0F;
+    }
+
+    private int screenX(Path path) {
+        return (int) (centerX + path.x() * scale);
+    }
+
+    private int screenY(Path path) {
+        return (int) (centerY + path.y() * scale);
+    }
+
+    @Override
+    public @NotNull NarrationPriority narrationPriority() {
+        if (this.isFocused()) {
+            return NarrationPriority.FOCUSED;
+        } else {
+            return NarrationPriority.NONE;
+        }
+    }
+
+    @Override
+    public void updateNarration(NarrationElementOutput narrationElementOutput) {
+
+    }
+
+    public int getSelected() {
+        return controller.getAllRecipes().indexOf(selectedPath);
+    }
+
+    public int selectedX() {
+        return screenX(selectedPath);
+    }
+
+    public int selectedY() {
+        return screenY(selectedPath);
+    }
+}

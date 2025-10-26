@@ -6,7 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.smok.drifter.blocks.controller.collision.Collision;
+import net.smok.drifter.data.events.ShipEvent;
 import net.smok.drifter.registries.Values;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.utils.ExtraUtils;
@@ -33,7 +33,7 @@ public record ShipWidget(int x, int y, int width, ShipControllerBlockEntity cont
 
             guiGraphics.blit(SHIP_TEXTURE, x - SHIP_SIZE / 2 + controller.getShipPosition() * width / 100, y - SHIP_SIZE / 2, 0, 0, SHIP_SIZE, (int) (SHIP_SIZE * amount), 24, 24);
 
-            Pair<ResourceLocation, Collision> danger = controller.getCollision();
+            Pair<ResourceLocation, ShipEvent> danger = controller.getCollision();
             if (danger != null) {
                 int x1 = x - DANGER_SIZE / 2 + controller.getDangerPosition() * width / 100;
                 int y1 = y - DANGER_SIZE / 2 - SHIP_SIZE;

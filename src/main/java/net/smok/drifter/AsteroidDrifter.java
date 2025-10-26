@@ -14,14 +14,14 @@ public class AsteroidDrifter implements ModInitializer {
 	public void onInitialize() {
 		Values.init();
 		NetworkHandler.init();
-		CollisionRegistries.init();
+		ShipEventRegistries.init();
 		ModifierRegistries.init();
 		DrifterEntities.init();
 		DrifterBlocks.init();
 		DrifterItems.init();
 		DrifterCreativeTab.TABS.init();
 
-		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new CollisionRegistries.CollisionRegistration());
+		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new ShipEventRegistries.CollisionRegistration());
 
 	}
 }

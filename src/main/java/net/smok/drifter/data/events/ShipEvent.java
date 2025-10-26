@@ -1,36 +1,38 @@
-package net.smok.drifter.blocks.controller.collision;
+package net.smok.drifter.data.events;
 
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.smok.drifter.blocks.structure.ShipStructure;
-import net.smok.drifter.registries.CollisionRegistries;
+import net.smok.drifter.registries.ShipEventRegistries;
 import net.smok.drifter.utils.SavedDataSlot;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public interface Collision {
+public interface ShipEvent {
 
-    Codec<Collision> CODEC = CollisionRegistries.COLLISION_TYPES.byNameCodec()
-            .dispatch("collision_type", Collision::getType, CollisionType::codec);
+    ShipEventType<?> getType();
 
-    CollisionType<?> getType();
+    ResourceLocation id();
 
     int iconColor();
 
     void applyCollision(@NotNull Level level, ShipStructure structure);
 
+    default boolean stopShip() {
+        return false;
+    }
+
     @Contract(" -> new")
-    static @NotNull SavedDataSlot<Pair<ResourceLocation, Collision>> createSavedData() {
+    static @NotNull SavedDataSlot<Pair<ResourceLocation, ShipEvent>> createSavedData() {
         return new SavedDataSlot<>(null) {
             @Override
             public void load(CompoundTag compoundTag) {
                 if (compoundTag.contains("collisionType")) {
                     ResourceLocation collisionId = new ResourceLocation(compoundTag.getString("collisionType"));
-                    Collision collision = CollisionRegistries.getCollision(collisionId);
-                    if (collision != null) setValue(new Pair<>(collisionId, collision));
+                    ShipEvent shipEvent = ShipEventRegistries.getCollision(collisionId);
+                    if (shipEvent != null) setValue(new Pair<>(collisionId, shipEvent));
                 }
             }
 

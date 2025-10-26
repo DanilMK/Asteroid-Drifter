@@ -1,4 +1,4 @@
-package net.smok.drifter.recipies;
+package net.smok.drifter.data.recipies;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -15,12 +15,14 @@ import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.registries.Values;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public record AsteroidRecipe(ResourceLocation id, ItemStack icon, List<String> tooltips, int size,
-                             Optional<ResourceLocation> structure, Optional<ResourceLocation> feature, int minDistance,
-                             int maxDistance) implements CodecRecipe<Container> {
+                             Optional<ResourceLocation> structure, Optional<ResourceLocation> feature,
+                             List<PathEvent> pathEvents, int minDistance, int maxDistance)
+        implements CodecRecipe<Container> {
 
 
 
@@ -56,8 +58,16 @@ public record AsteroidRecipe(ResourceLocation id, ItemStack icon, List<String> t
                 Codec.INT.fieldOf("size").forGetter(AsteroidRecipe::size),
                 ResourceLocation.CODEC.optionalFieldOf("structure").forGetter(AsteroidRecipe::structure),
                 ResourceLocation.CODEC.optionalFieldOf("configured_feature").forGetter(AsteroidRecipe::feature),
+                PathEvent.CODEC.listOf().optionalFieldOf("path_events", List.of()).forGetter(AsteroidRecipe::pathEvents),
                 Codec.INT.optionalFieldOf("min_distance", 0).forGetter(AsteroidRecipe::minDistance),
                 Codec.INT.optionalFieldOf("min_distance", Integer.MAX_VALUE).forGetter(AsteroidRecipe::maxDistance)
         ).apply(instance, AsteroidRecipe::new));
+    }
+
+    public void appendContent(List<Component> contents) {
+        tooltips.forEach(s -> contents.add(Component.translatable(s)));
+        if (pathEvents.isEmpty()) return;
+        contents.add(Component.translatable("tooltip.asteroid_drifter.possible_dangers"));
+        pathEvents.forEach(pathEvent -> contents.add(pathEvent.toComponent()));
     }
 }

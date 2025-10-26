@@ -14,7 +14,7 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.smok.drifter.blocks.controller.LandLaunchHandler;
-import net.smok.drifter.recipies.AsteroidRecipe;
+import net.smok.drifter.data.recipies.AsteroidRecipe;
 
 public class SimpleLandLaunchHandler implements LandLaunchHandler {
 

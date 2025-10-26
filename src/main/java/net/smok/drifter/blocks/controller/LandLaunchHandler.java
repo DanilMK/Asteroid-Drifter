@@ -1,7 +1,7 @@
 package net.smok.drifter.blocks.controller;
 
 import net.minecraft.server.level.ServerLevel;
-import net.smok.drifter.recipies.AsteroidRecipe;
+import net.smok.drifter.data.recipies.AsteroidRecipe;
 
 public interface LandLaunchHandler {
     void placeOnLand(ServerLevel serverLevel, AsteroidRecipe recipe);
