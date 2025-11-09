@@ -57,6 +57,6 @@ public record DistanceWidget(ShipControllerBlockEntity controller, int x, int y,
 
     @Override
     public List<Component> content() {
-        return List.of(Component.translatable("tooltip.asteroid_drifter.remain_distance", String.format("%,d", controller.getRemainDistance()), String.format("%,d", controller.getTotalDistance())));
+        return List.of(Component.translatable("tooltip.asteroid_drifter.remain_distance", String.format("%,f", controller.getRemainDistance()), String.format("%,f", controller.getTotalDistance())));
     }
 }

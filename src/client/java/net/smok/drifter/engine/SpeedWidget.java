@@ -6,9 +6,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.registries.Values;
-import net.smok.drifter.widgets.CircleDrawer;
 import net.smok.drifter.widgets.Hovered;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +26,7 @@ public record SpeedWidget(EnginePanelBlockEntity engine, int posX, int posY, flo
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float deltaTime) {
 
-        float r = (float) CircleDrawer.lerp(engine.speed(), 0, engine.maxSpeed(), minRot, maxRot);
+        float r = Mth.lerp(engine.speed() / engine.maxSpeed(), minRot(), maxRot());
 
         guiGraphics.blit(SPEEDOMETER_TEXTURE, posX, posY, 0, 0, width, height, TEXTURE_WIDTH, TEXTURE_HEIGHT);
         guiGraphics.pose().pushPose();

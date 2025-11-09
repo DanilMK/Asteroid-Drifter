@@ -16,9 +16,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class EngineNozzleBlock extends DirectionalBlock implements ShipBlock {
 
-    private final int maxSpeed;
+    private final float maxSpeed;
 
-    public EngineNozzleBlock(Properties properties, int maxSpeed) {
+    public EngineNozzleBlock(Properties properties, float maxSpeed) {
         super(properties);
         this.maxSpeed = maxSpeed;
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
@@ -49,7 +49,7 @@ public class EngineNozzleBlock extends DirectionalBlock implements ShipBlock {
         return false;
     }
 
-    public int getMaxSpeed() {
+    public float getMaxSpeed() {
         return maxSpeed;
     }
 }

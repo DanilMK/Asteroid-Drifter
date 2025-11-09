@@ -45,6 +45,6 @@ public record SimpleFuelWidget(DataSlot value, DataSlot max, DataSlot fuelEffici
     @Contract(" -> new")
     @Override
     public @NotNull @Unmodifiable List<Component> content() {
-        return List.of(Component.translatable("tooltip.asteroid_drifter.fuel_container", String.format("%.1f", fuelEfficiency.get() / 20f)));
+        return List.of(Component.empty());
     }
 }

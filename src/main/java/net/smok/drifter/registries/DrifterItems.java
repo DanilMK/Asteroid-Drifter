@@ -4,14 +4,17 @@ import com.teamresourceful.resourcefullib.common.registry.RegistryEntry;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistries;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistry;
 import earth.terrarium.adastra.common.config.MachineConfig;
+import earth.terrarium.adastra.common.items.TooltipBlockItem;
 import earth.terrarium.botarium.common.registry.fluid.FluidBucketItem;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.smok.drifter.Debug;
+import net.smok.drifter.blocks.engine.EngineNozzleBlock;
 import net.smok.drifter.items.ConfigureTool;
 import net.smok.drifter.items.FuelTank;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
 public final class DrifterItems {
@@ -83,14 +86,18 @@ public final class DrifterItems {
 
 
     public static final RegistryEntry<BlockItem> STEEL_ENGINE_NUZZLE = ITEMS.register("steel_engine_nuzzle", () ->
-            new BlockItem(DrifterBlocks.STEEL_NUZZLE_BLOCK.get(), new Item.Properties()));
+            new TooltipBlockItem(DrifterBlocks.STEEL_NUZZLE_BLOCK.get(), maxSpeedTooltip(DrifterBlocks.STEEL_NUZZLE_BLOCK), new Item.Properties()));
 
     public static final RegistryEntry<BlockItem> DESH_ENGINE_NUZZLE = ITEMS.register("desh_engine_nuzzle", () ->
-            new BlockItem(DrifterBlocks.DESH_NUZZLE_BLOCK.get(), new Item.Properties()));
+            new TooltipBlockItem(DrifterBlocks.DESH_NUZZLE_BLOCK.get(), maxSpeedTooltip(DrifterBlocks.DESH_NUZZLE_BLOCK), new Item.Properties()));
 
     public static final RegistryEntry<BlockItem> OSTRUM_ENGINE_NUZZLE = ITEMS.register("ostrum_engine_nuzzle", () ->
-            new BlockItem(DrifterBlocks.OSTRUM_NUZZLE_BLOCK.get(), new Item.Properties()));
+            new TooltipBlockItem(DrifterBlocks.OSTRUM_NUZZLE_BLOCK.get(), maxSpeedTooltip(DrifterBlocks.OSTRUM_NUZZLE_BLOCK),new Item.Properties()));
 
     public static final RegistryEntry<BlockItem> CALORITE_ENGINE_NUZZLE = ITEMS.register("calorite_engine_nuzzle", () ->
-            new BlockItem(DrifterBlocks.CALORITE_NUZZLE_BLOCK.get(), new Item.Properties()));
+            new TooltipBlockItem(DrifterBlocks.CALORITE_NUZZLE_BLOCK.get(), maxSpeedTooltip(DrifterBlocks.CALORITE_NUZZLE_BLOCK),new Item.Properties()));
+
+    private static @NotNull MutableComponent maxSpeedTooltip(RegistryEntry<EngineNozzleBlock> nuzzleBlock) {
+        return Component.translatable("tooltip.asteroid_drifter.add_max_speed", String.format("%.2f", nuzzleBlock.get().getMaxSpeed()));
+    }
 }

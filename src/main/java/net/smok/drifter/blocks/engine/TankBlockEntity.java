@@ -66,9 +66,10 @@ public class TankBlockEntity extends BlockEntity implements BotariumFluidBlock<W
         return engine.getBlock(level).isEmpty() || engine.getBlock(level).get().stand();
     }
 
-    public void decrease() {
+    public void decrease(long decreaseMb) {
         long amount = fluidContainer.getFirstFluid().getFluidAmount();
-        if (amount > 0) fluidContainer.getFirstFluid().setAmount(amount - 81);
+        if (amount > 0) fluidContainer.getFirstFluid().setAmount(amount - 81 * decreaseMb);
+        setChanged();
     }
 
     // todo add comparator

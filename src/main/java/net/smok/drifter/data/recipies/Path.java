@@ -6,7 +6,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import net.smok.drifter.Debug;
 import net.smok.drifter.data.events.ShipEvent;
 import net.smok.drifter.registries.ShipEventRegistries;
 import net.smok.drifter.registries.Values;
@@ -20,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public record Path(@NotNull ResourceLocation recipeId, int x, int y, int distance, @NotNull List<PathEvent> pathEvents) {
+public record Path(@NotNull ResourceLocation recipeId, int x, int y, int distance, int ring, @NotNull List<PathEvent> pathEvents) {
 
     private record PathEvent(ResourceLocation eventId, int startOn) {
 
@@ -42,9 +41,9 @@ public record Path(@NotNull ResourceLocation recipeId, int x, int y, int distanc
         }
     }
 
-    @Contract("_, _, _, _, _ -> new")
-    public static @NotNull Path of(@NotNull AsteroidRecipe recipe, int x, int y, int distance, @NotNull List<Pair<ShipEvent, Integer>> events) {
-        return new Path(recipe.id(), x, y, distance, events.stream().map(pair -> new PathEvent(pair.getFirst().id(), pair.getSecond()))
+    @Contract("_, _, _, _, _, _ -> new")
+    public static @NotNull Path of(@NotNull AsteroidRecipe recipe, int x, int y, int distance, int ring, @NotNull List<Pair<ShipEvent, Integer>> events) {
+        return new Path(recipe.id(), x, y, distance, ring, events.stream().map(pair -> new PathEvent(pair.getFirst().id(), pair.getSecond()))
                 .sorted(Comparator.comparing(pathEvent -> pathEvent.startOn)).toList());
     }
 
@@ -60,6 +59,7 @@ public record Path(@NotNull ResourceLocation recipeId, int x, int y, int distanc
         tag.putString("recipe", recipeId().toString());
         tag.putInt("x", x);
         tag.putInt("y", y);
+        tag.putInt("ring", ring);
         tag.putInt("distance", distance);
         tag.put("pathEvents", pathEvents.stream().map(PathEvent::saveData).collect(Collectors.toCollection(ListTag::new)));
 
@@ -74,6 +74,7 @@ public record Path(@NotNull ResourceLocation recipeId, int x, int y, int distanc
 
         int x = tag.contains("x", Tag.TAG_INT) ? tag.getInt("x") : 0;
         int y = tag.contains("y", Tag.TAG_INT) ? tag.getInt("y") : 0;
+        int ring = tag.contains("ring", Tag.TAG_INT) ? tag.getInt("ring") : 0;
 
         List<PathEvent> events;
         if (tag.contains("pathEvents", Tag.TAG_LIST)) {
@@ -84,7 +85,7 @@ public record Path(@NotNull ResourceLocation recipeId, int x, int y, int distanc
             }
         } else events = List.of();
 
-        return new Path(recipeId, x, y, distance, events);
+        return new Path(recipeId, x, y, distance, ring, events);
     }
 
     public @NotNull Optional<ShipEvent> startEvent(int distance, int completedEvents) {

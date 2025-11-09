@@ -15,18 +15,19 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
+import net.smok.drifter.blocks.controller.extras.ComplexPathGenerator;
 import net.smok.drifter.data.recipies.AsteroidRecipe;
 import net.smok.drifter.data.recipies.Path;
-import net.smok.drifter.registries.Values;
-import net.smok.drifter.utils.FlyUtils;
+import net.smok.drifter.ShipConfig;
 import net.smok.drifter.widgets.AnimationHandler;
+import net.smok.drifter.widgets.GuiUtils;
 import net.smok.drifter.widgets.Hovered;
+import net.smok.drifter.widgets.Sprite;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -39,9 +40,8 @@ import java.util.stream.Stream;
 
 public final class PathWidget implements Renderable, Hovered, GuiEventListener, NarratableEntry {
 
-    private static final ResourceLocation DANGER_ICON = new ResourceLocation(Values.MOD_ID, "textures/gui/controller/selector.png");
-    private static final ResourceLocation SHIP_ICON = new ResourceLocation(Values.MOD_ID, "textures/gui/controller/ship.png");
-    private static final ResourceLocation SELECTOR_ICON = new ResourceLocation(Values.MOD_ID, "textures/gui/controller/selector.png");
+    public static final Sprite SHIP_SPRITE = Sprite.ofName("controller/ship.png", 16, 16);
+    public static final Sprite SELECTOR_SPRITE = Sprite.ofName("controller/selector.png", 18, 18);
 
     private final ShipControllerBlockEntity controller;
     private final Level level;
@@ -68,6 +68,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        //renderRings();
         if (controller.getRemainDistance() > 0) {
             Path recipe = controller.getSelectedRecipe();
             renderPathLine(recipe);
@@ -76,7 +77,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
 
         } else {
             renderSelection(guiGraphics);
-            controller.getAllRecipes().forEach(path -> renderRecipe(guiGraphics, path));
+            controller.getAllPaths().forEach(path -> renderRecipe(guiGraphics, path));
         }
     }
 
@@ -111,7 +112,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
             if (isPathHovered(mouseX, mouseY, path) || isShiHovered(mouseX, mouseY, path)) {
                 path.getRecipe(level).ifPresent(recipe -> {
                     recipe.appendContent(contents);
-                    contents.add(Component.translatable("tooltip.asteroid_drifter.remain_distance", String.format("%,d", controller.getRemainDistance()), String.format("%,d", controller.getTotalDistance())));
+                    contents.add(Component.translatable("tooltip.asteroid_drifter.remain_distance", ShipConfig.kmToString(controller.getRemainDistance()), ShipConfig.kmToString(controller.getTotalDistance())));
                 });
                 return true;
             }
@@ -165,8 +166,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
 
         Component fuel = controller.getRequired(path.distance());
 
-        String totalTime = FlyUtils.timeToString(FlyUtils.totalTime(
-                controller.maxSpeed(), path.distance()));
+        String totalTime = ShipConfig.timeToString(path.distance() / controller.maxSpeed());
         MutableComponent time = Component.translatable("tooltip.asteroid_drifter.time_required", totalTime).withStyle(ChatFormatting.GRAY);
 
         contents.add(distance);
@@ -175,7 +175,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
     }
 
     private Stream<Path> hoveredPath(int mouseX, int mouseY) {
-        return controller.getAllRecipes().stream().filter(path -> isPathHovered(mouseX, mouseY, path));
+        return controller.getAllPaths().stream().filter(path -> isPathHovered(mouseX, mouseY, path));
     }
 
     private boolean isPathHovered(int mouseX, int mouseY, Path path) {
@@ -190,7 +190,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
         return Hovered.isHover(x - 12, y - 12, x + 12, y + 12, mouseX, mouseY);
     }
 
-    private void renderShip(GuiGraphics guiGraphics, Path path, int remainDist, int totalDis) {
+    private void renderShip(GuiGraphics guiGraphics, Path path, float remainDist, float totalDis) {
         double x = Mth.lerp(1d - (double) remainDist / totalDis, centerX, screenX(path));
         double y = Mth.lerp(1d - (double) remainDist / totalDis, centerY, screenY(path));
         PoseStack pose = guiGraphics.pose();
@@ -202,7 +202,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
                 (float) (Math.atan((double) path.y() / path.x()) + Math.PI)
         ));
         RenderSystem.enableBlend();
-        guiGraphics.blit(SHIP_ICON, -12, -12, 0, 0, 24, 24, 24, 24);
+        SHIP_SPRITE.draw(guiGraphics, -12, -12);
         RenderSystem.disableBlend();
         pose.popPose();
     }
@@ -256,7 +256,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
     private void renderSelection(GuiGraphics guiGraphics) {
         if (isFocused()) {
             RenderSystem.enableBlend();
-            guiGraphics.blit(SELECTOR_ICON, screenX(selectedPath) - 9, screenY(selectedPath) - 9, 0, 0, 18, 18, 18, 18);
+            SELECTOR_SPRITE.draw(guiGraphics, screenX(selectedPath) - 9, screenY(selectedPath) - 9);
             RenderSystem.disableBlend();
         }
     }
@@ -277,6 +277,23 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
         ItemStack icon = recipe.icon();
         guiGraphics.renderItem(icon, -8, -8);
         pose.popPose();
+    }
+
+    private void renderRings() {
+        List<Path> allPaths = controller.getAllPaths();
+        int max = allPaths.stream().mapToInt(Path::ring).max().orElse(0) + 1;
+
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.getBuilder();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+
+        float distBetweenRings = ComplexPathGenerator.MAX_PIXELS_RANGE * scale / max;
+        for (int i = 1; i < max; i++) {
+            GuiUtils.drawCircle(bufferBuilder, centerX, centerY, distBetweenRings * i * i, 100, 0xFF999999, 0.3);
+        }
+        tesselator.end();
+        //Debug.log("Render circles " + max + " : " + distBetweenRings + " : " + distBetweenRings * (max + 1) * (max + 1));
     }
 
     private static float getTime() {
@@ -306,7 +323,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
     }
 
     public int getSelected() {
-        return controller.getAllRecipes().indexOf(selectedPath);
+        return controller.getAllPaths().indexOf(selectedPath);
     }
 
     public int selectedX() {

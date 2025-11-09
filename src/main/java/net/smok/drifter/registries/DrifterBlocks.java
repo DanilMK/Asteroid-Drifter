@@ -22,6 +22,7 @@ import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.blocks.engine.*;
 import net.smok.drifter.blocks.structure.ShipStructureBlock;
 import net.smok.drifter.blocks.structure.ShipStructureBlockEntity;
+import net.smok.drifter.ShipConfig;
 import org.jetbrains.annotations.NotNull;
 
 public final class DrifterBlocks {
@@ -70,16 +71,16 @@ public final class DrifterBlocks {
 
     // Engine Nuzzles
     public static final RegistryEntry<EngineNozzleBlock> STEEL_NUZZLE_BLOCK = BLOCKS.register("steel_engine_nuzzle",
-            () -> new EngineNozzleBlock(steelProperties(), 16));
+            () -> new EngineNozzleBlock(steelProperties(), ShipConfig.startSpeed() / 16));
 
     public static final RegistryEntry<EngineNozzleBlock> DESH_NUZZLE_BLOCK = BLOCKS.register("desh_engine_nuzzle",
-            () -> new EngineNozzleBlock(steelProperties(), 32));
+            () -> new EngineNozzleBlock(steelProperties(), ShipConfig.startSpeed() / 8));
 
     public static final RegistryEntry<EngineNozzleBlock> OSTRUM_NUZZLE_BLOCK = BLOCKS.register("ostrum_engine_nuzzle",
-            () -> new EngineNozzleBlock(steelProperties(), 64));
+            () -> new EngineNozzleBlock(steelProperties(), ShipConfig.startSpeed() / 4));
 
     public static final RegistryEntry<EngineNozzleBlock> CALORITE_NUZZLE_BLOCK = BLOCKS.register("calorite_engine_nuzzle",
-            () -> new EngineNozzleBlock(steelProperties(), 128));
+            () -> new EngineNozzleBlock(steelProperties(), ShipConfig.startSpeed() / 2));
 
 
     // Engine block

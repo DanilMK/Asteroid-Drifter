@@ -22,14 +22,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.smok.drifter.Debug;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.ShipBlock;
 import net.smok.drifter.utils.BlockEntityPosition;
-import net.smok.drifter.utils.FlyUtils;
 import net.smok.drifter.utils.SavedDataSlot;
+import net.smok.drifter.ShipConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
@@ -47,9 +46,9 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
 
     private final NonNullList<ItemStack> itemContainer;
 
-    private final SavedDataSlot<Integer> fuelEfficiency = SavedDataSlot.intValue("fuelEfficiency", 1, 9999); // the fuel consumption tick rate
-    private final SavedDataSlot<Integer> maxSpeed = SavedDataSlot.intValue("maxSpeed");
-    private final SavedDataSlot<Integer> speed = SavedDataSlot.intValue("speed");
+    private final SavedDataSlot<Float> maxSpeed = SavedDataSlot.floatValue("maxSpeed");
+    private final SavedDataSlot<Float> speed = SavedDataSlot.floatValue("speed");
+    private final SavedDataSlot<Float> lastDistanceFuelDecrees = SavedDataSlot.floatValue("lastDistanceFuelDecrees");
 
     // Not configurable
     private final BlockEntityPosition<TankBlockEntity> tank =
@@ -62,13 +61,12 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     private int shakingTicks;
 
 
-    private final List<SavedDataSlot<?>> savedData = List.of(fuelEfficiency, maxSpeed, speed);
+    private final List<SavedDataSlot<?>> savedData = List.of(maxSpeed, speed, lastDistanceFuelDecrees);
 
     public EnginePanelBlockEntity(BlockPos pos, BlockState blockState) {
         super(DrifterBlocks.ENGINE_PANEL_BLOCK_ENTITY.get(), pos, blockState);
         itemContainer = NonNullList.withSize(4, ItemStack.EMPTY);
-        maxSpeed.setValue(80);
-        fuelEfficiency.setValue(20);
+        maxSpeed.setValue(ShipConfig.startSpeed());
         tank.setPos(getBlockPos().above());
     }
 
@@ -156,53 +154,67 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
     public void tick(ServerLevel lvl, long gameTime) {
-        controller.executeIfPresentOrElse(level,
-                controllerBlock ->
-                {
-                    if (!controllerBlock.isStand()) speedTick(controllerBlock.getRemainDistance());
-                },
-                pos ->
-                {
-                    if (controller.pos() != null) controller.setPos(null);
-                    if (speed() > 0) speedTick(0);
-                }
-        );
+        if (speed() > 0) {
+            Optional<ShipControllerBlockEntity> block = controller.getBlock(level);
+            if (block.isEmpty() || block.get().isStand()) speedTick(0);
+        }
 
-        if (gameTime % 10L == 0) {
-            tank.executeIfPresent(lvl, tankBlockEntity ->
-            {
-                FluidUtils.moveItemToContainer(
-                        this, tankBlockEntity.getFluidContainer(), BUCKET_INPUT, BUCKET_OUTPUT, 0);
-                tankBlockEntity.setChanged();
-                setChanged();
+        // handle fuel load to tank
+        if (gameTime % 10L == 0){
+            if (!getItem(BUCKET_INPUT).isEmpty()) {
+                tank.executeIfPresent(lvl, tankBlockEntity ->
+                        {
+                            FluidUtils.moveItemToContainer(
+                                    this, tankBlockEntity.getFluidContainer(), BUCKET_INPUT, BUCKET_OUTPUT, 0);
+                            tankBlockEntity.setChanged();
+                            setChanged();
+                        }
+                );
             }
-            );
             recountMaxSpeed();
         }
 
-        if (gameTime % fuelEfficiency.get() == 0 && speed() > 0) {
-            tank.getBlock(lvl).ifPresent(TankBlockEntity::decrease);
-        }
-
-
+        fuelTick(lvl, gameTime);
         if (shakingTicks > 0) shakingTicks--;
     }
 
-    public void speedTick(int remainDistance) {
-        int maxSpeed = maxSpeed();
-        int curSpeed = speed();
+    private void fuelTick(ServerLevel lvl, long gameTime) {
+        if (gameTime % 20L == 0 && speed() > 0) {
+            Float remainDistance = controller.getBlock(level).map(ShipControllerBlockEntity::getRemainDistance).orElse(0f);
+            float mbDecrees = ShipConfig.kmToMb(lastDistanceFuelDecrees.getValue() - remainDistance);
 
-        if (shakingTicks > 0 || remainDistance < FlyUtils.brakingDistance(maxSpeed) || getFuel() <= 0) {
-            speed.setValue(Math.max(curSpeed - FlyUtils.BRAKING, 0));
+            if (mbDecrees < 0) { // If the ship has started flying, the remaining distance will be greater than the last saved one.
+                lastDistanceFuelDecrees.setValue(remainDistance);
+                setChanged();
+            } else if (mbDecrees > 1) {
+                tank.getBlock(lvl).ifPresent(tankBlockEntity -> tankBlockEntity.decrease((long) mbDecrees));
+                lastDistanceFuelDecrees.setValue(remainDistance + ShipConfig.mbToKm(mbDecrees % 1)); //save remainder
+                setChanged();
+            }
+        }
+    }
+
+
+    /**
+     * Accelerate speed only from ship controller or brake speed.
+     * @param remainDistance if >0 - accelerate speed to max, else brake speed to 0
+     */
+    public void speedTick(float remainDistance) {
+        float maxSpeed = maxSpeed();
+        float curSpeed = speed();
+
+        if (shakingTicks > 0 || remainDistance < maxSpeed * ShipConfig.brakingTime / 3 || getFuel() <= 0) {
+            speed.setValue(ShipConfig.brakeTick(curSpeed, maxSpeed));
             setChanged();
         } else if (curSpeed < maxSpeed) {
-            speed.setValue(Math.min(curSpeed + FlyUtils.ACCELERATION, maxSpeed));
+            speed.setValue(ShipConfig.accelerateTick(curSpeed, maxSpeed));
             setChanged();
         }
     }
 
     public void resetSpeed() {
-        speed.setValue(0);
+        speed.setValue(0f);
+        setChanged();
     }
 
     private void recountMaxSpeed() {
@@ -223,8 +235,8 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         }
 
         double speed = counter.entrySet().stream().mapToDouble(pair -> Math.sqrt(pair.getValue().get()) * pair.getKey().getMaxSpeed()).sum();
-        int last = maxSpeed();
-        maxSpeed.setValue((int) speed);
+        float last = maxSpeed();
+        maxSpeed.setValue((float) speed);
         if (last != maxSpeed()) {
             shakeEngines();
             setChanged();
@@ -245,11 +257,11 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
     public Component getSpeed() {
-        return Component.translatable("tooltip.asteroid_drifter.speed_container", String.format("%,d", FlyUtils.speedToKm(speed())));
+        return Component.translatable("tooltip.asteroid_drifter.speed_container", String.format("%,d", (int) speed()));
     }
 
     public Component getMaxSpeed() {
-        return Component.translatable("tooltip.asteroid_drifter.max_speed_container", String.format("%,d", FlyUtils.speedToKm(maxSpeed())));
+        return Component.translatable("tooltip.asteroid_drifter.max_speed_container", String.format("%,d", (int) maxSpeed()));
     }
 
     public Component getAmount() {
@@ -258,29 +270,32 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
     public Component getRequired(int distance) {
-        float v = FlyUtils.fuelCost(maxSpeed(), distance, getFuelEfficiency());
+        float v = ShipConfig.kmToMb(distance);
         long fuel = FluidConstants.toMillibuckets(getFuel());
         return Component.translatable("tooltip.asteroid_drifter.fuel_required", fuel, String.format("%.1f", v)).withStyle(v > fuel ? ChatFormatting.RED : ChatFormatting.GRAY);
     }
 
-    public boolean canLaunch(int distance) {
-        return FluidConstants.toMillibuckets(getFuel()) > FlyUtils.fuelCost(maxSpeed(), distance, getFuelEfficiency());
+    public boolean canLaunch(float distance) {
+        return FluidConstants.toMillibuckets(getFuel()) > ShipConfig.kmToMb(distance);
     }
 
     public Component fuelConsumption() {
-        return Component.translatable("tooltip.asteroid_drifter.fuel_container", String.format("%.1f", getFuelEfficiency() / 20f));
+        int km = 1;
+        float mb = ShipConfig.kmToMb(km);
+        if (mb < 0.1f) {
+            km *= 1000;
+            mb *= 1000;
+        }
+        return Component.translatable("tooltip.asteroid_drifter.fuel_container", String.format("%.1f", mb), String.format("%d", km));
     }
 
-    public int getFuelEfficiency() {
-        return fuelEfficiency.get();
-    }
 
 
-    public int maxSpeed() {
+    public float maxSpeed() {
         return maxSpeed.getValue();
     }
 
-    public int speed() {
+    public float speed() {
         return speed.getValue();
     }
 

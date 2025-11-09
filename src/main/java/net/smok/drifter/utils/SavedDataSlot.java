@@ -140,5 +140,29 @@ public abstract class SavedDataSlot<T> extends DataSlot {
         };
     }
 
+    public static SavedDataSlot<Float> floatValue(String name) {
+        return new SavedDataSlot<>(0f) {
+            @Override
+            public void load(CompoundTag compoundTag) {
+                if (compoundTag.contains(name, Tag.TAG_FLOAT)) setValue(compoundTag.getFloat(name));
+            }
+
+            @Override
+            public void save(CompoundTag compoundTag) {
+                compoundTag.putFloat(name, getValue());
+            }
+
+            @Override
+            public int get() {
+                return getValue().intValue();
+            }
+
+            @Override
+            public void set(int value) {
+                setValue((float) value);
+            }
+        };
+    }
+
 
 }

@@ -12,9 +12,8 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.inventory.DataSlot;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.utils.FlyUtils;
+import net.smok.drifter.ShipConfig;
 import net.smok.drifter.widgets.GuiUtils;
 import net.smok.drifter.widgets.Hovered;
 import org.jetbrains.annotations.Contract;
@@ -40,11 +39,7 @@ public record SpeedWidget(ShipControllerBlockEntity controller, int posX, int po
         GuiUtils.drawArc(bufferBuilder, posX, posY, radius, radius, MAIN_COLOR, SECOND_COLOR, 0.5, 1, (double) controller.getSpeed() / controller.maxSpeed());
         tessellator.end();
 
-
-        String timeToString = FlyUtils.timeToString(FlyUtils.leftTime(
-                controller.maxSpeed(), controller.getRemainDistance(), controller.getSpeed()));
-
-        MutableComponent time = Component.literal(timeToString);
+        MutableComponent time = Component.literal(ShipConfig.timeToString(controller.getRemainDistance() / controller.getSpeed()));
 
         guiGraphics.drawCenteredString(font, time.withStyle(ChatFormatting.WHITE), posX, posY - 9, 50);
         guiGraphics.drawCenteredString(font, Component.translatable("tooltip.asteroid_drifter.min_sec").withStyle(ChatFormatting.WHITE), posX, posY + 1, 50);
@@ -60,6 +55,6 @@ public record SpeedWidget(ShipControllerBlockEntity controller, int posX, int po
     @Contract(" -> new")
     @Override
     public @NotNull @Unmodifiable List<Component> content() {
-        return List.of(Component.translatable("tooltip.asteroid_drifter.speed_container", String.format("%,d", controller.getSpeed() * 20 * 60)));
+        return List.of(Component.translatable("tooltip.asteroid_drifter.speed_container", String.format("%,d", (int) controller.getSpeed())));
     }
 }

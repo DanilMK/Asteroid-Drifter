@@ -37,7 +37,7 @@ public class SimplePathGenerator implements PathGenerator {
         AsteroidRecipe recipe = getRandomRecipe(level, controller, random, distance);
         if (recipe == null) return;
         List<Pair<ShipEvent, Integer>> events = getRandomEvents(random, recipe, distance);
-        asteroids.add(Path.of(recipe, xDist, yDist, distance, events));
+        asteroids.add(Path.of(recipe, xDist, yDist, distance, 1, events));
     }
 
 }

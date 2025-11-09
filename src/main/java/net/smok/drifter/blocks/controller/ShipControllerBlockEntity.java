@@ -20,11 +20,11 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.smok.drifter.Debug;
+import net.smok.drifter.ShipConfig;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
 import net.smok.drifter.blocks.controller.extras.ComplexPathGenerator;
 import net.smok.drifter.data.events.ShipEvent;
-import net.smok.drifter.blocks.controller.extras.SimplePathGenerator;
 import net.smok.drifter.blocks.controller.extras.SimpleLandLaunchHandler;
 import net.smok.drifter.blocks.structure.ShipStructure;
 import net.smok.drifter.data.recipies.Path;
@@ -33,7 +33,6 @@ import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.blocks.ShipBlock;
 import net.smok.drifter.utils.BlockEntityPosition;
-import net.smok.drifter.utils.FlyUtils;
 import net.smok.drifter.utils.SavedDataSlot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,9 +42,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class ShipControllerBlockEntity extends ExtendedBlockEntity implements ShipBlock {
-
-    
-    private static final int ASTEROIDS_AMOUNT = 8;
 
 
     private static final int DANGER_HALF_SIZE = 16;
@@ -57,7 +53,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
 
     // Local data
-    private final SavedDataSlot<Integer> remainDistance = SavedDataSlot.intValue("remainDistance");
+    private final SavedDataSlot<Float> remainDistance = SavedDataSlot.floatValue("remainDistance");
     private final SavedDataSlot<Integer> selectedAsteroid = SavedDataSlot.intValue("selectedAsteroid");
     private final SavedDataSlot<Integer> shipPosition = SavedDataSlot.intValue("shipPosition", -50, 50);
     private final SavedDataSlot<Integer> dangerPosition = SavedDataSlot.intValue("dangerPosition", -50, 50);
@@ -119,7 +115,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         save |= leftRightTick();
 
 
-        if (getRemainDistance() > 0 && getSpeed() > 0) {
+        if (getRemainDistance() > 0) {
             long gameTime = serverLevel.getGameTime();
             movingTick(serverLevel, gameTime);
             save |= gameTime % 10 == 0;
@@ -131,10 +127,11 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     }
 
     private void movingTick(Level lvl, long gameTime) {
-        remainDistance.setValue(getRemainDistance() - getSpeed());
-        // handle fuel
 
-        float leftTime = FlyUtils.leftTime(maxSpeed(), getRemainDistance(), getSpeed());
+        engine.executeIfPresent(level, block -> block.speedTick(getRemainDistance()));
+        remainDistance.setValue(getRemainDistance() - ShipConfig.tickToMin(getSpeed()));
+
+        float leftTime = getRemainDistance() / getSpeed();
         if (getCollision() == null && gameTime % 120 == 0 && leftTime > ESCAPE_DANGER_TIME) { //todo increase
             int chance = lvl.getRandom().nextInt(0, 100);
             if (chance < 5) createDanger(lvl.random, lvl);
@@ -177,9 +174,14 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     }
 
     public void launch(int asteroid) {
-        if (!isStand()) return; // While we are driving we can't launch again
+        if (isLaunch()) return;
         if (getRemainDistance() > 0 && getSpeed() == 0) {
-            if (engine.getBlock(level).map(e -> e.canLaunch(getRemainDistance())).orElse(false)) stand.setValue(false);
+            if (engine.getBlock(level).map(e -> e.canLaunch(getRemainDistance())).orElse(false)) {
+                stand.setValue(false);
+                playSound(SoundEvents.BEACON_ACTIVATE);
+                setChanged();
+                return;
+            }
         }
 
         if (asteroid >= paths.size() || asteroid < 0) return;
@@ -191,7 +193,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         stand.setValue(false);
         landLaunchHandler.startDestroy();
         selectedAsteroid.setValue(asteroid);
-        remainDistance.setValue(getSelectedRecipe().distance());
+        remainDistance.setValue((float) getSelectedRecipe().distance());
         shipPosition.setValue(0);
         setChanged();
         playSound(SoundEvents.BEACON_ACTIVATE);
@@ -202,7 +204,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         if (isStand()) return; // can't handle danger in standing position
         if (getCollision() != null) return;
 
-        Optional<ShipEvent> event = getSelectedRecipe().startEvent(getRemainDistance(), getCompletedEvents());
+        Optional<ShipEvent> event = getSelectedRecipe().startEvent((int) getRemainDistance(), getCompletedEvents());
         if (event.isPresent()) {
             Optional<ShipStructure> structure = ShipStructure.findStructure(lvl, getBlockPos());
             structure.ifPresent(shipStructure -> event.get().applyCollision(lvl, shipStructure));
@@ -226,7 +228,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
                         ShipStructure.findStructure(level, getBlockPos()).map(value -> value.getBigBoxMin().getY()).orElse(25), recipe.size());
                 landLaunchHandler.placeOnLand(serverLevel, recipe);
             });
-            remainDistance.setValue(0);
+            remainDistance.setValue(0f);
             reRollPaths();
             completedEvents.setValue(0);
         }
@@ -253,6 +255,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
         paths.clear();
         pathGenerator.genAsteroidField(this, random, paths);
+        selectedAsteroid.setValue(0);
 
         setChanged();
     }
@@ -268,7 +271,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
             case 0 -> reRollPaths();
             case 1 -> land();
             case 2 -> {
-                remainDistance.setValue(0);
+                remainDistance.setValue(0f);
                 land();
             }
         }
@@ -330,11 +333,11 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return engine.getBlock(level).map(block -> block.getRequired(distance)).orElse(null);
     }
 
-    public int getTotalDistance() {
+    public float getTotalDistance() {
         return getSelectedRecipe().distance();
     }
 
-    public int getRemainDistance() {
+    public float getRemainDistance() {
         return remainDistance.getValue();
     }
 
@@ -346,12 +349,12 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return dangerPosition.getValue();
     }
 
-    public int getSpeed() {
-        return engine.getBlock(level).map(EnginePanelBlockEntity::speed).orElse(0);
+    public float getSpeed() {
+        return engine.getBlock(level).map(EnginePanelBlockEntity::speed).orElse(0f);
     }
 
-    public int maxSpeed() {
-        return engine.getBlock(level).map(EnginePanelBlockEntity::maxSpeed).orElse(1);
+    public float maxSpeed() {
+        return engine.getBlock(level).map(EnginePanelBlockEntity::maxSpeed).orElse(1f);
     }
 
     public Boolean isStand() {
@@ -394,7 +397,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         engine.setPos(null);
     }
 
-    public List<Path> getAllRecipes() {
+    public List<Path> getAllPaths() {
         return paths;
     }
 
