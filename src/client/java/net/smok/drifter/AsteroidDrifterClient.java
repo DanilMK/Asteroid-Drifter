@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.smok.drifter.alert.AlertOverlay;
 import net.smok.drifter.alert.AlertSystemScreen;
+import net.smok.drifter.controller.ControllerBlockRenderer;
 import net.smok.drifter.engine.TankRenderer;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.controller.ShipControllerScreen;
@@ -38,8 +39,10 @@ public class AsteroidDrifterClient implements ClientModInitializer {
 		BlockRenderLayerMap.INSTANCE.putBlock(DrifterBlocks.CALORITE_TANK_BLOCK.get(), RenderType.cutout());
 
 		EntityModelLayerRegistry.registerModelLayer(TankRenderer.FLUID_LOCATION, TankRenderer::createLayer);
+		EntityModelLayerRegistry.registerModelLayer(ControllerBlockRenderer.MODEL_LOCATION, ControllerBlockRenderer::createLayerDefinition);
 
 		BlockEntityRenderers.register(DrifterBlocks.TANK_BLOCK_ENTITY.get(), TankRenderer::new);
+		BlockEntityRenderers.register(DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get(), ControllerBlockRenderer::new);
 		BlockEntityRenderers.register(DrifterBlocks.SHIP_STRUCTURE_BLOCK_ENTITY.get(), context -> new ShipStructureBlockRenderer());
 
 		EntityRendererRegistry.register(DrifterEntities.COLLIDED_ASTEROID.get(), context -> new ThrownItemRenderer<>(context, 3.0F, true));

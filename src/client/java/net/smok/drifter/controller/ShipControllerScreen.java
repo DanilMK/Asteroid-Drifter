@@ -17,7 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.registries.Values;
 import net.smok.drifter.blocks.controller.ShipControllerMenu;
 import net.smok.drifter.network.NetworkHandler;
 import net.smok.drifter.widgets.*;
@@ -122,7 +121,7 @@ public class ShipControllerScreen extends AbstractContainerScreen<ShipController
                 new ResourceLocation(Values.MOD_ID, "textures/gui/controller/selector.png"), 18, 18, button -> moveRight(), Component.literal("D"), launchAnim, landAnim, menu.controller()));
 */
 
-        fieldWidget = addRenderableWidget(new PathWidget(controller, launchAnim, landAnim, width / 2, height / 2));
+        fieldWidget = addRenderableWidget(new PathWidget(controller, launchAnim, width / 2, height / 2));
 
         hoveredWidgets.clear();/*
         hoveredWidgets.add(shipWidget);

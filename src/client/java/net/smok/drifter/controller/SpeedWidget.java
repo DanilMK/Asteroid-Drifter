@@ -36,7 +36,7 @@ public record SpeedWidget(ShipControllerBlockEntity controller, int posX, int po
         bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
 
         GuiUtils.drawCircle(bufferBuilder, posX, posY, radius, radius, MAIN_COLOR);
-        GuiUtils.drawArc(bufferBuilder, posX, posY, radius, radius, MAIN_COLOR, SECOND_COLOR, 0.5, 1, (double) controller.getSpeed() / controller.maxSpeed());
+        GuiUtils.drawSerifArc(bufferBuilder, posX, posY, radius, radius, MAIN_COLOR, SECOND_COLOR, 0.5, 1, (double) controller.getSpeed() / controller.maxSpeed());
         tessellator.end();
 
         MutableComponent time = Component.literal(ShipConfig.timeToString(controller.getRemainDistance() / controller.getSpeed()));

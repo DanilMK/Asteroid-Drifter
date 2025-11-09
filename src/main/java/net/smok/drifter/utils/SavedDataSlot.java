@@ -8,7 +8,7 @@ import net.minecraft.world.inventory.DataSlot;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class SavedDataSlot<T> extends DataSlot {
+public abstract class SavedDataSlot<T> {
 
     private T value;
 
@@ -34,16 +34,6 @@ public abstract class SavedDataSlot<T> extends DataSlot {
     public static @NotNull SavedDataSlot<Integer> intValue(String name) {
         return new SavedDataSlot<>(0) {
             @Override
-            public int get() {
-                return getValue();
-            }
-
-            @Override
-            public void set(int i) {
-                setValue(i);
-            }
-
-            @Override
             public void load(CompoundTag compoundTag) {
                 if (compoundTag.contains(name, Tag.TAG_INT))
                     setValue(compoundTag.getInt(name));
@@ -59,16 +49,6 @@ public abstract class SavedDataSlot<T> extends DataSlot {
     @Contract(value = "_, _, _ -> new", pure = true)
     public static @NotNull SavedDataSlot<Integer> intValue(String name, int min, int max) {
         return new SavedDataSlot<>(min) {
-            @Override
-            public int get() {
-                return getValue();
-            }
-
-            @Override
-            public void set(int i) {
-                setValue(i);
-            }
-
             @Override
             public void load(CompoundTag compoundTag) {
                 if (compoundTag.contains(name, Tag.TAG_INT))
@@ -94,16 +74,6 @@ public abstract class SavedDataSlot<T> extends DataSlot {
         return new SavedDataSlot<>(false) {
 
             @Override
-            public int get() {
-                return getValue() ? 1 : 0;
-            }
-
-            @Override
-            public void set(int i) {
-                setValue(i > 0);
-            }
-
-            @Override
             public void load(CompoundTag compoundTag) {
                 if (compoundTag.contains(name)) setValue(compoundTag.getBoolean(name));
             }
@@ -116,7 +86,7 @@ public abstract class SavedDataSlot<T> extends DataSlot {
     }
 
     public static SavedDataSlot<BlockPos> blockPosValue(String name) {
-        return new SavedDataSlot<BlockPos>(BlockPos.ZERO) {
+        return new SavedDataSlot<>(BlockPos.ZERO) {
             @Override
             public void load(CompoundTag compoundTag) {
                 if (compoundTag.contains(name, Tag.TAG_COMPOUND))
@@ -128,15 +98,6 @@ public abstract class SavedDataSlot<T> extends DataSlot {
                 compoundTag.put(name, NbtUtils.writeBlockPos(getValue()));
             }
 
-            @Override
-            public int get() {
-                return 0;
-            }
-
-            @Override
-            public void set(int value) {
-
-            }
         };
     }
 
@@ -152,15 +113,6 @@ public abstract class SavedDataSlot<T> extends DataSlot {
                 compoundTag.putFloat(name, getValue());
             }
 
-            @Override
-            public int get() {
-                return getValue().intValue();
-            }
-
-            @Override
-            public void set(int value) {
-                setValue((float) value);
-            }
         };
     }
 

@@ -1,8 +1,8 @@
 package net.smok.drifter.blocks.engine;
 
+import earth.terrarium.adastra.common.menus.slots.PredicateSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.smok.drifter.registries.DrifterMenus;
 import net.smok.drifter.utils.ExtendedMenu;
@@ -17,13 +17,10 @@ public class EngineMenu extends ExtendedMenu {
         super(DrifterMenus.ENGINE_MENU.get(), id, playerInventory.player);
         this.enginePanelBlock = enginePanelBlock;
 
-        addSlot(new Slot(enginePanelBlock, EnginePanelBlockEntity.BUCKET_INPUT, 30, 22));
-        addSlot(new Slot(enginePanelBlock, EnginePanelBlockEntity.BUCKET_OUTPUT, 30, 52));
-
-
+        addSlot(new PredicateSlot(enginePanelBlock, EnginePanelBlockEntity.BUCKET_INPUT, 30, 22, stack -> EnginePanelBlockEntity.canPlace(EnginePanelBlockEntity.BUCKET_INPUT, stack)));
+        addSlot(new PredicateSlot(enginePanelBlock, EnginePanelBlockEntity.BUCKET_OUTPUT, 30, 52, stack -> false));
 
         addInventorySlots(playerInventory, 0, 0);
-
     }
 
     @Override

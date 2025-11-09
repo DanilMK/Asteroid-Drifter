@@ -22,9 +22,10 @@ public class AlertSystemMenu extends AbstractContainerMenu {
         this.alertSystemBlock = alertSystemBlock;
         this.dangers = alertSystemBlock.getDangers();
         dangers.forEach(danger -> {
+            /*
             addDataSlot(danger.color());
             addDataSlot(danger.active());
-            addDataSlot(danger.tested());
+            addDataSlot(danger.tested());*/
         });
     }
 

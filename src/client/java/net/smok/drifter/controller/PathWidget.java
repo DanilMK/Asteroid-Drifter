@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
@@ -20,7 +19,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.blocks.controller.extras.ComplexPathGenerator;
 import net.smok.drifter.data.recipies.AsteroidRecipe;
 import net.smok.drifter.data.recipies.Path;
 import net.smok.drifter.ShipConfig;
@@ -46,7 +44,6 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
     private final ShipControllerBlockEntity controller;
     private final Level level;
     private final AnimationHandler startAnim;
-    private final AnimationHandler endAnim;
     private final int centerX, centerY;
     private final float scale;
 
@@ -55,11 +52,10 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
 
 
 
-    public PathWidget(ShipControllerBlockEntity controller, AnimationHandler startAnim, AnimationHandler endAnim, int centerX, int centerY) {
+    public PathWidget(ShipControllerBlockEntity controller, AnimationHandler startAnim, int centerX, int centerY) {
         this.controller = controller;
         this.level = controller.getLevel();
         this.startAnim = startAnim;
-        this.endAnim = endAnim;
         this.centerX = centerX;
         this.centerY = centerY;
         this.scale = (centerY - 40) / 120f;
@@ -202,7 +198,7 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
                 (float) (Math.atan((double) path.y() / path.x()) + Math.PI)
         ));
         RenderSystem.enableBlend();
-        SHIP_SPRITE.draw(guiGraphics, -12, -12);
+        SHIP_SPRITE.draw(guiGraphics, -8, -8);
         RenderSystem.disableBlend();
         pose.popPose();
     }
@@ -219,38 +215,12 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
             y = Mth.lerp(startAnim.relativeTime(), centerY, y);
         }
 
-        renderDashedPathLine(bufferBuilder, centerX - 0.3f, centerY, x - 0.3f, y, 5, ShipControllerScreen.COLOR_FADE, 20);
-        renderDashedPathLine(bufferBuilder, centerX, centerY - 0.5f, x, y - 0.3f, 5, ShipControllerScreen.COLOR_FADE, 20);
-        renderDashedPathLine(bufferBuilder, centerX + 0.3f, centerY, x + 0.3f, y, 5, ShipControllerScreen.COLOR_FADE, 20);
-        renderDashedPathLine(bufferBuilder, centerX, centerY + 0.3f, x, y + 0.3f, 5, ShipControllerScreen.COLOR_FADE, 20);
-        renderDashedPathLine(bufferBuilder, centerX, centerY, x, y, 5, ShipControllerScreen.COLOR_FADE, 20);
+        GuiUtils.renderDashedPathLine(bufferBuilder, centerX - 0.3f, centerY, x - 0.3f, y, 5, ShipControllerScreen.COLOR_FADE, 20);
+        GuiUtils.renderDashedPathLine(bufferBuilder, centerX, centerY - 0.5f, x, y - 0.3f, 5, ShipControllerScreen.COLOR_FADE, 20);
+        GuiUtils.renderDashedPathLine(bufferBuilder, centerX + 0.3f, centerY, x + 0.3f, y, 5, ShipControllerScreen.COLOR_FADE, 20);
+        GuiUtils.renderDashedPathLine(bufferBuilder, centerX, centerY + 0.3f, x, y + 0.3f, 5, ShipControllerScreen.COLOR_FADE, 20);
+        GuiUtils.renderDashedPathLine(bufferBuilder, centerX, centerY, x, y, 5, ShipControllerScreen.COLOR_FADE, 20);
         tesselator.end();
-    }
-
-    private static void renderDashedPathLine(BufferBuilder bufferBuilder, float startX, float startY, float endX, float endY, float dash, int color, float cycleTime) {
-        double dx = endX - startX;
-        double dy = endY - startY;
-        double r = Math.sqrt(dx * dx + dy * dy);
-
-        double normalX = dx * dash / r;
-        double normalY = dy * dash / r;
-
-        double shift = getTime() % cycleTime / cycleTime;
-
-        double px = startX + shift * normalX * 2 - normalX * 0.75;
-        double py = startY + shift * normalY * 2 - normalY * 0.75;
-
-
-
-        bufferBuilder.vertex(startX, startY, 0.0).color(color).endVertex();
-        int i = 0;
-        for (double p = 0; p < r - dash * 2; p += dash) {
-            px += normalX;
-            py += normalY;
-            bufferBuilder.vertex(px, py, 0.0).color(color).endVertex();
-            i++;
-        }
-        if (i % 2 == 0) bufferBuilder.vertex(endX, endY, 0.0).color(color).endVertex();
     }
 
     private void renderSelection(GuiGraphics guiGraphics) {
@@ -272,32 +242,11 @@ public final class PathWidget implements Renderable, Hovered, GuiEventListener, 
         PoseStack pose = guiGraphics.pose();
         pose.pushPose();
         pose.translate(x, y, 0);
-        pose.mulPose(Axis.ZP.rotationDegrees(getTime() + path.distance()));
+        pose.mulPose(Axis.ZP.rotationDegrees(GuiUtils.getTime() + path.distance()));
 
         ItemStack icon = recipe.icon();
         guiGraphics.renderItem(icon, -8, -8);
         pose.popPose();
-    }
-
-    private void renderRings() {
-        List<Path> allPaths = controller.getAllPaths();
-        int max = allPaths.stream().mapToInt(Path::ring).max().orElse(0) + 1;
-
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferBuilder = tesselator.getBuilder();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-
-        float distBetweenRings = ComplexPathGenerator.MAX_PIXELS_RANGE * scale / max;
-        for (int i = 1; i < max; i++) {
-            GuiUtils.drawCircle(bufferBuilder, centerX, centerY, distBetweenRings * i * i, 100, 0xFF999999, 0.3);
-        }
-        tesselator.end();
-        //Debug.log("Render circles " + max + " : " + distBetweenRings + " : " + distBetweenRings * (max + 1) * (max + 1));
-    }
-
-    private static float getTime() {
-        return Util.getMillis() / 100.0F;
     }
 
     private int screenX(Path path) {

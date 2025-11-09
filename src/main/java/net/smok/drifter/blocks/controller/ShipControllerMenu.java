@@ -21,10 +21,6 @@ public class ShipControllerMenu extends ExtendedMenu {
     public ShipControllerMenu(Integer id, Inventory inventory, @NotNull ShipControllerBlockEntity controllerBlock) {
         super(DrifterMenus.SHIP_CONTROLLER_MENU.get(), id, inventory.player);
         this.controllerBlock = controllerBlock;
-        controllerBlock.getDataSlots().forEach(this::addDataSlot);
-
-
-
     }
 
 

@@ -103,16 +103,6 @@ public enum SpaceCollision {
             public void save(CompoundTag compoundTag) {
                 compoundTag.putString("dangerType", getValue().name().toLowerCase());
             }
-
-            @Override
-            public int get() {
-                return getValue().type;
-            }
-
-            @Override
-            public void set(int i) {
-                setValue(of(i));
-            }
         };
     }
 

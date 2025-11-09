@@ -62,6 +62,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     private final SavedDataSlot<Boolean> stand = SavedDataSlot.booleanValue("stand");
     private final SavedDataSlot<Integer> completedEvents = SavedDataSlot.intValue("completedEvents");
     private int shipMoving;
+    private int clientTick = 20;
 
     private final PathGenerator pathGenerator;
     private LandLaunchHandler landLaunchHandler;
@@ -100,13 +101,15 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return Container.stillValidBlockEntity(this, player);
     }
 
-    public void tick(Level clientLevel) {
-        //asteroids.forEach(recipe -> recipe.setRecipe(clientLevel));
+    public void clientTick() {
+        if (clientTick < 20) {
+            Debug.log( "Tick " + clientTick);
+            clientTick++;
+        }
     }
 
     public void tick(ServerLevel serverLevel) {
         boolean save = false;
-        //asteroids.forEach(recipe -> recipe.setRecipe(serverLevel));
         landLaunchHandler.destroyOnLaunch(serverLevel);
         if (isStand()) return;
         if (serverLevel.getGameTime() % 80L == 0L) playSound(SoundEvents.BEACON_AMBIENT);
@@ -283,7 +286,9 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         alertPanel.load(compoundTag);
         engine.load(compoundTag);
 
+        boolean b = isStand();
         savedDataSlots.forEach(savedValue -> savedValue.load(compoundTag));
+        if (b != isStand()) clientTick = 0;
         paths.clear();
 
         if (!compoundTag.contains("asteroids", Tag.TAG_LIST)) return;
@@ -377,9 +382,12 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return collisionType.getValue();
     }
 
+    public int getClientTick() {
+        return clientTick;
+    }
 
     @Override
-    public boolean  bind(BlockPos pos, ShipBlock other) {
+    public boolean bind(BlockPos pos, ShipBlock other) {
         if (other instanceof AlertPanelBlockEntity) {
             alertPanel.setPos(pos);
             return true;
@@ -406,10 +414,10 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     }
 
     public Direction forward() {
-        return getBlockState().getValue(ShipControllerBlock.FACING);
+        return getBlockState().getValue(ShipControllerBlock.FACING).getOpposite();
     }
 
     public Direction backward() {
-        return getBlockState().getValue(ShipControllerBlock.FACING).getOpposite();
+        return getBlockState().getValue(ShipControllerBlock.FACING);
     }
 }

@@ -3,7 +3,6 @@ package net.smok.drifter;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.PackType;
 import net.smok.drifter.registries.*;
 import net.smok.drifter.network.NetworkHandler;

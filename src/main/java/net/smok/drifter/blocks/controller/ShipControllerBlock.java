@@ -35,10 +35,10 @@ public class ShipControllerBlock extends BasicEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LAUNCH = BooleanProperty.create("launch");
     public static final VoxelShape SHAPE_BASE = box(0, 0, 0, 16, 14, 16);
-    public static final VoxelShape SHAPE_NORTH = Shapes.or(SHAPE_BASE, box(0, 14, 0, 16, 16, 8));
-    public static final VoxelShape SHAPE_SOUTH = Shapes.or(SHAPE_BASE, box(0, 14, 8, 16, 16, 16));
-    public static final VoxelShape SHAPE_WEST = Shapes.or(SHAPE_BASE, box(0, 14, 0, 8, 16, 16));
-    public static final VoxelShape SHAPE_EAST = Shapes.or(SHAPE_BASE, box(8, 14, 0, 16, 16, 16));
+    public static final VoxelShape SHAPE_SOUTH = Shapes.or(SHAPE_BASE, box(0, 14, 0, 16, 16, 8));
+    public static final VoxelShape SHAPE_NORTH = Shapes.or(SHAPE_BASE, box(0, 14, 8, 16, 16, 16));
+    public static final VoxelShape SHAPE_EAST = Shapes.or(SHAPE_BASE, box(0, 14, 0, 8, 16, 16));
+    public static final VoxelShape SHAPE_WEST = Shapes.or(SHAPE_BASE, box(8, 14, 0, 16, 16, 16));
 
 
     public ShipControllerBlock(Properties properties) {
@@ -71,7 +71,7 @@ public class ShipControllerBlock extends BasicEntityBlock {
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
 
@@ -80,7 +80,7 @@ public class ShipControllerBlock extends BasicEntityBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
         return blockEntityType == DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get() && !level.isClientSide ?
                 (level1, blockPos, blockState1, blockEntity) -> ((ShipControllerBlockEntity) blockEntity).tick((ServerLevel) level1)
-                 : (level1, blockPos, blockState1, blockEntity) -> ((ShipControllerBlockEntity) blockEntity).tick(level1);
+                 : (level1, blockPos, blockState1, blockEntity) -> ((ShipControllerBlockEntity) blockEntity).clientTick();
     }
 
     @Override

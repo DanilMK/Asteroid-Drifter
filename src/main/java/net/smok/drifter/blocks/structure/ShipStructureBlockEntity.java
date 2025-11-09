@@ -119,27 +119,27 @@ public class ShipStructureBlockEntity extends ExtendedBlockEntity {
     }
 
     public int sizeX() {
-        return sizeX.get();
+        return sizeX.getValue();
     }
 
     public void sizeX(int value) {
-        sizeX.set(value);
+        sizeX.setValue(value);
     }
 
     public int sizeY() {
-        return sizeY.get();
+        return sizeY.getValue();
     }
 
     public void sizeY(int value) {
-        sizeY.set(value);
+        sizeY.setValue(value);
     }
 
     public int sizeZ() {
-        return sizeZ.get();
+        return sizeZ.getValue();
     }
 
     public void sizeZ(int value) {
-        sizeZ.set(value);
+        sizeZ.setValue(value);
     }
 
     public boolean visibleBox() {

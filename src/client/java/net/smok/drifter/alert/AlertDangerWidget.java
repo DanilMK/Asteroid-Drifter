@@ -89,8 +89,8 @@ public class AlertDangerWidget extends AbstractWidget {
         RenderSystem.enableBlend();
 
         renderTexture(guiGraphics, TEXTURE, text.x, text.y, 0, 0, 0, text.width, HEIGHT, 160, 40);
-        renderTexture(guiGraphics, TEXTURE, alert.x, alert.y, TEXT_SIZE, danger.active().get() * BUTTON_SIZE, 0, alert.width, HEIGHT, 160, 40);
-        renderTexture(guiGraphics, TEXTURE, test.x, test.y, TEXT_SIZE + BUTTON_SIZE, danger.tested().get() * BUTTON_SIZE, 0,  BUTTON_SIZE, HEIGHT,160, 40);
+        renderTexture(guiGraphics, TEXTURE, alert.x, alert.y, TEXT_SIZE, danger.active().getValue() ? 0 : BUTTON_SIZE, 0, alert.width, HEIGHT, 160, 40);
+        renderTexture(guiGraphics, TEXTURE, test.x, test.y, TEXT_SIZE + BUTTON_SIZE, danger.tested().getValue() ? 0 : BUTTON_SIZE, 0,  BUTTON_SIZE, HEIGHT,160, 40);
         renderTexture(guiGraphics, TEXTURE, slot.x, slot.y, TEXT_SIZE + BUTTON_SIZE * 2, 0, 0,  BUTTON_SIZE, HEIGHT,160, 40);
 
         RenderSystem.disableBlend();
@@ -130,14 +130,14 @@ public class AlertDangerWidget extends AbstractWidget {
     private void slotButton(int button) {
         int i;
         if (button > 0) {
-            i = danger.color().get() - 1;
+            i = danger.color().getValue() - 1;
             if (i < 0) i = 15;
         } else {
-            i = danger.color().get() + 1;
+            i = danger.color().getValue() + 1;
             if (i > 15) i = 0;
         }
 
-        danger.color().set(i);
+        danger.color().setValue(i);
         ClientPlayNetworking.send(NetworkHandler.ALERT_CHANGE_DANGER_COLOR.getId(), NetworkHandler.ALERT_CHANGE_DANGER_COLOR.encode(alertSystemBlock, index, i));
     }
 

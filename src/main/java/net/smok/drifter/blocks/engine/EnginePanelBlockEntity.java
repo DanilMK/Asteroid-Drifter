@@ -2,6 +2,7 @@ package net.smok.drifter.blocks.engine;
 
 import earth.terrarium.adastra.common.blockentities.base.BasicContainer;
 import earth.terrarium.adastra.common.utils.FluidUtils;
+import earth.terrarium.botarium.common.fluid.FluidApi;
 import earth.terrarium.botarium.common.fluid.FluidConstants;
 import earth.terrarium.botarium.common.fluid.base.*;
 import net.minecraft.ChatFormatting;
@@ -99,7 +100,7 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return canTake(index, stack);
+        return canTake(index);
     }
 
     @Override
@@ -108,7 +109,7 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
     @Override
-    public Component getDisplayName() {
+    public @NotNull Component getDisplayName() {
         return Component.translatable("block.asteroid_drifter.engine_panel");
     }
 
@@ -146,11 +147,11 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
     public static boolean canPlace(int index, ItemStack item) {
-        return true;
+        return index == BUCKET_INPUT && FluidApi.isFluidContainingItem(item);
     }
 
-    public static boolean canTake(int index, ItemStack item) {
-        return true;
+    public static boolean canTake(int index) {
+        return index == BUCKET_OUTPUT;
     }
 
     public void tick(ServerLevel lvl, long gameTime) {

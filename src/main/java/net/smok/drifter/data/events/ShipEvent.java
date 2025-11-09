@@ -41,15 +41,6 @@ public interface ShipEvent {
                 if (getValue() != null) compoundTag.putString("collisionType", getValue().getFirst().toString());
             }
 
-            @Override
-            public int get() {
-                return 0;
-            }
-
-            @Override
-            public void set(int value) {
-
-            }
         };
     }
 }
