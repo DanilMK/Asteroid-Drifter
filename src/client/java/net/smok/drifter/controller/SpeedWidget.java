@@ -15,7 +15,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.inventory.DataSlot;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.utils.FlyUtils;
-import net.smok.drifter.widgets.CircleDrawer;
+import net.smok.drifter.widgets.GuiUtils;
 import net.smok.drifter.widgets.Hovered;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -36,8 +36,8 @@ public record SpeedWidget(ShipControllerBlockEntity controller, int posX, int po
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
 
-        CircleDrawer.drawSegment(bufferBuilder, posX, posY, radius, radius, MAIN_COLOR);
-        CircleDrawer.drawSegment(bufferBuilder, posX, posY, radius, radius, MAIN_COLOR, SECOND_COLOR, 0.5, 1, (double) controller.getSpeed() / controller.maxSpeed());
+        GuiUtils.drawCircle(bufferBuilder, posX, posY, radius, radius, MAIN_COLOR);
+        GuiUtils.drawArc(bufferBuilder, posX, posY, radius, radius, MAIN_COLOR, SECOND_COLOR, 0.5, 1, (double) controller.getSpeed() / controller.maxSpeed());
         tessellator.end();
 
 

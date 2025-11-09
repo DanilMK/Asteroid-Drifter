@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.widgets.AnimationHandler;
-import net.smok.drifter.widgets.CircleDrawer;
+import net.smok.drifter.widgets.GuiUtils;
 import net.smok.drifter.widgets.Hovered;
 
 import java.util.List;
@@ -43,7 +43,7 @@ public record DistanceWidget(ShipControllerBlockEntity controller, int x, int y,
         if (launchAnim.work()) start = end - (end - start) * (launchAnim.relativeTime());
         if (landAnim.work()) start = end - (end - start) * (1 - landAnim.relativeTime());
 
-        CircleDrawer.drawSegment(bufferBuilder, x, y, radius, sides,
+        GuiUtils.drawArc(bufferBuilder, x, y, radius, sides,
                 ShipControllerScreen.COLOR_EDGE, ShipControllerScreen.COLOR_FADE, start, end,
                 1d - (double) controller.getRemainDistance() / controller.getTotalDistance());
 
