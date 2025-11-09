@@ -15,8 +15,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class DrifterEntities {
-    public static void init() {
-    }
 
     public static final ResourcefulRegistry<EntityType<?>> ENTITY_TYPES = ResourcefulRegistries.create(BuiltInRegistries.ENTITY_TYPE, Values.MOD_ID);
 

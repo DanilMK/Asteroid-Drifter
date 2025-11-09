@@ -18,9 +18,6 @@ import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
 public final class DrifterItems {
-    public static void init() {
-        Debug.log("Asteroid Drifter Items Loaded!");
-    }
 
     public static final ResourcefulRegistry<Item> ITEMS = ResourcefulRegistries.create(BuiltInRegistries.ITEM, Values.MOD_ID);
 

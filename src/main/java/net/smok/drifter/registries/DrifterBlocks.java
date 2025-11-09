@@ -26,8 +26,6 @@ import net.smok.drifter.ShipConfig;
 import org.jetbrains.annotations.NotNull;
 
 public final class DrifterBlocks {
-    public static void init() {
-    }
 
 
     public static final ResourcefulRegistry<Block> BLOCKS = ResourcefulRegistries.create(BuiltInRegistries.BLOCK, Values.MOD_ID);

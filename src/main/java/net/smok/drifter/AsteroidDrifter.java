@@ -3,6 +3,7 @@ package net.smok.drifter;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.PackType;
 import net.smok.drifter.registries.*;
 import net.smok.drifter.network.NetworkHandler;
@@ -13,12 +14,13 @@ public class AsteroidDrifter implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		Values.init();
+		DrifterConfig.shipConfig.init();
 		NetworkHandler.init();
 		ShipEventRegistries.init();
 		ModifierRegistries.init();
-		DrifterEntities.init();
-		DrifterBlocks.init();
-		DrifterItems.init();
+		DrifterEntities.ENTITY_TYPES.init();
+		DrifterBlocks.BLOCKS.init();
+		DrifterItems.ITEMS.init();
 		DrifterCreativeTab.TABS.init();
 
 		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new ShipEventRegistries.CollisionRegistration());
