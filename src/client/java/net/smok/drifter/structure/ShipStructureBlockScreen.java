@@ -16,7 +16,11 @@ import net.smok.drifter.network.NetworkHandler;
 
 public class ShipStructureBlockScreen extends AbstractContainerScreen<ShipStructureBlockMenu> {
 
-    private static final MutableComponent SHOW_BOX = Component.translatable("show");
+    private static final MutableComponent VISIBLE_BOX = Component.translatable("gui.asteroid_drifter.structure_block.visible_box");
+    private static final MutableComponent VISIBLE_BLOCKS = Component.translatable("gui.asteroid_drifter.structure_block.visible_blocks");
+    public static final MutableComponent STRUCTURE_SIZE = Component.translatable("gui.asteroid_drifter.structure_block.size");
+    private static final int FIRST_ROW = 80;
+    private static final int SECOND_ROW = 120;
 
     private final ShipStructureBlockEntity block;
     private EditBox sizeXEdit;
@@ -24,6 +28,7 @@ public class ShipStructureBlockScreen extends AbstractContainerScreen<ShipStruct
     private EditBox sizeZEdit;
     private boolean boxVisible;
     private boolean blocksVisible;
+
 
     public ShipStructureBlockScreen(ShipStructureBlockMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -35,9 +40,10 @@ public class ShipStructureBlockScreen extends AbstractContainerScreen<ShipStruct
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        guiGraphics.drawCenteredString(font, title, width / 2, 20, 0xFFFFFF);
-        guiGraphics.drawString(font, Component.translatable("structure_block.size"), width / 2 - 152, 70, 0xFFFFFF, false);
-        guiGraphics.drawString(font, SHOW_BOX, width / 2 + 154 - font.width(SHOW_BOX), 70, 0xFFFFFF, false);
+        guiGraphics.drawCenteredString(font, title, width / 2, 20, 0xFFFFFFFF);
+        guiGraphics.drawCenteredString(font, STRUCTURE_SIZE, width / 2, FIRST_ROW - 10, 0xFFFFFFFF);
+        guiGraphics.drawCenteredString(font, VISIBLE_BOX, width / 2 - 80, SECOND_ROW - 10, 0xFFFFFFFF);
+        guiGraphics.drawCenteredString(font, VISIBLE_BLOCKS, width / 2 + 80, SECOND_ROW - 10, 0xFFFFFFFF);
 
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
@@ -51,30 +57,30 @@ public class ShipStructureBlockScreen extends AbstractContainerScreen<ShipStruct
         addRenderableWidget(
                 CycleButton.onOffBuilder(block.visibleBox())
                         .displayOnlyValue()
-                        .create(this.width / 2 + 104, 80, 50, 20,
-                                SHOW_BOX, (cycleButton, b) -> boxVisible = b)
+                        .create(this.width / 2 - 120, SECOND_ROW, 80, 20,
+                                VISIBLE_BOX, (cycleButton, b) -> boxVisible = b)
         );
 
         addRenderableWidget(
                 CycleButton.onOffBuilder(block.visibleBLocks())
                         .displayOnlyValue()
-                        .create(this.width / 2 + 104, 120, 50, 20,
-                                SHOW_BOX, (cycleButton, b) -> blocksVisible = b)
+                        .create(this.width / 2 + 40, SECOND_ROW, 80, 20,
+                                VISIBLE_BOX, (cycleButton, b) -> blocksVisible = b)
         );
 
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onDone())
                 .bounds(this.width / 2 - 75, 210, 150, 20).build());
 
 
-        sizeXEdit = new EditBox(this.font, this.width / 2 - 152, 80, 80, 20, Component.translatable("structure_block.size.x"));
+        sizeXEdit = new EditBox(this.font, this.width / 2 - 120, FIRST_ROW, 80, 20, Component.translatable("structure_block.size.x"));
         sizeXEdit.setMaxLength(15);
         sizeXEdit.setValue(Integer.toString(block.sizeX()));
         addRenderableWidget(sizeXEdit);
-        sizeYEdit = new EditBox(this.font, this.width / 2 - 72, 80, 80, 20, Component.translatable("structure_block.size.y"));
+        sizeYEdit = new EditBox(this.font, this.width / 2 - 40, FIRST_ROW, 80, 20, Component.translatable("structure_block.size.y"));
         sizeYEdit.setMaxLength(15);
         sizeYEdit.setValue(Integer.toString(block.sizeY()));
         addRenderableWidget(sizeYEdit);
-        sizeZEdit = new EditBox(this.font, this.width / 2 + 8, 80, 80, 20, Component.translatable("structure_block.size.z"));
+        sizeZEdit = new EditBox(this.font, this.width / 2 + 40, FIRST_ROW, 80, 20, Component.translatable("structure_block.size.z"));
         sizeZEdit.setMaxLength(15);
         sizeZEdit.setValue(Integer.toString(block.sizeZ()));
         addRenderableWidget(sizeZEdit);

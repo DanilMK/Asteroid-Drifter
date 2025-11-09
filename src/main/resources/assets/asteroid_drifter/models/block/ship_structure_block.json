@@ -1,3 +1,6 @@
 {
-  "parent": "minecraft:block/structure_block"
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "asteroid_drifter:block/structure_block"
+  }
 }
