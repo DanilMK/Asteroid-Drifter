@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "front": "asteroid_drifter:block/engine_front",
+    "side": "asteroid_drifter:block/engine_side",
+    "bottom": "asteroid_drifter:block/engine_bottom",
+    "top": "asteroid_drifter:block/engine_top"
+  }
+}
