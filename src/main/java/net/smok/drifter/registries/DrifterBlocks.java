@@ -50,16 +50,16 @@ public final class DrifterBlocks {
 
     // Fluid tanks
     public static final RegistryEntry<TankBlock> STEEL_TANK_BLOCK = BLOCKS.register("steel_tank",
-            () -> new TankBlock(steelProperties(), MachineConfig.steelTierFluidCapacity));
+            () -> new TankBlock(steelProperties(), 4000L));
 
     public static final RegistryEntry<TankBlock> OSTRUM_TANK_BLOCK = BLOCKS.register("ostrum_tank",
-            () -> new TankBlock(steelProperties(), MachineConfig.ostrumTierFluidCapacity));
+            () -> new TankBlock(steelProperties(), 12000L));
 
     public static final RegistryEntry<TankBlock> DESH_TANK_BLOCK = BLOCKS.register("desh_tank",
-            () -> new TankBlock(steelProperties(), MachineConfig.deshTierFluidCapacity));
+            () -> new TankBlock(steelProperties(), 18000L));
 
     public static final RegistryEntry<TankBlock> CALORITE_TANK_BLOCK = BLOCKS.register("calorite_tank",
-            () -> new TankBlock(steelProperties(), MachineConfig.steelTierFluidCapacity * 5));
+            () -> new TankBlock(steelProperties(), 25000));
 
 
     public static final RegistryEntry<BlockEntityType<TankBlockEntity>> TANK_BLOCK_ENTITY =
