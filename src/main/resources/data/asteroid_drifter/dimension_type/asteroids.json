@@ -5,7 +5,7 @@
   "effects": "ad_astra:earth_orbit",
   "has_ceiling": false,
   "has_raids": false,
-  "has_skylight": true,
+  "has_skylight": false,
   "height": 384,
   "infiniburn": "#minecraft:infiniburn_overworld",
   "logical_height": 384,
@@ -18,7 +18,7 @@
       "min_inclusive": 0
     }
   },
-  "natural": true,
+  "natural": false,
   "piglin_safe": false,
   "respawn_anchor_works": false,
   "ultrawarm": false

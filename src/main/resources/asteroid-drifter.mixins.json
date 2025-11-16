@@ -3,7 +3,9 @@
   "package": "net.smok.drifter.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "JetSuitMixin"
+    "JetSuitMixin",
+    "PlayerListMixin",
+    "ServerPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

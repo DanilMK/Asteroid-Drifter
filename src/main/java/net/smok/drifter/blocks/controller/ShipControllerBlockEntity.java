@@ -103,7 +103,6 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
     public void clientTick() {
         if (clientTick < 20) {
-            Debug.log( "Tick " + clientTick);
             clientTick++;
         }
     }

@@ -25,14 +25,14 @@ public class DrifterEntities {
                     .updateInterval(10)
                     .build("collided_asteroid")
     );
-
+/*
     public static final RegistryEntry<EntityType<MagneticField>> MAGNETIC_FIELD =
             ENTITY_TYPES.register("magnetic_field", () -> builder(MagneticField::new, MobCategory.MISC)
                     .sized(1, 1)
                     .clientTrackingRange(4)
                     .updateInterval(10)
                     .build("magnetic_field")
-            );
+            );*/
 
 
     public static <T extends Entity> EntityType.Builder<T> builder(Function<Level, T> factory, MobCategory category) {
