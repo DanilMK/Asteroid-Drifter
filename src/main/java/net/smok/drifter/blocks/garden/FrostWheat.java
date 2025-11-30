@@ -27,7 +27,6 @@ public class FrostWheat extends CropBlock{
 
         for (int x = -2; x < 2; x++) {
             for (int z = -2; z < 2; z++) {
-                ;
                 for (BlockPos.MutableBlockPos point = pos.offset((x + shiftX) % 5, 3, (z + shiftZ) % 5).mutable();
                      point.getY() > yMin; point.move(Direction.DOWN)) {
 
