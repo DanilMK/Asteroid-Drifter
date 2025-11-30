@@ -4,7 +4,6 @@ import com.teamresourceful.resourcefullib.common.registry.RegistryEntry;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistries;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistry;
 import earth.terrarium.adastra.common.blocks.lamps.IndustrialLampBlock;
-import earth.terrarium.adastra.common.config.MachineConfig;
 import earth.terrarium.botarium.common.registry.RegistryHelpers;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
@@ -13,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.smok.drifter.blocks.alert.AlertLampBlock;
 import net.smok.drifter.blocks.alert.AlertLampBlockEntity;
 import net.smok.drifter.blocks.alert.AlertPanelBlock;
@@ -20,6 +20,9 @@ import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerBlock;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.blocks.engine.*;
+import net.smok.drifter.blocks.garden.CropBlock;
+import net.smok.drifter.blocks.garden.MoonFarmBlock;
+import net.smok.drifter.blocks.garden.MoonFarmBlockEntity;
 import net.smok.drifter.blocks.structure.ShipStructureBlock;
 import net.smok.drifter.blocks.structure.ShipStructureBlockEntity;
 import net.smok.drifter.ShipConfig;
@@ -43,6 +46,26 @@ public final class DrifterBlocks {
 
 
     //Garden
+
+    public static final RegistryEntry<CropBlock> CARROTS = BLOCKS.register("carrots",
+            () -> new CropBlock(7, CropBlock.EIGHT_AGE_SHAPES, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
+                    .noCollission()
+                    .randomTicks()
+                    .instabreak()
+                    .sound(SoundType.CROP)
+                    .pushReaction(PushReaction.DESTROY)));
+
+
+    public static final RegistryEntry<CropBlock> POTATOES = BLOCKS.register("potatoes",
+            () -> new CropBlock(7, CropBlock.EIGHT_AGE_SHAPES, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
+                    .noCollission()
+                    .randomTicks()
+                    .instabreak()
+                    .sound(SoundType.CROP)
+                    .pushReaction(PushReaction.DESTROY)));
+
 
     public static final RegistryEntry<MoonFarmBlock> MOON_FARM = BLOCKS.register("moon_farm",
             () -> new MoonFarmBlock(BlockBehaviour.Properties.of()
