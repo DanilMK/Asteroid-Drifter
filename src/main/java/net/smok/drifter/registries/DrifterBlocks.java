@@ -36,8 +36,26 @@ public final class DrifterBlocks {
     private static BlockBehaviour.Properties steelProperties() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY)
                 .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
-                .requiresCorrectToolForDrops().strength(5f, 12f).sound(SoundType.COPPER);
+                .requiresCorrectToolForDrops()
+                .strength(5f, 12f)
+                .sound(SoundType.COPPER);
     }
+
+
+    //Garden
+
+    public static final RegistryEntry<MoonFarmBlock> MOON_FARM = BLOCKS.register("moon_farm",
+            () -> new MoonFarmBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIRT)
+                    .strength(0.6F)
+                    .sound(SoundType.COPPER)
+                    .isSuffocating(MoonFarmBlock::hasSoil)
+                    .isViewBlocking(MoonFarmBlock::hasSoil))
+    );
+
+    public static final RegistryEntry<BlockEntityType<MoonFarmBlockEntity>> MOON_FARM_BLOCK_ENTITY =
+            BLOCK_ENTITY_TYPES.register("moon_farm",
+                    () -> RegistryHelpers.createBlockEntityType(MoonFarmBlockEntity::new, MOON_FARM.get()));
 
     // Structure Block
     public static final RegistryEntry<ShipStructureBlock> SHIP_STRUCTURE_BLOCK = BLOCKS.register("ship_structure_block",

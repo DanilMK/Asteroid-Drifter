@@ -21,6 +21,9 @@ public final class DrifterItems {
 
     public static final ResourcefulRegistry<Item> ITEMS = ResourcefulRegistries.create(BuiltInRegistries.ITEM, Values.MOD_ID);
 
+    public static final RegistryEntry<BlockItem> MOON_FARM = ITEMS.register("moon_farm", () ->
+            new BlockItem(DrifterBlocks.MOON_FARM.get(), new Item.Properties()));
+
     public static final RegistryEntry<Item> ALERT_PANEL = ITEMS.register("alert_panel", () ->
             new BlockItem(DrifterBlocks.ALERT_PANEL_BLOCK.get(), new Item.Properties()));
 

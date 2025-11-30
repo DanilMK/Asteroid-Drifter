@@ -3,9 +3,13 @@ package net.smok.drifter.utils;
 import earth.terrarium.adastra.common.utils.FluidUtils;
 import earth.terrarium.adastra.common.utils.ItemUtils;
 import earth.terrarium.botarium.common.fluid.FluidApi;
+import earth.terrarium.botarium.common.fluid.base.BotariumFluidBlock;
 import earth.terrarium.botarium.common.fluid.base.FluidContainer;
 import earth.terrarium.botarium.common.fluid.base.FluidHolder;
+import earth.terrarium.botarium.common.fluid.impl.InsertOnlyFluidContainer;
+import earth.terrarium.botarium.common.fluid.impl.WrappedBlockFluidContainer;
 import earth.terrarium.botarium.common.item.ItemStackHolder;
+import earth.terrarium.botarium.util.Updatable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -15,8 +19,11 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.blocks.engine.TankBlockEntity;
@@ -56,25 +63,63 @@ public final class ExtraUtils {
         FluidApi.moveFluid(from, to, amount, false);
         tankBlock.setChanged();
 
+        giveOrCreateItem(level, pos, player, bucketIn, bucketHolder.getStack());
+
+        return InteractionResult.SUCCESS;
+    }
+
+
+    public static <T extends FluidContainer & Updatable<BlockEntity>> @NotNull InteractionResult
+    putFluidBucket(Level level, BlockPos pos, Player player) {
+
+        ItemStack bucketIn = player.getMainHandItem();
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+
+        if (!(blockEntity instanceof BotariumFluidBlock<?> fluidBlock)) return InteractionResult.PASS;
+        T tankContainer = (T) fluidBlock.getFluidContainer();
+
+
+        ItemStackHolder bucketHolder = new ItemStackHolder(bucketIn.copyWithCount(1));
+        FluidContainer bucketContainer = FluidContainer.of(bucketHolder);
+
+        if (bucketContainer == null || tankContainer == null) return InteractionResult.PASS;
+        if (level.isClientSide) return InteractionResult.SUCCESS;
+        FluidHolder bucketAmount = bucketContainer.getFluids().get(0).copyHolder();
+        if (bucketAmount.isEmpty())
+            return InteractionResult.SUCCESS;
+
+        if (moveFluid(bucketContainer, tankContainer, bucketAmount, tankContainer, blockEntity))
+            giveOrCreateItem(level, pos, player, bucketIn, bucketHolder.getStack());
+
+        return InteractionResult.SUCCESS;
+    }
+
+    private static <T extends FluidContainer & Updatable<BlockEntity>> boolean
+    moveFluid(FluidContainer from, FluidContainer to, FluidHolder amount, T tankContainer, BlockEntity blockEntity) {
+        if (FluidApi.moveFluid(from, to, amount, true) == 0L) return false;
+        FluidApi.moveFluid(from, to, amount, false);
+        tankContainer.update(blockEntity);
+        return true;
+    }
+
+
+    public static void giveOrCreateItem(Level level, BlockPos pos, Player player, ItemStack itemToShrink, ItemStack itemToGrow) {
         if (!player.isCreative()) {
-            ItemStack result = bucketHolder.getStack();
-            bucketIn.shrink(1);
-            boolean added = player.getInventory().add(result);
+            itemToShrink.shrink(1);
+            boolean added = player.getInventory().add(itemToGrow);
 
             if (added) {
                 level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F,
                         ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                 player.containerMenu.broadcastChanges();
             } else {
-                ItemEntity itemEntity = player.drop(result, false);
+                ItemEntity itemEntity = player.drop(itemToGrow, false);
                 if (itemEntity != null) {
                     itemEntity.setNoPickUpDelay();
                     itemEntity.setTarget(player.getUUID());
                 }
             }
         }
-
-        return InteractionResult.SUCCESS;
     }
 
     public static boolean moveFluidFromItemToItem(Container container, int bucketInSlot, int bucketOutSlot, int containerSlot) {
@@ -179,4 +224,18 @@ public final class ExtraUtils {
 
         return new float[]{r, g, b, a};
     }
+
+
+    public <C extends Container, T extends Recipe<C> & RecipeWithFluidInput> WrappedBlockFluidContainer
+    createInFluidContainer(Level level, BlockEntity entity, long capacity, int tanks, RecipeType<T> type) {
+
+        return new WrappedBlockFluidContainer(entity, new InsertOnlyFluidContainer(value -> capacity, tanks,
+                (tank, holder) -> level.getRecipeManager().getAllRecipesFor(type).stream().anyMatch(t -> t.fluidMatch(holder))));
+
+    }
+
+    public interface RecipeWithFluidInput {
+        boolean fluidMatch(FluidHolder holder);
+    }
+
 }
