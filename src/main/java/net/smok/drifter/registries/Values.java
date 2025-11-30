@@ -23,6 +23,8 @@ import net.smok.drifter.AlertEffect;
 import net.smok.drifter.Debug;
 import net.smok.drifter.DrifterConfig;
 import net.smok.drifter.data.recipies.AsteroidRecipe;
+import net.smok.drifter.data.recipies.MoonFarmRecipe;
+import net.smok.drifter.world.AgedTreeFeature;
 import net.smok.drifter.world.AsteroidFeature;
 
 import java.util.function.Function;
