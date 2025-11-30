@@ -21,6 +21,7 @@ import net.smok.drifter.blocks.controller.ShipControllerBlock;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.blocks.engine.*;
 import net.smok.drifter.blocks.garden.CropBlock;
+import net.smok.drifter.blocks.garden.FrostWheat;
 import net.smok.drifter.blocks.garden.MoonFarmBlock;
 import net.smok.drifter.blocks.garden.MoonFarmBlockEntity;
 import net.smok.drifter.blocks.structure.ShipStructureBlock;
@@ -46,6 +47,16 @@ public final class DrifterBlocks {
 
 
     //Garden
+
+    public static final RegistryEntry<FrostWheat> FROST_WHEAT = BLOCKS.register("frost_wheat",
+            () -> new FrostWheat(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
+                    .noCollission()
+                    .randomTicks()
+                    .instabreak()
+                    .sound(SoundType.CROP)
+                    .pushReaction(PushReaction.DESTROY))
+    );
 
     public static final RegistryEntry<CropBlock> CARROTS = BLOCKS.register("carrots",
             () -> new CropBlock(7, CropBlock.EIGHT_AGE_SHAPES, BlockBehaviour.Properties.of()
