@@ -68,6 +68,10 @@ public final class Values {
     public static final RegistryEntry<CodecRecipeSerializer<AsteroidRecipe>> ASTEROID_RECIPE =
             registerRecipe("asteroid", ASTEROID_RECIPE_TYPE.get(), AsteroidRecipe::codec);
 
+    public static final RegistryEntry<RecipeType<MoonFarmRecipe>> MOON_FARMLAND_TYPE = registerRecipeType("moon_farmland");
+    public static final RegistryEntry<CodecRecipeSerializer<MoonFarmRecipe>> MOON_FARMLAND_RECIPE =
+            registerRecipe("moon_farmland", MOON_FARMLAND_TYPE.get(), MoonFarmRecipe::codec);
+
     public static final RegistryEntry<AsteroidFeature> ASTEROID_FEATURE =
             FEATURES.register("asteroid_feature", AsteroidFeature::new);
 

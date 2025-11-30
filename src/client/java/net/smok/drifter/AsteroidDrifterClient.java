@@ -9,10 +9,12 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.world.level.block.Block;
 import net.smok.drifter.alert.AlertOverlay;
 import net.smok.drifter.alert.AlertSystemScreen;
 import net.smok.drifter.controller.ControllerBlockRenderer;
 import net.smok.drifter.engine.TankRenderer;
+import net.smok.drifter.garden.MoonFarmRenderer;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.controller.ShipControllerScreen;
 import net.smok.drifter.engine.EngineScreen;
@@ -23,6 +25,17 @@ import net.smok.drifter.structure.ShipStructureBlockScreen;
 
 public class AsteroidDrifterClient implements ClientModInitializer {
 
+	private static final Block[] TRANSPARENT_BLOCKS = new Block[] {
+			DrifterBlocks.ALERT_LUMP.get(),
+			DrifterBlocks.CARROTS.get(),
+			DrifterBlocks.POTATOES.get(),
+			DrifterBlocks.FROST_WHEAT.get(),
+			DrifterBlocks.STEEL_TANK_BLOCK.get(),
+			DrifterBlocks.OSTRUM_TANK_BLOCK.get(),
+			DrifterBlocks.DESH_TANK_BLOCK.get(),
+			DrifterBlocks.CALORITE_TANK_BLOCK.get()
+	};
+
 	@Override
 	public void onInitializeClient() {
 		MenuScreens.register(DrifterMenus.SHIP_CONTROLLER_MENU.get(), ShipControllerScreen::new);
@@ -32,11 +45,7 @@ public class AsteroidDrifterClient implements ClientModInitializer {
 
 		HudRenderCallback.EVENT.register(new AlertOverlay());
 
-		BlockRenderLayerMap.INSTANCE.putBlock(DrifterBlocks.ALERT_LUMP.get(), RenderType.cutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(DrifterBlocks.STEEL_TANK_BLOCK.get(), RenderType.cutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(DrifterBlocks.OSTRUM_TANK_BLOCK.get(), RenderType.cutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(DrifterBlocks.DESH_TANK_BLOCK.get(), RenderType.cutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(DrifterBlocks.CALORITE_TANK_BLOCK.get(), RenderType.cutout());
+		BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutout(), TRANSPARENT_BLOCKS);
 
 		EntityModelLayerRegistry.registerModelLayer(TankRenderer.FLUID_LOCATION, TankRenderer::createLayer);
 		EntityModelLayerRegistry.registerModelLayer(ControllerBlockRenderer.MODEL_LOCATION, ControllerBlockRenderer::createLayerDefinition);
@@ -44,6 +53,7 @@ public class AsteroidDrifterClient implements ClientModInitializer {
 		BlockEntityRenderers.register(DrifterBlocks.TANK_BLOCK_ENTITY.get(), TankRenderer::new);
 		BlockEntityRenderers.register(DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get(), ControllerBlockRenderer::new);
 		BlockEntityRenderers.register(DrifterBlocks.SHIP_STRUCTURE_BLOCK_ENTITY.get(), context -> new ShipStructureBlockRenderer());
+		BlockEntityRenderers.register(DrifterBlocks.MOON_FARM_BLOCK_ENTITY.get(), MoonFarmRenderer::new);
 
 		EntityRendererRegistry.register(DrifterEntities.COLLIDED_ASTEROID.get(), context -> new ThrownItemRenderer<>(context, 3.0F, true));
 		//EntityRendererRegistry.register(DrifterEntities.MAGNETIC_FIELD.get(), MagneticFieldRenderer::new);
