@@ -50,6 +50,6 @@ public abstract class CodecRecipeBuilder<C extends Container, T extends CodecRec
                 .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(recipeId))
                 .rewards(AdvancementRewards.Builder.recipe(recipeId))
                 .requirements(RequirementsStrategy.OR);
-        finishedRecipeConsumer.accept(new FinishedCodecRecipe<>(recipeFactory.apply(recipeId), recipeId, advancement)); // todo crush
+        finishedRecipeConsumer.accept(new FinishedCodecRecipe<>(recipeFactory.apply(recipeId), recipeId, advancement));
     }
 }
