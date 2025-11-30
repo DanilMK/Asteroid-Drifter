@@ -1,0 +1,30 @@
+{
+  "type": "asteroid_drifter:moon_farmland",
+  "crop": "minecraft:dark_oak_sapling",
+  "moisture": [
+    {
+      "fluid_ingredient": {
+        "ingredient": {
+          "tag": "minecraft:water"
+        },
+        "millibuckets": 250
+      },
+      "speed": 0.25,
+      "take_probability": 0.25
+    },
+    {
+      "fluid_ingredient": {
+        "ingredient": [],
+        "millibuckets": 0
+      },
+      "item_ingredient": {
+        "item": "minecraft:bone_meal"
+      },
+      "speed": 0.25,
+      "take_probability": 0.25
+    }
+  ],
+  "soil": {
+    "item": "minecraft:dirt"
+  }
+}

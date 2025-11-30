@@ -3,9 +3,14 @@
   "package": "net.smok.drifter.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "CactusMixin",
+    "ItemsMixin",
     "JetSuitMixin",
+    "NetherWartBlockMixin",
     "PlayerListMixin",
-    "ServerPlayerMixin"
+    "SaplingMixin",
+    "ServerPlayerMixin",
+    "SugarCaneBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1
