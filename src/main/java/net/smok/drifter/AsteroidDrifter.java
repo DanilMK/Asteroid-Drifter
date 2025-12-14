@@ -17,7 +17,7 @@ public class AsteroidDrifter implements ModInitializer {
 		NetworkHandler.init();
 		ShipEventRegistries.init();
 		ModifierRegistries.init();
-		DrifterEntities.ENTITY_TYPES.init();
+		DrifterEntities.init();
 		DrifterBlocks.BLOCKS.init();
 		DrifterItems.ITEMS.init();
 		DrifterCreativeTab.TABS.init();

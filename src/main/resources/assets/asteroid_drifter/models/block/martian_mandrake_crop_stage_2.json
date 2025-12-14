@@ -1,0 +1,6 @@
+{
+	"parent": "asteroid_drifter:block/martian_mandrake_crop_stage_1",
+	"textures": {
+      "stage": "asteroid_drifter:block/martian_mandrake_crop_bottom_stage_2"
+    }
+}

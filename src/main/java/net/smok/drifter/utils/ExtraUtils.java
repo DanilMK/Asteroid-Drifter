@@ -238,4 +238,28 @@ public final class ExtraUtils {
         boolean fluidMatch(FluidHolder holder);
     }
 
+    public static boolean putItemToContainer(@NotNull Container container, @NotNull ItemStack from) {
+        int initAmount = from.getCount();
+        for (int slot = 0; slot < container.getContainerSize() && from.getCount() > 0; slot++) {
+            ItemStack to = container.getItem(slot);
+            if (to.isEmpty() || (ItemStack.isSameItemSameTags(to, from) &&
+                    to.getCount() < to.getMaxStackSize() && to.getCount() < container.getMaxStackSize())) {
+
+                if (to.isEmpty()) {
+                    container.setItem(slot, from.copyWithCount(Math.min(from.getCount(), container.getMaxStackSize())));
+                    from.shrink(container.getItem(slot).getCount());
+                    continue;
+                }
+
+                int grow = Math.min(Math.min(to.getMaxStackSize() - to.getCount(), container.getMaxStackSize() - to.getCount()),  from.getCount());
+                if (grow == 0) continue;
+                to.grow(grow);
+                from.shrink(grow);
+            }
+        }
+
+        boolean b = initAmount != from.getCount();
+        if (b) container.setChanged();
+        return b;
+    }
 }

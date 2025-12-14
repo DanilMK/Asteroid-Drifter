@@ -33,7 +33,8 @@ public class AsteroidDrifterClient implements ClientModInitializer {
 			DrifterBlocks.STEEL_TANK_BLOCK.get(),
 			DrifterBlocks.OSTRUM_TANK_BLOCK.get(),
 			DrifterBlocks.DESH_TANK_BLOCK.get(),
-			DrifterBlocks.CALORITE_TANK_BLOCK.get()
+			DrifterBlocks.CALORITE_TANK_BLOCK.get(),
+			DrifterBlocks.MARTIAN_MANDRAKE.get()
 	};
 
 	@Override
@@ -49,11 +50,13 @@ public class AsteroidDrifterClient implements ClientModInitializer {
 
 		EntityModelLayerRegistry.registerModelLayer(TankRenderer.FLUID_LOCATION, TankRenderer::createLayer);
 		EntityModelLayerRegistry.registerModelLayer(ControllerBlockRenderer.MODEL_LOCATION, ControllerBlockRenderer::createLayerDefinition);
+		EntityModelLayerRegistry.registerModelLayer(MartianMandrakeModel.LAYER_LOCATION, MartianMandrakeModel::createBodyLayer);
 
 		BlockEntityRenderers.register(DrifterBlocks.TANK_BLOCK_ENTITY.get(), TankRenderer::new);
 		BlockEntityRenderers.register(DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get(), ControllerBlockRenderer::new);
 		BlockEntityRenderers.register(DrifterBlocks.SHIP_STRUCTURE_BLOCK_ENTITY.get(), context -> new ShipStructureBlockRenderer());
 		BlockEntityRenderers.register(DrifterBlocks.MOON_FARM_BLOCK_ENTITY.get(), MoonFarmRenderer::new);
+		EntityRendererRegistry.register(DrifterEntities.MARTIAN_MANDRAKE.get(), MartianMandrakeModel::getMobRenderer);
 
 		EntityRendererRegistry.register(DrifterEntities.COLLIDED_ASTEROID.get(), context -> new ThrownItemRenderer<>(context, 3.0F, true));
 		//EntityRendererRegistry.register(DrifterEntities.MAGNETIC_FIELD.get(), MagneticFieldRenderer::new);

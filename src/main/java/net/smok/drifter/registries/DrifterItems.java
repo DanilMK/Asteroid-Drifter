@@ -9,6 +9,7 @@ import earth.terrarium.botarium.common.registry.fluid.FluidBucketItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemNameBlockItem;
@@ -24,6 +25,12 @@ public final class DrifterItems {
 
     public static final RegistryEntry<BlockItem> FROST_WHEAT_SEEDS = ITEMS.register("frost_wheat_seeds", () ->
             new ItemNameBlockItem(DrifterBlocks.FROST_WHEAT.get(), new Item.Properties()));
+
+    public static final RegistryEntry<BlockItem> MARTIAN_MANDRAKE_SEEDS = ITEMS.register("martian_mandrake_seeds", () ->
+            new ItemNameBlockItem(DrifterBlocks.MARTIAN_MANDRAKE.get(), new Item.Properties()));
+
+    public static final RegistryEntry<Item> MARTIAN_MANDRAKE = ITEMS.register("martian_mandrake", () ->
+            new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(4).build())));
 
     public static final RegistryEntry<BlockItem> MOON_FARM = ITEMS.register("moon_farm", () ->
             new BlockItem(DrifterBlocks.MOON_FARM.get(), new Item.Properties()));
