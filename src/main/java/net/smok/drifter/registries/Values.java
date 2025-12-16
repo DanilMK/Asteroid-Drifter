@@ -38,7 +38,6 @@ public final class Values {
     public static final ResourcefulRegistry<Feature<?>> FEATURES = ResourcefulRegistries.create(BuiltInRegistries.FEATURE, MOD_ID);
 
 
-
     public static final FluidData SHIP_FUEL = FLUID_PROPERTIES.register("ship_fuel", FluidProperties.create()
             .still(new ResourceLocation("block/water_still"))
             .flowing(new ResourceLocation("block/water_flow"))

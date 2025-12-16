@@ -1,5 +1,6 @@
 package net.smok.drifter.registries;
 
+import com.teamresourceful.resourcefullib.common.item.tabs.ResourcefulCreativeTab;
 import com.teamresourceful.resourcefullib.common.registry.RegistryEntry;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistries;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistry;
@@ -9,14 +10,18 @@ import earth.terrarium.botarium.common.registry.fluid.FluidBucketItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemNameBlockItem;
 import net.smok.drifter.blocks.engine.EngineNozzleBlock;
 import net.smok.drifter.items.ConfigureTool;
 import net.smok.drifter.items.FuelTank;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public final class DrifterItems {
@@ -107,6 +112,13 @@ public final class DrifterItems {
 
     public static final RegistryEntry<BlockItem> CALORITE_ENGINE_NUZZLE = ITEMS.register("calorite_engine_nuzzle", () ->
             new TooltipBlockItem(DrifterBlocks.CALORITE_NUZZLE_BLOCK.get(), maxSpeedTooltip(DrifterBlocks.CALORITE_NUZZLE_BLOCK),new Item.Properties()));
+
+    public static final Supplier<CreativeModeTab> TAB =
+            new ResourcefulCreativeTab(new ResourceLocation(Values.MOD_ID, "main"))
+                    .setItemIcon(MEDIUM_ASTEROID).addRegistry(ITEMS).build();
+
+    public static final ResourcefulRegistry<CreativeModeTab> TABS =
+            ResourcefulRegistries.create(BuiltInRegistries.CREATIVE_MODE_TAB, Values.MOD_ID);
 
     private static @NotNull MutableComponent maxSpeedTooltip(RegistryEntry<EngineNozzleBlock> nuzzleBlock) {
         return Component.translatable("tooltip.asteroid_drifter.add_max_speed", String.format("%.2f", nuzzleBlock.get().getMaxSpeed()));
