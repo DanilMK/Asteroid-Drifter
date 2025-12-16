@@ -21,6 +21,7 @@ public class AsteroidDrifter implements ModInitializer {
 		DrifterBlocks.BLOCKS.init();
 		DrifterItems.ITEMS.init();
 		DrifterCreativeTab.TABS.init();
+		DrifterRecipes.RECIPE_TYPES.init();
 
 		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new ShipEventRegistries.CollisionRegistration());
 

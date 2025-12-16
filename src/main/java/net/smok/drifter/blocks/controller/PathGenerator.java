@@ -3,11 +3,11 @@ package net.smok.drifter.blocks.controller;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
-import net.smok.drifter.data.events.ShipEvent;
-import net.smok.drifter.data.recipies.AsteroidRecipe;
-import net.smok.drifter.data.recipies.Path;
-import net.smok.drifter.data.recipies.PathEvent;
-import net.smok.drifter.registries.Values;
+import net.smok.drifter.events.ShipEvent;
+import net.smok.drifter.recipies.AsteroidRecipe;
+import net.smok.drifter.recipies.Path;
+import net.smok.drifter.recipies.PathEvent;
+import net.smok.drifter.registries.DrifterRecipes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +20,7 @@ public interface PathGenerator {
 
     default @Nullable AsteroidRecipe getRandomRecipe(@NotNull Level level, @NotNull ShipControllerBlockEntity controller, @NotNull RandomSource random, int distance) {
 
-        List<AsteroidRecipe> filteredRecipies = level.getRecipeManager().getAllRecipesFor(Values.ASTEROID_RECIPE_TYPE.get())
+        List<AsteroidRecipe> filteredRecipies = level.getRecipeManager().getAllRecipesFor(DrifterRecipes.ASTEROID_RECIPE_TYPE.get())
                 .stream().filter(asteroidRecipe -> asteroidRecipe.matches(controller, distance)).toList();
         if (filteredRecipies.isEmpty()) return null;
         return filteredRecipies.get(random.nextInt(filteredRecipies.size()));

@@ -19,9 +19,9 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.smok.drifter.Debug;
-import net.smok.drifter.data.events.AsteroidCollision;
-import net.smok.drifter.data.events.ShipEvent;
-import net.smok.drifter.data.events.ShipEventType;
+import net.smok.drifter.events.AsteroidCollision;
+import net.smok.drifter.events.ShipEvent;
+import net.smok.drifter.events.ShipEventType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

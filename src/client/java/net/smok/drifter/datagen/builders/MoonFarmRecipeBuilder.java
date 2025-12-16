@@ -13,7 +13,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.smok.drifter.blocks.garden.MoonFarmBlockEntity;
-import net.smok.drifter.data.recipies.MoonFarmRecipe;
+import net.smok.drifter.recipies.MoonFarmRecipe;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 

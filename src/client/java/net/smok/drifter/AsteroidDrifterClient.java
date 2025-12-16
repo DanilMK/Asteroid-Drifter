@@ -10,18 +10,18 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.world.level.block.Block;
-import net.smok.drifter.alert.AlertOverlay;
-import net.smok.drifter.alert.AlertSystemScreen;
-import net.smok.drifter.controller.ControllerBlockRenderer;
-import net.smok.drifter.engine.TankRenderer;
-import net.smok.drifter.garden.MoonFarmRenderer;
+import net.smok.drifter.blocks.alert.AlertOverlay;
+import net.smok.drifter.blocks.alert.AlertSystemScreen;
+import net.smok.drifter.blocks.controller.ControllerBlockRenderer;
+import net.smok.drifter.blocks.engine.TankRenderer;
+import net.smok.drifter.blocks.garden.MoonFarmRenderer;
 import net.smok.drifter.registries.DrifterBlocks;
-import net.smok.drifter.controller.ShipControllerScreen;
-import net.smok.drifter.engine.EngineScreen;
+import net.smok.drifter.blocks.controller.ShipControllerScreen;
+import net.smok.drifter.blocks.engine.EngineScreen;
 import net.smok.drifter.registries.DrifterEntities;
 import net.smok.drifter.registries.DrifterMenus;
-import net.smok.drifter.structure.ShipStructureBlockRenderer;
-import net.smok.drifter.structure.ShipStructureBlockScreen;
+import net.smok.drifter.blocks.structure.ShipStructureBlockRenderer;
+import net.smok.drifter.blocks.structure.ShipStructureBlockScreen;
 
 public class AsteroidDrifterClient implements ClientModInitializer {
 

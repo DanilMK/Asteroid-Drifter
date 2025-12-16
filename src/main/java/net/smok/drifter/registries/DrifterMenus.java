@@ -11,13 +11,13 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
-import net.smok.drifter.blocks.alert.AlertSystemMenu;
-import net.smok.drifter.blocks.engine.EngineMenu;
+import net.smok.drifter.menus.AlertSystemMenu;
+import net.smok.drifter.menus.EngineMenu;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.blocks.controller.ShipControllerMenu;
+import net.smok.drifter.menus.ShipControllerMenu;
 import net.smok.drifter.blocks.structure.ShipStructureBlockEntity;
-import net.smok.drifter.blocks.structure.ShipStructureBlockMenu;
+import net.smok.drifter.menus.ShipStructureBlockMenu;
 import org.apache.commons.lang3.function.TriFunction;
 
 public final class DrifterMenus {

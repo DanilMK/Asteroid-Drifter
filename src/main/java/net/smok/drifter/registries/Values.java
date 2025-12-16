@@ -1,8 +1,6 @@
 package net.smok.drifter.registries;
 
-import com.mojang.serialization.Codec;
 import com.teamresourceful.resourcefulconfig.common.config.Configurator;
-import com.teamresourceful.resourcefullib.common.recipe.CodecRecipeSerializer;
 import com.teamresourceful.resourcefullib.common.registry.RegistryEntry;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistries;
 import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistry;
@@ -13,21 +11,13 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.material.Fluid;
 import net.smok.drifter.AlertEffect;
 import net.smok.drifter.Debug;
 import net.smok.drifter.DrifterConfig;
-import net.smok.drifter.data.recipies.AsteroidRecipe;
-import net.smok.drifter.data.recipies.MoonFarmRecipe;
-import net.smok.drifter.world.AgedTreeFeature;
 import net.smok.drifter.world.AsteroidFeature;
-
-import java.util.function.Function;
 
 public final class Values {
     public static void init() {
@@ -42,8 +32,6 @@ public final class Values {
     public static final ResourceLocation ASTEROID_DIMENSION = new ResourceLocation(MOD_ID, "asteroids");
     public static final ResourceKey<Level> ASTEROID_LEVEL = ResourceKey.create(Registries.DIMENSION, ASTEROID_DIMENSION);
 
-    public static final ResourcefulRegistry<RecipeSerializer<?>> RECIPE_SERIALIZERS = ResourcefulRegistries.create(BuiltInRegistries.RECIPE_SERIALIZER, MOD_ID);
-    public static final ResourcefulRegistry<RecipeType<?>> RECIPE_TYPES = ResourcefulRegistries.create(BuiltInRegistries.RECIPE_TYPE, MOD_ID);
     public static final FluidRegistry FLUID_PROPERTIES = new FluidRegistry(MOD_ID);
     public static final ResourcefulRegistry<Fluid> FLUIDS = ResourcefulRegistries.create(BuiltInRegistries.FLUID, MOD_ID);
     public static final ResourcefulRegistry<MobEffect> EFFECTS = ResourcefulRegistries.create(BuiltInRegistries.MOB_EFFECT, MOD_ID);
@@ -66,29 +54,8 @@ public final class Values {
             () -> new AlertEffect(MobEffectCategory.NEUTRAL, 0xd8d8d8));
 
 
-    public static final RegistryEntry<RecipeType<AsteroidRecipe>> ASTEROID_RECIPE_TYPE = registerRecipeType("asteroid");
-    public static final RegistryEntry<CodecRecipeSerializer<AsteroidRecipe>> ASTEROID_RECIPE =
-            registerRecipe("asteroid", ASTEROID_RECIPE_TYPE.get(), AsteroidRecipe::codec);
-
-    public static final RegistryEntry<RecipeType<MoonFarmRecipe>> MOON_FARMLAND_TYPE = registerRecipeType("moon_farmland");
-    public static final RegistryEntry<CodecRecipeSerializer<MoonFarmRecipe>> MOON_FARMLAND_RECIPE =
-            registerRecipe("moon_farmland", MOON_FARMLAND_TYPE.get(), MoonFarmRecipe::codec);
-
     public static final RegistryEntry<AsteroidFeature> ASTEROID_FEATURE =
             FEATURES.register("asteroid_feature", AsteroidFeature::new);
 
-
-    private static <T extends Recipe<?>> RegistryEntry<CodecRecipeSerializer<T>> registerRecipe(String id, RecipeType<T> recipeType, Function<ResourceLocation, Codec<T>> codec) {
-        return RECIPE_SERIALIZERS.register(id, () -> new CodecRecipeSerializer<>(recipeType, codec));
-    }
-
-    private static <T extends Recipe<?>> RegistryEntry<RecipeType<T>> registerRecipeType(String id) {
-        return RECIPE_TYPES.register(id, () -> new RecipeType<>() {
-            @Override
-            public String toString() {
-                return id;
-            }
-        });
-    }
 
 }

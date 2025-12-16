@@ -23,9 +23,9 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.smok.drifter.data.recipies.MoonFarmRecipe;
+import net.smok.drifter.recipies.MoonFarmRecipe;
 import net.smok.drifter.registries.DrifterBlocks;
-import net.smok.drifter.registries.Values;
+import net.smok.drifter.registries.DrifterRecipes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,7 +42,6 @@ public class MoonFarmBlockEntity extends BlockEntity implements BasicContainer, 
                     (integer, holder) -> true));
 
     private @Nullable MoonFarmRecipe cachedRecipe = null;
-    private List<MoonFarmRecipe> cachedRecipes;
 
 
     public MoonFarmBlockEntity(BlockPos pos, BlockState blockState) {
@@ -200,19 +199,19 @@ public class MoonFarmBlockEntity extends BlockEntity implements BasicContainer, 
     }
 
     private boolean canPutSoil(ItemStack item) {
-        return level.getRecipeManager().getAllRecipesFor(Values.MOON_FARMLAND_TYPE.get())
+        return level.getRecipeManager().getAllRecipesFor(DrifterRecipes.MOON_FARMLAND_TYPE.get())
                 .stream().anyMatch(recipe -> recipe.soil().test(item));
     }
 
     private boolean canPutNutrients(ItemStack item) {
-        return level.getRecipeManager().getAllRecipesFor(Values.MOON_FARMLAND_TYPE.get()).stream()
+        return level.getRecipeManager().getAllRecipesFor(DrifterRecipes.MOON_FARMLAND_TYPE.get()).stream()
                 .anyMatch(recipe -> recipe.nutrients().stream().anyMatch(requirement ->
                         requirement.itemIngredient().test(item)
                 ));
     }
 
     public boolean canPutNutrientsFluid(ItemStack item) {
-        return FluidUtils.hasFluid(item) && level.getRecipeManager().getAllRecipesFor(Values.MOON_FARMLAND_TYPE.get()).stream()
+        return FluidUtils.hasFluid(item) && level.getRecipeManager().getAllRecipesFor(DrifterRecipes.MOON_FARMLAND_TYPE.get()).stream()
                 .anyMatch(recipe -> recipe.nutrients().stream().anyMatch(requirement ->
                         requirement.fluidIngredient().test(FluidUtils.getTank(item))
                 ));
@@ -221,7 +220,7 @@ public class MoonFarmBlockEntity extends BlockEntity implements BasicContainer, 
     public @NotNull Optional<MoonFarmRecipe> findRecipe(Block cropBlock) {
         if (cachedRecipe != null && cachedRecipe.cropBlock().equals(cropBlock)) return Optional.of(cachedRecipe);
         if (level == null) return Optional.empty();
-        Optional<MoonFarmRecipe> first = level.getRecipeManager().getAllRecipesFor(Values.MOON_FARMLAND_TYPE.get()).stream()
+        Optional<MoonFarmRecipe> first = level.getRecipeManager().getAllRecipesFor(DrifterRecipes.MOON_FARMLAND_TYPE.get()).stream()
                 .filter(recipe -> recipe.matches(this, level) && recipe.cropBlock().equals(cropBlock)).findFirst();
         first.ifPresent(recipe -> cachedRecipe = recipe);
         return first;

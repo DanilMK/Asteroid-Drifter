@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.blocks.ShipBlock;
+import net.smok.drifter.menus.ShipStructureBlockMenu;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.utils.ExtraUtils;
 import net.smok.drifter.utils.SavedDataSlot;

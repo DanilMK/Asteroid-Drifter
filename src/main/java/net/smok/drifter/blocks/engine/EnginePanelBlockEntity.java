@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
+import net.smok.drifter.menus.EngineMenu;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.ShipBlock;
 import net.smok.drifter.utils.BlockEntityPosition;
