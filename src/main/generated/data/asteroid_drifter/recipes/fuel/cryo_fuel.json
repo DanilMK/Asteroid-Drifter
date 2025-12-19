@@ -1,0 +1,10 @@
+{
+  "type": "asteroid_drifter:fuel",
+  "fluid": {
+    "ingredient": {
+      "fluid": "ad_astra:cryo_fuel"
+    },
+    "millibuckets": 1
+  },
+  "fuel_amount": 1
+}

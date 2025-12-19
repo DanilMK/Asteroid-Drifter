@@ -11,6 +11,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.smok.drifter.recipies.AsteroidRecipe;
+import net.smok.drifter.recipies.FuelRecipe;
 import net.smok.drifter.recipies.MoonFarmRecipe;
 
 import java.util.function.Function;
@@ -29,6 +30,11 @@ public final class DrifterRecipes {
     public static final RegistryEntry<RecipeType<MoonFarmRecipe>> MOON_FARMLAND_TYPE = registerRecipeType("moon_farmland");
     public static final RegistryEntry<CodecRecipeSerializer<MoonFarmRecipe>> MOON_FARMLAND_RECIPE =
             registerRecipe("moon_farmland", MOON_FARMLAND_TYPE.get(), MoonFarmRecipe::codec);
+
+
+    public static final RegistryEntry<RecipeType<FuelRecipe>> FUEL_TYPE = registerRecipeType("fuel");
+    public static final RegistryEntry<CodecRecipeSerializer<FuelRecipe>> FUEL_RECIPE =
+            registerRecipe("fuel", FUEL_TYPE.get(), FuelRecipe::codec);
 
 
 
