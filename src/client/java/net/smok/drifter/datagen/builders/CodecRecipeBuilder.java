@@ -21,14 +21,20 @@ import java.util.function.Function;
 
 public abstract class CodecRecipeBuilder<C extends Container, T extends CodecRecipe<C>> implements RecipeBuilder {
     private final Function<ResourceLocation, T> recipeFactory;
-    private final Advancement.Builder advancement = Advancement.Builder.recipeAdvancement();
+    private Advancement.Builder advancement;
 
     public CodecRecipeBuilder(Function<ResourceLocation, T> recipeFactory) {
         this.recipeFactory = recipeFactory;
     }
 
+    public CodecRecipeBuilder<C, T> addAdvancement() {
+        advancement = Advancement.Builder.recipeAdvancement();
+        return this;
+    }
+
     @Override
     public @NotNull CodecRecipeBuilder<C, T> unlockedBy(String criterionName, CriterionTriggerInstance criterionTrigger) {
+        if (advancement == null) advancement = Advancement.Builder.recipeAdvancement();
         this.advancement.addCriterion(criterionName, criterionTrigger);
         return this;
     }
@@ -46,7 +52,7 @@ public abstract class CodecRecipeBuilder<C extends Container, T extends CodecRec
     @Override
     public void save(Consumer<FinishedRecipe> finishedRecipeConsumer, ResourceLocation recipeId) {
 
-        advancement.parent(ROOT_RECIPE_ADVANCEMENT)
+        if (advancement != null) advancement.parent(ROOT_RECIPE_ADVANCEMENT)
                 .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(recipeId))
                 .rewards(AdvancementRewards.Builder.recipe(recipeId))
                 .requirements(RequirementsStrategy.OR);
