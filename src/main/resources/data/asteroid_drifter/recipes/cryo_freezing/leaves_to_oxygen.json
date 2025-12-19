@@ -1,0 +1,12 @@
+{
+  "type": "ad_astra:cryo_freezing",
+  "cookingtime": 20,
+  "energy": 25,
+  "ingredient": {
+    "tag": "c:leaves"
+  },
+  "result": {
+    "fluid": "ad_astra:oxygen",
+    "millibuckets": 50
+  }
+}
