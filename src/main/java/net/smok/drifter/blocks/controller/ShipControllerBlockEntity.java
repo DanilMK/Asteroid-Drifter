@@ -359,7 +359,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     }
 
     public float maxSpeed() {
-        return engine.getBlock(level).map(EnginePanelBlockEntity::maxSpeed).orElse(1f);
+        return engine.getBlock(level).map(EnginePanelBlockEntity::maxLimitedSpeed).orElse(1f);
     }
 
     public Boolean isStand() {

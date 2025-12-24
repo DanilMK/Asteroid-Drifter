@@ -22,12 +22,19 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
+import net.smok.drifter.Debug;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.menus.EngineMenu;
+import net.smok.drifter.recipies.FuelRecipe;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.ShipBlock;
+import net.smok.drifter.registries.DrifterRecipes;
 import net.smok.drifter.utils.BlockEntityPosition;
 import net.smok.drifter.utils.SavedDataSlot;
 import net.smok.drifter.ShipConfig;
@@ -49,6 +56,7 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     private final NonNullList<ItemStack> itemContainer;
 
     private final SavedDataSlot<Float> maxSpeed = SavedDataSlot.floatValue("maxSpeed");
+    private final SavedDataSlot<Float> maxLimitedSpeed = SavedDataSlot.floatValue("maxLimitedSpeed");
     private final SavedDataSlot<Float> speed = SavedDataSlot.floatValue("speed");
     private final SavedDataSlot<Float> lastDistanceFuelDecrees = SavedDataSlot.floatValue("lastDistanceFuelDecrees");
 
@@ -60,14 +68,18 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
             new BlockEntityPosition<>("controller", DrifterBlocks.SHIP_CONTROLLER_BLOCK_ENTITY.get());
 
     private final HashSet<BlockPos> nuzzles = new HashSet<>();
+    private final RecipeManager.CachedCheck<EnginePanelBlockEntity, FuelRecipe> quickCheck =
+            RecipeManager.createCheck(DrifterRecipes.FUEL_TYPE.get());
     private int shakingTicks;
+    @Nullable
+    private FuelRecipe recipe;
 
 
-    private final List<SavedDataSlot<?>> savedData = List.of(maxSpeed, speed, lastDistanceFuelDecrees);
+    private final List<SavedDataSlot<?>> savedData = List.of(maxSpeed, speed, lastDistanceFuelDecrees, maxLimitedSpeed);
 
     public EnginePanelBlockEntity(BlockPos pos, BlockState blockState) {
         super(DrifterBlocks.ENGINE_PANEL_BLOCK_ENTITY.get(), pos, blockState);
-        itemContainer = NonNullList.withSize(4, ItemStack.EMPTY);
+        itemContainer = NonNullList.withSize(2, ItemStack.EMPTY);
         maxSpeed.setValue(ShipConfig.startSpeed());
         tank.setPos(getBlockPos().above());
     }
@@ -78,6 +90,9 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
 
+    /**
+     * Fuel Tank with capacity
+     */
     public Pair<FluidHolder, Long> getFluidHolder() {
         return tank.getBlock(level).map(tankBlockEntity ->
                         new Pair<>(
@@ -88,10 +103,8 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
 
     @Override
     public int @NotNull [] getSlotsForFace(Direction side) {
-        return switch (side) {
-            case DOWN -> new int[] {3};
-            case UP, NORTH, EAST, SOUTH, WEST -> new int[] {2};
-        };
+        if (side == Direction.DOWN) return new int[BUCKET_OUTPUT];
+        return new int[] {BUCKET_INPUT};
     }
 
     @Override
@@ -161,6 +174,11 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
             if (block.isEmpty() || block.get().isStand()) speedTick(0);
         }
 
+        tank.getBlock(level).ifPresent(t -> {
+            if (t.getFluidContainer().isEmpty()) recipe = null;
+            quickCheckRecipe();
+        });
+
         // handle fuel load to tank
         if (gameTime % 10L == 0){
             if (!getItem(BUCKET_INPUT).isEmpty()) {
@@ -181,17 +199,48 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
     private void fuelTick(ServerLevel lvl, long gameTime) {
-        if (gameTime % 20L == 0 && speed() > 0) {
+        if (gameTime % 20L == 0 && speed() > 0 && recipe != null) {
             Float remainDistance = controller.getBlock(level).map(ShipControllerBlockEntity::getRemainDistance).orElse(0f);
-            float mbDecrees = ShipConfig.kmToMb(lastDistanceFuelDecrees.getValue() - remainDistance);
+            float mbDecrease = recipe.kmToMb(lastDistanceFuelDecrees.getValue() - remainDistance);
 
-            if (mbDecrees < 0) { // If the ship has started flying, the remaining distance will be greater than the last saved one.
+            if (mbDecrease < 0) { // If the ship has started flying, the remaining distance will be greater than the last saved one.
                 lastDistanceFuelDecrees.setValue(remainDistance);
                 setChanged();
-            } else if (mbDecrees > 1) {
-                tank.getBlock(lvl).ifPresent(tankBlockEntity -> tankBlockEntity.decrease((long) mbDecrees));
-                lastDistanceFuelDecrees.setValue(remainDistance + ShipConfig.mbToKm(mbDecrees % 1)); //save remainder
+            } else if (mbDecrease > 1) {
+
+                // Subtract the long part of value, extract from tank, save float remainder
+                tank.getBlock(lvl).ifPresent(t -> t.getFluidContainer()
+                        .internalExtract(t.getFluidContainer().getFirstFluid()
+                                .copyWithAmount(FluidConstants.fromMillibuckets((long) mbDecrease)), false));
+                lastDistanceFuelDecrees.setValue(remainDistance + recipe.mbToKm(mbDecrease % 1f));
                 setChanged();
+
+                if (lvl.random.nextFloat() < recipe.slagChance() * mbDecrease) {
+
+                    BlockPos slugNuzzle = new ArrayList<>(nuzzles).get(lvl.random.nextInt(nuzzles.size()));
+                    lvl.getBlockState(slugNuzzle).getOptionalValue(EngineNozzleBlock.FACING).ifPresent(direction -> {
+                        BlockPos pos = slugNuzzle.relative(direction);
+                        if (lvl.getBlockState(pos).isAir()) {
+                            lvl.setBlock(pos, recipe.slugBlock().getState(lvl.random, pos), 3);
+                        } else {
+                            Vec3 center = pos.getCenter();
+                            lvl.explode(null, center.x, center.y, center.z, 1, Level.ExplosionInteraction.BLOCK);
+                        }
+                        recountMaxSpeed();
+                    });
+                }
+                if (lvl.random.nextFloat() < 0.01f * mbDecrease) {
+
+                    BlockPos slugNuzzle = new ArrayList<>(nuzzles).get(lvl.random.nextInt(nuzzles.size()));
+                    lvl.getBlockState(slugNuzzle).getOptionalValue(EngineNozzleBlock.FACING).ifPresent(direction -> {
+                        BlockPos pos = slugNuzzle.relative(direction);
+                        if (!lvl.getBlockState(pos).isAir()) {
+                            Vec3 center = pos.getCenter();
+                            lvl.explode(null, center.x, center.y, center.z, 1, Level.ExplosionInteraction.BLOCK);
+                            recountMaxSpeed();
+                        }
+                    });
+                }
             }
         }
     }
@@ -202,10 +251,10 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
      * @param remainDistance if >0 - accelerate speed to max, else brake speed to 0
      */
     public void speedTick(float remainDistance) {
-        float maxSpeed = maxSpeed();
+        float maxSpeed = maxLimitedSpeed();
         float curSpeed = speed();
 
-        if (shakingTicks > 0 || remainDistance < maxSpeed * ShipConfig.brakingTime / 3 || getFuel() <= 0) {
+        if (shakingTicks > 0 || curSpeed > maxSpeed || remainDistance < maxSpeed * ShipConfig.brakingTime / 3 || getFuel() <= 0) {
             speed.setValue(ShipConfig.brakeTick(curSpeed, maxSpeed));
             setChanged();
         } else if (curSpeed < maxSpeed) {
@@ -222,14 +271,31 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     private void recountMaxSpeed() {
         if (level == null || level.isClientSide) return;
 
+        Direction direction = controller.getBlock(level).map(c -> c.getBlockState()
+                .getValue(BlockStateProperties.HORIZONTAL_FACING)).orElse(getBlockState()
+                .getValue(BlockStateProperties.HORIZONTAL_FACING));
+
         HashMap<EngineNozzleBlock, AtomicInteger> counter = new HashMap<>();
+        HashMap<EngineNozzleBlock, AtomicInteger> counterLimited = new HashMap<>();
+        boolean stand = stand();
         for (BlockPos pos : new HashSet<>(nuzzles)) {
             BlockState blockState = level.getBlockState(pos);
-            if (blockState.getBlock() instanceof EngineNozzleBlock nuzzle) {
+            if (blockState.getBlock() instanceof EngineNozzleBlock nuzzle &&
+                    blockState.getValue(EngineNozzleBlock.FACING) == direction) {
+
+                level.setBlock(pos, blockState.setValue(EngineNozzleBlock.LIT, !stand), 3);
+
                 if (!counter.containsKey(nuzzle)) {
                     counter.put(nuzzle, new AtomicInteger(1));
                 } else {
                     counter.get(nuzzle).incrementAndGet();
+                }
+                if (level.getBlockState(pos.relative(direction)).isAir()) {
+                    if (!counterLimited.containsKey(nuzzle)) {
+                        counterLimited.put(nuzzle, new AtomicInteger(1));
+                    } else {
+                        counterLimited.get(nuzzle).incrementAndGet();
+                    }
                 }
             } else {
                 nuzzles.remove(pos);
@@ -237,8 +303,10 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         }
 
         double speed = counter.entrySet().stream().mapToDouble(pair -> Math.sqrt(pair.getValue().get()) * pair.getKey().getMaxSpeed()).sum();
+        double limitedSpeed = counterLimited.entrySet().stream().mapToDouble(pair -> Math.sqrt(pair.getValue().get()) * pair.getKey().getMaxSpeed()).sum();
         float last = maxSpeed();
         maxSpeed.setValue((float) speed);
+        maxLimitedSpeed.setValue((float) limitedSpeed);
         if (last != maxSpeed()) {
             shakeEngines();
             setChanged();
@@ -246,12 +314,13 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
     private void shakeEngines() {
-        shakingTicks += SHAKING_TICKS;
+        shakingTicks = SHAKING_TICKS;
     }
 
 
     public long getFuel() {
-        return tank.getBlock(level).map(tankBlockEntity -> tankBlockEntity.getFluidContainer().getFirstFluid().getFluidAmount()).orElse(0L);
+        return tank.getBlock(level).map(tankBlockEntity -> tankBlockEntity.getFluidContainer()
+                .getFirstFluid().getFluidAmount()).orElse(0L);
     }
 
     public long getFuelCapacity() {
@@ -272,18 +341,20 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
     public Component getRequired(int distance) {
-        float v = ShipConfig.kmToMb(distance);
+        float v = recipe != null ? recipe.kmToMb(distance) : Float.POSITIVE_INFINITY;
         long fuel = FluidConstants.toMillibuckets(getFuel());
         return Component.translatable("tooltip.asteroid_drifter.fuel_required", fuel, String.format("%.1f", v)).withStyle(v > fuel ? ChatFormatting.RED : ChatFormatting.GRAY);
     }
 
     public boolean canLaunch(float distance) {
-        return FluidConstants.toMillibuckets(getFuel()) > ShipConfig.kmToMb(distance);
+        Debug.log("Can launch " + FluidConstants.toMillibuckets(getFuel()) + " > " + (recipe != null ? recipe.kmToMb(distance) : 1));
+        return recipe != null && FluidConstants.toMillibuckets(getFuel()) > recipe.kmToMb(distance);
     }
 
     public Component fuelConsumption() {
-        int km = 1;
-        float mb = ShipConfig.kmToMb(km);
+        if (recipe == null) return Component.empty();
+        int km = 1000;
+        float mb = recipe.consumption();
         if (mb < 0.1f) {
             km *= 1000;
             mb *= 1000;
@@ -292,11 +363,23 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
 
+    /**
+     * Max speed decreased by slagChance
+     */
+    public float maxLimitedSpeed() {
+        return maxLimitedSpeed.getValue();
+    }
 
+    /**
+     * Max speed without decreased by slagChance
+     */
     public float maxSpeed() {
         return maxSpeed.getValue();
     }
 
+    /**
+     * Current ship speed
+     */
     public float speed() {
         return speed.getValue();
     }
@@ -312,7 +395,10 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
             return true;
         }
         if (other instanceof EngineNozzleBlock) {
-            if (nuzzles.add(pos)) {
+            Direction direction = controller.getBlock(level).map(c -> c.getBlockState()
+                    .getValue(BlockStateProperties.HORIZONTAL_FACING)).orElse(getBlockState()
+                    .getValue(BlockStateProperties.HORIZONTAL_FACING));
+            if (level.getBlockState(pos).getValue(EngineNozzleBlock.FACING) == direction && nuzzles.add(pos)) {
                 recountMaxSpeed();
             }
             return true;
@@ -326,5 +412,15 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         nuzzles.clear();
         recountMaxSpeed();
         setChanged();
+    }
+
+    @Override
+    public void setChanged() {
+        quickCheckRecipe();
+        super.setChanged();
+    }
+
+    private void quickCheckRecipe() {
+        this.quickCheck.getRecipeFor(this, level).ifPresent((r) -> this.recipe = r);
     }
 }
