@@ -38,14 +38,6 @@ public final class ShipConfig {
     public static int[] ringsAmount = new int[] {2, 4, 8, 12};
 
     @ConfigEntry(
-            id = "distanceBetweenRingsMb",
-            type = EntryType.INTEGER,
-            translation = "config.drifter.distance_between_rings_mb"
-    )
-    @Comment(value = "Distance between rings in mb of fuel.", translation = "config.drifter.distance_between_rings_mb.comment")
-    public static int distanceBetweenRingsMb = 2000;
-
-    @ConfigEntry(
             id = "distanceBetweenRingsMinutes",
             type = EntryType.FLOAT,
             translation = "config.drifter.distance_between_rings_minutes"
@@ -101,14 +93,6 @@ public final class ShipConfig {
 
     public static float startSpeed() {
         return distanceBetweenRingsKm / distanceBetweenRingsMinutes;
-    }
-
-    public static float kmToMb(float km) {
-        return km * distanceBetweenRingsMb / distanceBetweenRingsKm;
-    }
-
-    public static float mbToKm(float mb) {
-        return mb * distanceBetweenRingsKm / distanceBetweenRingsMb;
     }
 
     public static float minToTick(float min) {
