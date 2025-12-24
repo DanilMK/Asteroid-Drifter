@@ -48,7 +48,7 @@ public final class ExtraUtils {
         if (level.isClientSide) return InteractionResult.SUCCESS;
         FluidHolder bucketAmount = bucketContainer.getFluids().get(0).copyHolder();
         FluidHolder tankAmount = tankContainer.getFluids().get(0).copyHolder();
-        if (bucketAmount.isEmpty() && tankAmount.isEmpty() || !tankBlock.canBeAccessed())
+        if (bucketAmount.isEmpty() && tankAmount.isEmpty() || !tankBlock.canBeAccessed(0, bucketAmount))
             return InteractionResult.SUCCESS;
 
         boolean tankToBucket = bucketAmount.isEmpty();
