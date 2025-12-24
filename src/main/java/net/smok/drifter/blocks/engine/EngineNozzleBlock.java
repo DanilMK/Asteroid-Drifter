@@ -2,27 +2,36 @@ package net.smok.drifter.blocks.engine;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.phys.Vec3;
 import net.smok.drifter.blocks.ShipBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class EngineNozzleBlock extends DirectionalBlock implements ShipBlock {
 
+
+    public static final Property<Boolean> LIT = BlockStateProperties.LIT;
     private final float maxSpeed;
 
     public EngineNozzleBlock(Properties properties, float maxSpeed) {
         super(properties);
         this.maxSpeed = maxSpeed;
-        registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
+        registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH).setValue(LIT, false));
     }
 
     @Nullable
@@ -43,6 +52,7 @@ public class EngineNozzleBlock extends DirectionalBlock implements ShipBlock {
 
     protected void createBlockStateDefinition(StateDefinition.@NotNull Builder<Block, BlockState> builder) {
         builder.add(FACING);
+        builder.add(LIT);
     }
 
 
@@ -52,5 +62,25 @@ public class EngineNozzleBlock extends DirectionalBlock implements ShipBlock {
 
     public float getMaxSpeed() {
         return maxSpeed;
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (state.getValue(LIT)) {
+            Direction direction = state.getValue(FACING);
+            Vec3 particlePoint = pos.relative(direction).getCenter();
+            Vec3i directionNormal = direction.getNormal();
+            float v = random.nextFloat();
+
+            level.addParticle(ParticleTypes.DRAGON_BREATH,
+                    particlePoint.x + random.nextFloat() - 0.5,
+                    particlePoint.y + random.nextFloat() - 0.5,
+                    particlePoint.z + random.nextFloat() - 0.5,
+                    directionNormal.getX() * 2 + (v - 0.5) / 2,
+                    directionNormal.getY() * 2 + (v - 0.5) / 2,
+                    directionNormal.getZ() * 2 + (v - 0.5) / 2
+            );
+
+        }
     }
 }
