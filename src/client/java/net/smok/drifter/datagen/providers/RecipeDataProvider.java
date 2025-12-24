@@ -3,7 +3,6 @@ package net.smok.drifter.datagen.providers;
 import earth.terrarium.adastra.common.registry.ModFluids;
 import earth.terrarium.adastra.common.registry.ModItems;
 import earth.terrarium.botarium.common.fluid.utils.FluidIngredient;
-import earth.terrarium.botarium.common.fluid.utils.QuantifiedFluidIngredient;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
@@ -15,6 +14,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.smok.drifter.datagen.builders.FuelRecipeBuilder;
 import net.smok.drifter.datagen.builders.MoonFarmRecipeBuilder;
 import net.smok.drifter.registries.DrifterBlocks;
@@ -64,11 +64,11 @@ public class RecipeDataProvider extends RecipeProvider {
         registerSapling(writer, Blocks.OAK_SAPLING, "oak");
         registerSapling(writer, Blocks.DARK_OAK_SAPLING, "dark_oak");
 
-        FuelRecipeBuilder.of(new QuantifiedFluidIngredient(FluidIngredient.of(ModFluids.OIL.get()), 81*125L), 1)
+        FuelRecipeBuilder.of(FluidIngredient.of(ModFluids.OIL.get()), BlockStateProvider.simple(Blocks.SNOW_BLOCK),2.5f, 0.03f)
                 .save(writer, new ResourceLocation(Values.MOD_ID, "oil"));
-        FuelRecipeBuilder.of(new QuantifiedFluidIngredient(FluidIngredient.of(ModFluids.FUEL.get()), 81*5L), 1)
+        FuelRecipeBuilder.of(FluidIngredient.of(ModFluids.FUEL.get()), BlockStateProvider.simple(Blocks.SNOW_BLOCK), 2f, 0.015f)
                 .save(writer, new ResourceLocation(Values.MOD_ID, "fuel"));
-        FuelRecipeBuilder.of(new QuantifiedFluidIngredient(FluidIngredient.of(ModFluids.CRYO_FUEL.get()), 81L), 1)
+        FuelRecipeBuilder.of(FluidIngredient.of(ModFluids.CRYO_FUEL.get()), BlockStateProvider.simple(Blocks.SNOW_BLOCK), 2f, 0.005f)
                 .save(writer, new ResourceLocation(Values.MOD_ID, "cryo_fuel"));
     }
 

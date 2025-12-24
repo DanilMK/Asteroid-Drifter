@@ -1,10 +1,14 @@
 {
   "type": "asteroid_drifter:fuel",
+  "consumption": 2.5,
   "fluid": {
-    "ingredient": {
-      "fluid": "ad_astra:oil"
-    },
-    "millibuckets": 125
+    "fluid": "ad_astra:oil"
   },
-  "fuel_amount": 1
+  "slagChance": 0.03,
+  "slag_block": {
+    "type": "minecraft:simple_state_provider",
+    "state": {
+      "Name": "minecraft:snow_block"
+    }
+  }
 }

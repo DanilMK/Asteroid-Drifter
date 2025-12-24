@@ -1,8 +1,9 @@
 package net.smok.drifter.datagen.builders;
 
-import earth.terrarium.botarium.common.fluid.utils.QuantifiedFluidIngredient;
+import earth.terrarium.botarium.common.fluid.utils.FluidIngredient;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.recipies.FuelRecipe;
 
@@ -20,7 +21,7 @@ public class FuelRecipeBuilder extends CodecRecipeBuilder<EnginePanelBlockEntity
         super.save(finishedRecipeConsumer, new ResourceLocation(recipeId.getNamespace(), "fuel/" + recipeId.getPath()));
     }
 
-    public static FuelRecipeBuilder of(QuantifiedFluidIngredient fuelFluid, int fuelAmount) {
-        return new FuelRecipeBuilder(id -> new FuelRecipe(id, fuelFluid, fuelAmount));
+    public static FuelRecipeBuilder of(FluidIngredient fuelFluid, BlockStateProvider slugBlock, float fuelAmount, float slag) {
+        return new FuelRecipeBuilder(id -> new FuelRecipe(id, fuelFluid, slugBlock, fuelAmount, slag));
     }
 }

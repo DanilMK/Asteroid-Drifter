@@ -116,5 +116,26 @@ public abstract class SavedDataSlot<T> {
         };
     }
 
+    public static SavedDataSlot<Float> floatValue(String name, float min, float max) {
+        return new SavedDataSlot<>(0f) {
+            @Override
+            public void load(CompoundTag compoundTag) {
+                if (compoundTag.contains(name, Tag.TAG_FLOAT)) setValue(compoundTag.getFloat(name));
+            }
+
+            @Override
+            public void save(CompoundTag compoundTag) {
+                compoundTag.putFloat(name, getValue());
+            }
+
+            @Override
+            public SavedDataSlot<Float> setValue(Float value) {
+                if (value < min) value = min;
+                if (value > max) value = max;
+                return super.setValue(value);
+            }
+        };
+    }
+
 
 }
