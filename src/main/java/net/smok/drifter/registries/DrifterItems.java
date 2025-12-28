@@ -12,10 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.*;
 import net.smok.drifter.blocks.engine.EngineNozzleBlock;
 import net.smok.drifter.items.ConfigureTool;
 import net.smok.drifter.items.FuelTank;
@@ -36,6 +33,9 @@ public final class DrifterItems {
 
     public static final RegistryEntry<Item> MARTIAN_MANDRAKE = ITEMS.register("martian_mandrake", () ->
             new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(4).build())));
+
+    public static final RegistryEntry<Item> MARTIAN_MANDRAKE_SPAWN_EGG = ITEMS.register("martian_mandrake_spawn_egg", () ->
+            new SpawnEggItem(DrifterEntities.MARTIAN_MANDRAKE.get(), Integer.MAX_VALUE, 0, new Item.Properties()));
 
     public static final RegistryEntry<BlockItem> MOON_FARM = ITEMS.register("moon_farm", () ->
             new BlockItem(DrifterBlocks.MOON_FARM.get(), new Item.Properties()));
