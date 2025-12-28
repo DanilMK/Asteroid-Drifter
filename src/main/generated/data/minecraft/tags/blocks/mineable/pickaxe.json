@@ -14,6 +14,9 @@
     "asteroid_drifter:ostrum_engine_nuzzle",
     "asteroid_drifter:calorite_engine_nuzzle",
     "asteroid_drifter:moon_farm",
-    "asteroid_drifter:ship_structure_block"
+    "asteroid_drifter:ship_structure_block",
+    "asteroid_drifter:oil_sludge",
+    "asteroid_drifter:cryo_sludge",
+    "asteroid_drifter:bio_sludge"
   ]
 }

@@ -34,7 +34,10 @@ public class BlockTagsProvider extends FabricTagProvider.BlockTagProvider {
                 DrifterBlocks.OSTRUM_NUZZLE_BLOCK.get(),
                 DrifterBlocks.CALORITE_NUZZLE_BLOCK.get(),
                 DrifterBlocks.MOON_FARM.get(),
-                DrifterBlocks.SHIP_STRUCTURE_BLOCK.get()
+                DrifterBlocks.SHIP_STRUCTURE_BLOCK.get(),
+                DrifterBlocks.OIL_SLUDGE.get(),
+                DrifterBlocks.CRYO_SLUDGE.get(),
+                DrifterBlocks.BIO_SLUDGE.get()
         );
 
         getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_AXE).add(

@@ -8,7 +8,7 @@
   "slag_block": {
     "type": "minecraft:simple_state_provider",
     "state": {
-      "Name": "minecraft:snow_block"
+      "Name": "asteroid_drifter:cryo_sludge"
     }
   }
 }

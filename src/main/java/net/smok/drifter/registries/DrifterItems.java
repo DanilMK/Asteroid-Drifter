@@ -113,6 +113,18 @@ public final class DrifterItems {
     public static final RegistryEntry<BlockItem> CALORITE_ENGINE_NUZZLE = ITEMS.register("calorite_engine_nuzzle", () ->
             new TooltipBlockItem(DrifterBlocks.CALORITE_NUZZLE_BLOCK.get(), maxSpeedTooltip(DrifterBlocks.CALORITE_NUZZLE_BLOCK),new Item.Properties()));
 
+
+    public static final RegistryEntry<Item> OIL_SLUDGE = ITEMS.register("oil_sludge",
+            () -> new BlockItem(DrifterBlocks.OIL_SLUDGE.get(), new Item.Properties()));
+
+    public static final RegistryEntry<Item> CRYO_SLUDGE = ITEMS.register("cryo_sludge",
+            () -> new BlockItem(DrifterBlocks.CRYO_SLUDGE.get(), new Item.Properties()));
+
+    public static final RegistryEntry<Item> BIO_SLUDGE = ITEMS.register("bio_sludge",
+            () -> new BlockItem(DrifterBlocks.BIO_SLUDGE.get(), new Item.Properties()));
+
+
+
     public static final Supplier<CreativeModeTab> TAB =
             new ResourcefulCreativeTab(new ResourceLocation(Values.MOD_ID, "main"))
                     .setItemIcon(MEDIUM_ASTEROID).addRegistry(ITEMS).build();

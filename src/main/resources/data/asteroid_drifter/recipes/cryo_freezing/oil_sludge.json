@@ -1,0 +1,12 @@
+{
+  "type": "ad_astra:cryo_freezing",
+  "cookingtime": 120,
+  "energy": 40,
+  "ingredient": {
+    "item": "asteroid_drifter:oil_sludge"
+  },
+  "result": {
+    "fluid": "ad_astra:oil",
+    "millibuckets": 100
+  }
+}

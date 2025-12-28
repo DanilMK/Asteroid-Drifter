@@ -40,7 +40,10 @@ public class BlocksLootTableProvider extends FabricBlockLootTableProvider {
             DrifterBlocks.SHIP_STRUCTURE_BLOCK,
             DrifterBlocks.MOON_FARM,
             DrifterBlocks.ALERT_PANEL_BLOCK,
-            DrifterBlocks.ALERT_LAMP
+            DrifterBlocks.ALERT_LAMP,
+            DrifterBlocks.OIL_SLUDGE,
+            DrifterBlocks.CRYO_SLUDGE,
+            DrifterBlocks.BIO_SLUDGE
     ).map(RegistryEntry::get).collect(Collectors.toSet());
 
     public BlocksLootTableProvider(FabricDataOutput output) {

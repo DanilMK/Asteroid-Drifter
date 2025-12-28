@@ -6,7 +6,9 @@ import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistry;
 import earth.terrarium.adastra.common.blocks.lamps.IndustrialLampBlock;
 import earth.terrarium.botarium.common.registry.RegistryHelpers;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -28,6 +30,19 @@ import org.jetbrains.annotations.NotNull;
 
 public final class DrifterBlocks {
 
+
+    /* Reminder
+    1. Block
+    2. Item
+    3. Block Entity
+    4. Lang's translation
+    5. Texture
+    6. Model
+    7. BlockState
+    8. Mineable Tag
+    9. Loot Table
+    10. Recipe
+     */
 
     public static final ResourcefulRegistry<Block> BLOCKS = ResourcefulRegistries.create(BuiltInRegistries.BLOCK, Values.MOD_ID);
     public static final ResourcefulRegistry<BlockEntityType<?>> BLOCK_ENTITY_TYPES = ResourcefulRegistries.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, Values.MOD_ID);
@@ -162,6 +177,28 @@ public final class DrifterBlocks {
 
     public static final RegistryEntry<BlockEntityType<AlertLampBlockEntity>> ALERT_LAMP_BLOCK_ENTITY =
             BLOCK_ENTITY_TYPES.register("alert_lamp", () -> RegistryHelpers.createBlockEntityType(AlertLampBlockEntity::new, ALERT_LAMP.get()));
+
+
+    public static final RegistryEntry<Block> OIL_SLUDGE = BLOCKS.register("oil_sludge",
+            () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK)
+                    .instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+            )
+    );
+
+    public static final RegistryEntry<Block> CRYO_SLUDGE = BLOCKS.register("cryo_sludge",
+            () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.ICE)
+                    .instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+            )
+    );
+
+    public static final RegistryEntry<Block> BIO_SLUDGE = BLOCKS.register("bio_sludge",
+            () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.PODZOL)
+                    .instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+            )
+    );
 
 
 }
