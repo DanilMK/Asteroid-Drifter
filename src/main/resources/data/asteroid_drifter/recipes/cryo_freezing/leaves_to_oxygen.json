@@ -3,7 +3,7 @@
   "cookingtime": 20,
   "energy": 25,
   "ingredient": {
-    "tag": "c:leaves"
+    "tag": "asteroid_drifter:leaves"
   },
   "result": {
     "fluid": "ad_astra:oxygen",

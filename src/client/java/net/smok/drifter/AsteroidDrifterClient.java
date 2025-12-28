@@ -26,7 +26,7 @@ import net.smok.drifter.blocks.structure.ShipStructureBlockScreen;
 public class AsteroidDrifterClient implements ClientModInitializer {
 
 	private static final Block[] TRANSPARENT_BLOCKS = new Block[] {
-			DrifterBlocks.ALERT_LUMP.get(),
+			DrifterBlocks.ALERT_LAMP.get(),
 			DrifterBlocks.CARROTS.get(),
 			DrifterBlocks.POTATOES.get(),
 			DrifterBlocks.FROST_WHEAT.get(),

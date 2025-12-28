@@ -3,13 +3,11 @@ package net.smok.drifter.datagen.providers;
 import earth.terrarium.adastra.common.registry.ModFluids;
 import earth.terrarium.adastra.common.registry.ModItems;
 import earth.terrarium.botarium.common.fluid.utils.FluidIngredient;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.PackOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
@@ -18,14 +16,15 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import net.smok.drifter.datagen.builders.FuelRecipeBuilder;
 import net.smok.drifter.datagen.builders.MoonFarmRecipeBuilder;
 import net.smok.drifter.registries.DrifterBlocks;
+import net.smok.drifter.registries.DrifterTags;
 import net.smok.drifter.registries.Values;
 
 import java.util.function.Consumer;
 
-public class RecipeDataProvider extends RecipeProvider {
+public class RecipeDataProvider extends FabricRecipeProvider {
 
 
-    public RecipeDataProvider(PackOutput output) {
+    public RecipeDataProvider(FabricDataOutput output) {
         super(output);
     }
 
@@ -51,8 +50,8 @@ public class RecipeDataProvider extends RecipeProvider {
 
         MoonFarmRecipeBuilder.of(DrifterBlocks.MARTIAN_MANDRAKE.get(), Ingredient.of(Items.FARMLAND, ModItems.MARS_SAND.get()),
                 MoonFarmRecipeBuilder.nutrientOf(0.25f, 0.5f, 81 * 250L, FluidTags.WATER),
-                MoonFarmRecipeBuilder.nutrientOf(0.25f, 0.5f, TagKey.create(BuiltInRegistries.ITEM.key(), new ResourceLocation(Values.MOD_ID, "mandrake_foods"))),
-                MoonFarmRecipeBuilder.nutrientOf(0.25f, 0.5f, TagKey.create(BuiltInRegistries.ITEM.key(), new ResourceLocation(Values.MOD_ID, "mandrake_foods")))
+                MoonFarmRecipeBuilder.nutrientOf(0.25f, 0.5f, DrifterTags.MANDRAKE_FOODS),
+                MoonFarmRecipeBuilder.nutrientOf(0.25f, 0.5f, DrifterTags.MANDRAKE_FOODS)
         ).save(writer, new ResourceLocation(Values.MOD_ID, "martian_mandrake"));
 
 

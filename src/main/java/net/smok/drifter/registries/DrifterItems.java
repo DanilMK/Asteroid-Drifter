@@ -48,7 +48,7 @@ public final class DrifterItems {
                     .stacksTo(1)));
 
     public static final RegistryEntry<Item> ALERT_LAMP = ITEMS.register("alert_lamp", () ->
-            new BlockItem(DrifterBlocks.ALERT_LUMP.get(), new Item.Properties()));
+            new BlockItem(DrifterBlocks.ALERT_LAMP.get(), new Item.Properties()));
 
     public static final RegistryEntry<Item> SHIP_CONTROLLER = ITEMS.register("ship_controller", () ->
             new BlockItem(DrifterBlocks.SHIP_CONTROLLER.get(), new Item.Properties()));

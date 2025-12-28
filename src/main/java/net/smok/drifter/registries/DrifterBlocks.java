@@ -153,7 +153,7 @@ public final class DrifterBlocks {
 
 
     // Alert lamp
-    public static final RegistryEntry<Block> ALERT_LUMP = BLOCKS.register("alert_lamp",
+    public static final RegistryEntry<Block> ALERT_LAMP = BLOCKS.register("alert_lamp",
             () -> new AlertLampBlock(new AlertLampBlock.LampShape(
                     IndustrialLampBlock.NORTH_SHAPE, IndustrialLampBlock.EAST_SHAPE, IndustrialLampBlock.SOUTH_SHAPE,
                     IndustrialLampBlock.WEST_SHAPE, IndustrialLampBlock.UP_SHAPE_X, IndustrialLampBlock.UP_SHAPE_Z,
@@ -161,7 +161,7 @@ public final class DrifterBlocks {
                     steelProperties().lightLevel(value -> value.getValue(AlertLampBlock.COLOR) > 0 ? 7 : 0)));
 
     public static final RegistryEntry<BlockEntityType<AlertLampBlockEntity>> ALERT_LAMP_BLOCK_ENTITY =
-            BLOCK_ENTITY_TYPES.register("alert_lamp", () -> RegistryHelpers.createBlockEntityType(AlertLampBlockEntity::new, ALERT_LUMP.get()));
+            BLOCK_ENTITY_TYPES.register("alert_lamp", () -> RegistryHelpers.createBlockEntityType(AlertLampBlockEntity::new, ALERT_LAMP.get()));
 
 
 }

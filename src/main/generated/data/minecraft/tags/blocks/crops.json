@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "asteroid_drifter:frost_wheat",
+    "asteroid_drifter:martian_mandrake",
+    "asteroid_drifter:potatoes",
+    "asteroid_drifter:carrots"
+  ]
+}

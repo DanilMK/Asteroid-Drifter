@@ -1,9 +1,6 @@
 package net.smok.drifter.entities;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -12,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
-import net.smok.drifter.registries.Values;
+import net.smok.drifter.registries.DrifterTags;
 import net.smok.drifter.utils.ExtraUtils;
 
 import java.util.Optional;
@@ -41,8 +38,7 @@ public class ChestGoal extends Goal {
         Optional<BlockPos> chestOptional = BlockPos.betweenClosedStream(
                         entity.getOnPos().offset(-4, -2, -4),
                         entity.getOnPos().offset(4, 2, 4))
-                .filter(pos -> level.getBlockState(pos).is(TagKey.create(BuiltInRegistries.BLOCK.key(),
-                        new ResourceLocation(Values.MOD_ID, "mandrake_containers")))).findAny();
+                .filter(pos -> level.getBlockState(pos).is(DrifterTags.MANDRAKE_CONTAINERS)).findAny();
 
         if (chestOptional.isPresent()) {
             chestPos = chestOptional.get();
