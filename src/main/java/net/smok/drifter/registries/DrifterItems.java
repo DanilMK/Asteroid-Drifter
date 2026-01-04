@@ -124,6 +124,9 @@ public final class DrifterItems {
             () -> new BlockItem(DrifterBlocks.BIO_SLUDGE.get(), new Item.Properties()));
 
 
+    public static final RegistryEntry<BlockItem> DETECTOR_BLOCK = ITEMS.register("detector",
+            () -> new TooltipBlockItem(DrifterBlocks.DETECTOR_BLOCK.get(), Component.translatable("tooltip.asteroid_drifter.detector"), new Item.Properties()));
+
 
     public static final Supplier<CreativeModeTab> TAB =
             new ResourcefulCreativeTab(new ResourceLocation(Values.MOD_ID, "main"))

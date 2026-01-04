@@ -11,13 +11,11 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
-import net.smok.drifter.menus.AlertSystemMenu;
-import net.smok.drifter.menus.EngineMenu;
+import net.smok.drifter.blocks.alert.DetectorBlockEntity;
+import net.smok.drifter.menus.*;
 import net.smok.drifter.blocks.engine.EnginePanelBlockEntity;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.menus.ShipControllerMenu;
 import net.smok.drifter.blocks.structure.ShipStructureBlockEntity;
-import net.smok.drifter.menus.ShipStructureBlockMenu;
 import org.apache.commons.lang3.function.TriFunction;
 
 public final class DrifterMenus {
@@ -30,13 +28,16 @@ public final class DrifterMenus {
             registerMenu("ship_controller_menu", ShipControllerMenu::new, ShipControllerBlockEntity.class);
 
     public static final RegistryEntry<MenuType<AlertSystemMenu>> ALERT_SYSTEM_MENU =
-            registerMenu("alert_system_menu", (id, inventory, alertSystemBlock) -> new AlertSystemMenu(id, alertSystemBlock), AlertPanelBlockEntity.class);
+            registerMenu("alert_system_menu", AlertSystemMenu::new, AlertPanelBlockEntity.class);
 
     public static final RegistryEntry<MenuType<EngineMenu>> ENGINE_MENU =
             registerMenu("engine_menu", EngineMenu::new, EnginePanelBlockEntity.class);
 
     public static final RegistryEntry<MenuType<ShipStructureBlockMenu>> SHIP_STRUCTURE_MENU =
             registerMenu("ship_structure_menu", ShipStructureBlockMenu::new, ShipStructureBlockEntity.class);
+
+    public static final RegistryEntry<MenuType<DetectorMenu>> DETECTOR_MENU =
+            registerMenu("detector", DetectorMenu::new, DetectorBlockEntity.class);
 
 
     private static <T extends AbstractContainerMenu, V extends BlockEntity> RegistryEntry<MenuType<T>> registerMenu(

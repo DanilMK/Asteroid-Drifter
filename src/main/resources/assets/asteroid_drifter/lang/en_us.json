@@ -60,6 +60,7 @@
   "block.asteroid_drifter.oil_sludge": "Oil Sludge",
   "block.asteroid_drifter.cryo_sludge": "Cryo Sludge",
   "block.asteroid_drifter.bio_sludge": "Bio Sludge",
+  "block.asteroid_drifter.detector": "Detector",
   "item.asteroid_drifter.large_asteroid": "Large Asteroid",
   "item.asteroid_drifter.large_ore_asteroid": "Large Ore Asteroid",
   "item.asteroid_drifter.medium_asteroid": "Medium Asteroid",
@@ -92,5 +93,7 @@
   "config.drifter.km_format_pattern": "Km format pattern",
   "config.drifter.km_format_pattern.comment": "Format of distance describe in all places.",
   "config.drifter.km_format_separator": "Km format separator",
-  "config.drifter.km_format_separator.comment": "Symbols represent group and decimal separators.\nFirst - group, second - decimal.\nLength must be equal 2 symbols."
+  "config.drifter.km_format_separator.comment": "Symbols represent group and decimal separators.\nFirst - group, second - decimal.\nLength must be equal 2 symbols.",
+  "alert.basic": "Alert",
+  "alert.collision": "Collision Alert"
 }

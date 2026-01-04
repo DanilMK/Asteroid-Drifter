@@ -43,7 +43,8 @@ public class BlocksLootTableProvider extends FabricBlockLootTableProvider {
             DrifterBlocks.ALERT_LAMP,
             DrifterBlocks.OIL_SLUDGE,
             DrifterBlocks.CRYO_SLUDGE,
-            DrifterBlocks.BIO_SLUDGE
+            DrifterBlocks.BIO_SLUDGE,
+            DrifterBlocks.DETECTOR_BLOCK
     ).map(RegistryEntry::get).collect(Collectors.toSet());
 
     public BlocksLootTableProvider(FabricDataOutput output) {

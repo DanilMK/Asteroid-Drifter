@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.world.level.block.Block;
 import net.smok.drifter.blocks.alert.AlertOverlay;
 import net.smok.drifter.blocks.alert.AlertSystemScreen;
+import net.smok.drifter.blocks.alert.DetectorScreen;
 import net.smok.drifter.blocks.controller.ControllerBlockRenderer;
 import net.smok.drifter.blocks.engine.TankRenderer;
 import net.smok.drifter.blocks.garden.MoonFarmRenderer;
@@ -43,6 +44,7 @@ public class AsteroidDrifterClient implements ClientModInitializer {
 		MenuScreens.register(DrifterMenus.ALERT_SYSTEM_MENU.get(), AlertSystemScreen::new);
 		MenuScreens.register(DrifterMenus.ENGINE_MENU.get(), EngineScreen::new);
 		MenuScreens.register(DrifterMenus.SHIP_STRUCTURE_MENU.get(), ShipStructureBlockScreen::new);
+		MenuScreens.register(DrifterMenus.DETECTOR_MENU.get(), DetectorScreen::new);
 
 		HudRenderCallback.EVENT.register(new AlertOverlay());
 

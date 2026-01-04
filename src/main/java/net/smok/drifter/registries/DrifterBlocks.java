@@ -6,19 +6,14 @@ import com.teamresourceful.resourcefullib.common.registry.ResourcefulRegistry;
 import earth.terrarium.adastra.common.blocks.lamps.IndustrialLampBlock;
 import earth.terrarium.botarium.common.registry.RegistryHelpers;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.smok.drifter.blocks.alert.AlertLampBlock;
-import net.smok.drifter.blocks.alert.AlertLampBlockEntity;
-import net.smok.drifter.blocks.alert.AlertPanelBlock;
-import net.smok.drifter.blocks.alert.AlertPanelBlockEntity;
+import net.smok.drifter.blocks.alert.*;
 import net.smok.drifter.blocks.controller.ShipControllerBlock;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
 import net.smok.drifter.blocks.engine.*;
@@ -179,6 +174,7 @@ public final class DrifterBlocks {
             BLOCK_ENTITY_TYPES.register("alert_lamp", () -> RegistryHelpers.createBlockEntityType(AlertLampBlockEntity::new, ALERT_LAMP.get()));
 
 
+    // Sludge
     public static final RegistryEntry<Block> OIL_SLUDGE = BLOCKS.register("oil_sludge",
             () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK)
                     .instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops()
@@ -200,5 +196,13 @@ public final class DrifterBlocks {
             )
     );
 
+
+    // Alert Detector
+    public static final RegistryEntry<DetectorBlock> DETECTOR_BLOCK = BLOCKS.register("detector",
+            () -> new DetectorBlock(steelProperties()));
+
+    public static final RegistryEntry<BlockEntityType<DetectorBlockEntity>> DETECTOR_BLOCK_ENTITY =
+            BLOCK_ENTITY_TYPES.register("detector",
+                () -> RegistryHelpers.createBlockEntityType(DetectorBlockEntity::new, DETECTOR_BLOCK.get()));
 
 }

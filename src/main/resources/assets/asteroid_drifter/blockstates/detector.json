@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "asteroid_drifter:block/detector"
+    },
+    "powered=true": {
+      "model": "asteroid_drifter:block/detector_on"
+    }
+  }
+}

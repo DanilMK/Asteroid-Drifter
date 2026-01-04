@@ -37,7 +37,8 @@ public class BlockTagsProvider extends FabricTagProvider.BlockTagProvider {
                 DrifterBlocks.SHIP_STRUCTURE_BLOCK.get(),
                 DrifterBlocks.OIL_SLUDGE.get(),
                 DrifterBlocks.CRYO_SLUDGE.get(),
-                DrifterBlocks.BIO_SLUDGE.get()
+                DrifterBlocks.BIO_SLUDGE.get(),
+                DrifterBlocks.DETECTOR_BLOCK.get()
         );
 
         getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_AXE).add(
