@@ -95,5 +95,14 @@
   "config.drifter.km_format_separator": "Km format separator",
   "config.drifter.km_format_separator.comment": "Symbols represent group and decimal separators.\nFirst - group, second - decimal.\nLength must be equal 2 symbols.",
   "alert.basic": "Alert",
-  "alert.collision": "Collision Alert"
+  "alert.collision": "Collision Alert",
+  "subtitles.asteroid_drifter.hard_alarm": "Hard Alarm",
+  "subtitles.asteroid_drifter.ship_alarm": "Ship Alarm",
+  "subtitles.asteroid_drifter.venus_alarm": "Venus Alarm",
+  "subtitles.asteroid_drifter.mars_alarm": "Mars Alarm",
+  "subtitles.asteroid_drifter.earth_alarm": "Earth Alarm",
+  "subtitles.asteroid_drifter.biohazard_alarm": "Biohazard Alarm",
+  "subtitles.asteroid_drifter.siren_alarm": "Siren Alarm",
+  "subtitles.asteroid_drifter.fire_alarm": "Fire Alarm",
+  "subtitles.asteroid_drifter.galaxy_police_alarm": "Galaxy Police Alarm"
 }

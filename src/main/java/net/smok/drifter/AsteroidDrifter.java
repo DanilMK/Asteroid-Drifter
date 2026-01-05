@@ -18,6 +18,7 @@ public class AsteroidDrifter implements ModInitializer {
 		ShipEventRegistries.init();
 		ModifierRegistries.init();
 		DrifterEntities.init();
+		DrifterSounds.SOUNDS.init();
 		DrifterBlocks.BLOCKS.init();
 		DrifterItems.ITEMS.init();
 		DrifterRecipes.RECIPE_TYPES.init();
