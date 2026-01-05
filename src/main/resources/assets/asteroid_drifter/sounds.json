@@ -1,0 +1,56 @@
+{
+  "hard_alarm": {
+    "sounds": [
+      "asteroid_drifter:hard_alarm"
+    ],
+    "subtitles": "subtitles.asteroid_drifter.hard_alarm"
+  },
+  "ship_alarm": {
+    "sounds": [
+      "asteroid_drifter:ship_alarm"
+    ],
+    "subtitles": "subtitles.asteroid_drifter.ship_alarm"
+  },
+  "venus_alarm": {
+    "sounds": [
+      "asteroid_drifter:venus_alarm"
+    ],
+    "subtitles": "subtitles.asteroid_drifter.venus_alarm"
+  },
+  "mars_alarm": {
+    "sounds": [
+      "asteroid_drifter:mars_alarm"
+    ],
+    "subtitles": "subtitles.asteroid_drifter.mars_alarm"
+  },
+  "earth_alarm": {
+    "sounds": [
+      "asteroid_drifter:earth_alarm"
+    ],
+    "subtitles": "subtitles.asteroid_drifter.earth_alarm"
+  },
+  "biohazard_alarm": {
+    "sounds": [
+      "asteroid_drifter:biohazard_alarm"
+    ],
+    "subtitles": "subtitles.asteroid_drifter.biohazard_alarm"
+  },
+  "siren_alarm": {
+    "sounds": [
+      "asteroid_drifter:siren_alarm"
+    ],
+    "subtitles": "subtitles.asteroid_drifter.siren_alarm"
+  },
+  "fire_alarm": {
+    "sounds": [
+      "asteroid_drifter:fire_alarm"
+    ],
+    "subtitles": "subtitles.asteroid_drifter.fire_alarm"
+  },
+  "galaxy_police_alarm": {
+    "sounds": [
+      "asteroid_drifter:galaxy_police_alarm"
+    ],
+    "subtitles": "subtitles.asteroid_drifter.galaxy_police_alarm"
+  }
+}
