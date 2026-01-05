@@ -9,28 +9,31 @@ public interface Detector {
     void setChanged();
 
     default void setName(int alert, String name) {
-        try {
-            getAllAlerts().get(alert).setName(name);
-        } catch (IndexOutOfBoundsException ignored) {}
+        if (alert > getAllAlerts().size()) return;
+        getAllAlerts().get(alert).setName(name);
     }
 
     default void setTest(int alert, boolean test) {
-        try {
-            getAllAlerts().get(alert).setTested(test);
-        } catch (IndexOutOfBoundsException ignored) {}
+        if (alert > getAllAlerts().size()) return;
+        getAllAlerts().get(alert).setTested(test);
     }
 
     default void moveAlert(int alert, int upOrDown) {
-        try {
-            Alert change = getAllAlerts().get(alert);
-            getAllAlerts().set(alert, getAllAlerts().get(alert + upOrDown));
-            getAllAlerts().set(alert + upOrDown, change);
-        } catch (IndexOutOfBoundsException ignored) {}
+        int nextAlert = alert + upOrDown;
+        if (alert > getAllAlerts().size() || nextAlert > getAllAlerts().size() || nextAlert < 0) return;
+
+        Alert change = getAllAlerts().get(alert);
+        getAllAlerts().set(alert, getAllAlerts().get(nextAlert));
+        getAllAlerts().set(nextAlert, change);
     }
 
     default void setIcon(int alert, Icon icon) {
-        try {
-            getAllAlerts().get(alert).setIcon(icon);
-        } catch (IndexOutOfBoundsException ignored) {}
+        if (alert > getAllAlerts().size()) return;
+        getAllAlerts().get(alert).setIcon(icon);
+    }
+
+    default void setSound(int alert, AlertSound sound) {
+        if (alert > getAllAlerts().size()) return;
+        getAllAlerts().get(alert).setSound(sound);
     }
 }

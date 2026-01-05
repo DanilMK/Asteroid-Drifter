@@ -183,7 +183,7 @@ public class Icon {
     @Override
     public String toString() {
         return "Icon{" +
-                "id=" + id +
+                "id=" + getIdAsString() +
                 ", color=" + colorIndex +
                 ", paintIcon=" + paintIcon +
                 '}';

@@ -16,6 +16,7 @@ public class Alert {
     private boolean active;
     private boolean tested;
     private final SavedDataSlot<Icon> icon;
+    private final SavedDataSlot<AlertSound> sound;
 
     public Alert(Detector detector, String defaultName) {
         this(detector, Icon.ICON_PRESETS[0], defaultName);
@@ -25,6 +26,7 @@ public class Alert {
         this.detector = detector;
         this.name = Language.getInstance().getOrDefault(defaultName);
         icon = Icon.savedDataSlot(defaultIcon);
+        sound = AlertSound.savedDataSlot(AlertSound.SOUND_PRESETS[0], "sound");
     }
 
     @Contract(value = " -> new", pure = true)
@@ -76,6 +78,17 @@ public class Alert {
         return icon.getValue();
     }
 
+    public AlertSound getSound() {
+        return sound.getValue();
+    }
+
+    public void setSound(AlertSound sound) {
+        boolean equals = this.sound.getValue().equals(sound);
+        if (equals) return;
+        this.sound.setValue(sound);
+        update();
+    }
+
     public boolean isActiveOrTested() {
         return active || tested;
     }
@@ -102,6 +115,7 @@ public class Alert {
                         getValue().active = tag.getBoolean("tested");
 
                     getValue().icon.load(tag);
+                    getValue().sound.load(tag);
                 }
             }
 
@@ -111,10 +125,10 @@ public class Alert {
                 tag.putString("name", getValue().name);
                 tag.putBoolean("active", getValue().active);
                 tag.putBoolean("tested", getValue().tested);
+                getValue().sound.save(tag);
                 getValue().icon.save(tag);
                 compoundTag.put(dataName, tag);
             }
         };
     }
-
 }

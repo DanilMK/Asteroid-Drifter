@@ -10,6 +10,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.Container;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.smok.drifter.blocks.alert.AlertSound;
 import net.smok.drifter.blocks.alert.Detector;
 import net.smok.drifter.blocks.alert.Icon;
 import net.smok.drifter.registries.Values;
@@ -51,6 +52,15 @@ public final class NetworkHandler {
                         BlockEntity blockEntity = level.getBlockEntity(value1);
                         if (blockEntity instanceof Detector detector && Container.stillValidBlockEntity(blockEntity, player))
                             detector.setIcon(value2, value3);
+                    }).register();
+
+    public static final ServerBoundPackets.ServerBoundPacket3<BlockPos, Integer, AlertSound> DETECTOR_SOUND =
+            ServerBoundPackets.of(new ResourceLocation(Values.MOD_ID, "detector_sound"), ServerBoundPackets.BLOCK_POS_CODEC,
+                    ServerBoundPackets.INTEGER_CODEC, AlertSound.BYTE_CODEC,
+                    (server, player, level, value1, value2, value3) -> {
+                        BlockEntity blockEntity = level.getBlockEntity(value1);
+                        if (blockEntity instanceof Detector detector && Container.stillValidBlockEntity(blockEntity, player))
+                            detector.setSound(value2, value3);
                     }).register();
 
     public static final ServerBoundPackets.ServerBoundPacket3<BlockPos, Integer, Integer> DETECTOR_MOVE =

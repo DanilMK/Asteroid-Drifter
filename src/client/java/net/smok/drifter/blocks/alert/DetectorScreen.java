@@ -11,7 +11,6 @@ import net.smok.drifter.network.NetworkHandler;
 import net.smok.drifter.registries.Values;
 import net.smok.drifter.widgets.Sprite;
 import net.smok.drifter.widgets.StringWidget;
-import org.jetbrains.annotations.NotNull;
 
 public class DetectorScreen extends AbstractContainerScreen<DetectorMenu> {
 
@@ -42,10 +41,13 @@ public class DetectorScreen extends AbstractContainerScreen<DetectorMenu> {
 
         y += AlertDangerWidget.HEIGHT;
 
-        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(x, y, button -> editName(),
+        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(width / 2 - 90, y, button -> editName(),
                 Component.translatable("tooltip.asteroid_drifter.detector_edit_name")));
 
-        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(leftPos + imageWidth - 68, y, button -> editIcon(),
+        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(width / 2 - 30, y, button -> editSound(),
+                Component.translatable("tooltip.asteroid_drifter.detector_edit_sound")));
+
+        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(width / 2 + 30, y, button -> editIcon(),
                 Component.translatable("tooltip.asteroid_drifter.detector_edit_icon")));
 
         y += 30;
@@ -76,6 +78,12 @@ public class DetectorScreen extends AbstractContainerScreen<DetectorMenu> {
 
         x += 20;
         addRenderableWidget(AlertDisplayWidget.MINUS.createButton(x, y, button -> setMaxSignal(detector.getMaxSignal() - 1)));
+    }
+
+    private void editSound() {
+        minecraft.setScreen(new AlertSoundEditScreen(this, alert.getSound(), s ->
+                ClientPlayNetworking.send(NetworkHandler.DETECTOR_SOUND.getId(),
+                        NetworkHandler.DETECTOR_SOUND.createPacket(detector.getBlockPos(), 0, s).getData())));
     }
 
     private void editName() {
@@ -121,12 +129,4 @@ public class DetectorScreen extends AbstractContainerScreen<DetectorMenu> {
         BACKGROUND_SPRITE.draw(guiGraphics, leftPos, topPos);
     }
 
-    private int parseInt(@NotNull String s) {
-        if (s.isEmpty() || s.isBlank()) return 0;
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
-    }
 }
