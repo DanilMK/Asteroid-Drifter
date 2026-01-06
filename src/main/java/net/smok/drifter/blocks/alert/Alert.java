@@ -112,7 +112,7 @@ public class Alert {
                         getValue().active = tag.getBoolean("active");
 
                     if (tag.contains("tested"))
-                        getValue().active = tag.getBoolean("tested");
+                        getValue().tested = tag.getBoolean("tested");
 
                     getValue().icon.load(tag);
                     getValue().sound.load(tag);
