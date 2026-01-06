@@ -3,7 +3,7 @@ package net.smok.drifter.widgets;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.smok.drifter.blocks.alert.AlertDisplayWidget;
+import net.smok.drifter.blocks.alert.AlertDisplay;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,15 +37,15 @@ public abstract class EditScreen extends Screen {
     }
 
     protected void createLabel() {
-        addRenderableOnly(new StringWidget(leftPos + 8, topPos + 8, background.width(), 10, font, title, StringWidget.Position.LEFT_DOWN));
+        addRenderableOnly(new StringWidget(leftPos + 4, topPos + 4, background.width() - 8, 10, font, title, StringWidget.Position.CENTER));
     }
 
     protected void createCancelButton() {
-        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(leftPos + background.width() - 8 - AlertDisplayWidget.BUTTON.width(), topPos + background.height() - 26, button -> this.cancel(), Component.translatable("gui.cancel")));
+        addRenderableWidget(AlertDisplay.BUTTON.createButton(leftPos + background.width() - 8 - AlertDisplay.BUTTON.width(), topPos + background.height() - 28, button -> this.cancel(), Component.translatable("gui.cancel")));
     }
 
     protected void createDoneButton() {
-        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(leftPos + 8, topPos + background.height() - 26, button -> this.done(), Component.translatable("gui.done")));
+        addRenderableWidget(AlertDisplay.BUTTON.createButton(leftPos + 8, topPos + background.height() - 28, button -> this.done(), Component.translatable("gui.done")));
     }
 
 

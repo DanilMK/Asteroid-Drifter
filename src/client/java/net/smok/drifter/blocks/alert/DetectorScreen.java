@@ -4,17 +4,15 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.smok.drifter.menus.DetectorMenu;
 import net.smok.drifter.network.NetworkHandler;
-import net.smok.drifter.registries.Values;
 import net.smok.drifter.widgets.Sprite;
 import net.smok.drifter.widgets.StringWidget;
 
 public class DetectorScreen extends AbstractContainerScreen<DetectorMenu> {
 
-    public static final Sprite BACKGROUND_SPRITE = Sprite.of(new ResourceLocation(Values.MOD_ID, "textures/gui/alert/alert_system_gui.png"), 184, 201);
+    public static final Sprite BACKGROUND_SPRITE = AlertDisplay.BACKGROUND;
     private final DetectorBlockEntity detector;
     private final Alert alert;
 
@@ -30,54 +28,55 @@ public class DetectorScreen extends AbstractContainerScreen<DetectorMenu> {
     protected void init() {
         super.init();
 
-        int x = leftPos + 8;
-        int y = topPos + 10;
+        int y = topPos + 4;
 
-        addRenderableWidget(new StringWidget(leftPos, y, imageWidth, 10, font, title, StringWidget.Position.CENTER));
+        addRenderableOnly(new StringWidget(leftPos + 4, topPos + 4, imageWidth - 8, 10, font, title, StringWidget.Position.CENTER));
 
-        y += 14;
+        y += 16;
 
-        addRenderableWidget(new AlertDisplayWidget(x, y, alert, font, this::setTest));
+        addRenderableWidget(new AlertDisplayWidget(leftPos + imageWidth / 2 - 80, y, alert, font, detector.getBlockPos(), 0));
 
-        y += AlertDangerWidget.HEIGHT;
+        y += 24;
 
-        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(width / 2 - 90, y, button -> editName(),
+        addRenderableWidget(AlertDisplay.BUTTON.createButton(width / 2 - 90, y, button -> editName(),
                 Component.translatable("tooltip.asteroid_drifter.detector_edit_name")));
 
-        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(width / 2 - 30, y, button -> editSound(),
+        addRenderableWidget(AlertDisplay.BUTTON.createButton(width / 2 - 30, y, button -> editSound(),
                 Component.translatable("tooltip.asteroid_drifter.detector_edit_sound")));
 
-        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(width / 2 + 30, y, button -> editIcon(),
+        addRenderableWidget(AlertDisplay.BUTTON.createButton(width / 2 + 30, y, button -> editIcon(),
                 Component.translatable("tooltip.asteroid_drifter.detector_edit_icon")));
 
         y += 30;
 
-        addRenderableOnly(new StringWidget(leftPos + 8, y, 60, 10, font, Component.translatable("tooltip.asteroid_drifter.detector_min"), StringWidget.Position.CENTER_DOWN));
-        addRenderableOnly(new StringWidget(leftPos + imageWidth - 68, y, 60, 10, font, Component.translatable("tooltip.asteroid_drifter.detector_max"), StringWidget.Position.CENTER_DOWN));
+        addRenderableOnly(new StringWidget(leftPos + 16, y, 60, 10, font, Component.translatable("tooltip.asteroid_drifter.detector_min"), StringWidget.Position.CENTER_DOWN));
+        addRenderableOnly(new StringWidget(leftPos + imageWidth - 76, y, 60, 10, font, Component.translatable("tooltip.asteroid_drifter.detector_max"), StringWidget.Position.CENTER_DOWN));
 
         y += 10;
 
-        addRenderableWidget(AlertDisplayWidget.PLUS.createButton(x, y, button -> setMinSignal(detector.getMinSignal() + 1)));
+        int x = leftPos + 16;
+
+        addRenderableWidget(AlertDisplay.PLUS.createButton(x, y, button -> setMinSignal(detector.getMinSignal() + 1)));
 
         x += 20;
 
-        addRenderableOnly(AlertDisplayWidget.EMPTY.createStringWidget(x, y, font, StringWidget.Position.CENTER,
+        addRenderableOnly(AlertDisplay.EMPTY.createStringWidget(x, y, font, StringWidget.Position.CENTER,
                 () -> Component.literal(String.valueOf(detector.getMinSignal()))));
 
         x += 20;
-        addRenderableWidget(AlertDisplayWidget.MINUS.createButton(x, y, button -> setMinSignal(detector.getMinSignal() - 1)));
+        addRenderableWidget(AlertDisplay.MINUS.createButton(x, y, button -> setMinSignal(detector.getMinSignal() - 1)));
 
-        x = leftPos + imageWidth - 8 - 60;
+        x = leftPos + imageWidth - 16 - 60;
 
-        addRenderableWidget(AlertDisplayWidget.PLUS.createButton(x, y, button -> setMaxSignal(detector.getMaxSignal() + 1)));
+        addRenderableWidget(AlertDisplay.PLUS.createButton(x, y, button -> setMaxSignal(detector.getMaxSignal() + 1)));
 
         x += 20;
 
-        addRenderableOnly(AlertDisplayWidget.EMPTY.createStringWidget(x, y, font, StringWidget.Position.CENTER,
+        addRenderableOnly(AlertDisplay.EMPTY.createStringWidget(x, y, font, StringWidget.Position.CENTER,
                 () -> Component.literal(String.valueOf(detector.getMaxSignal()))));
 
         x += 20;
-        addRenderableWidget(AlertDisplayWidget.MINUS.createButton(x, y, button -> setMaxSignal(detector.getMaxSignal() - 1)));
+        addRenderableWidget(AlertDisplay.MINUS.createButton(x, y, button -> setMaxSignal(detector.getMaxSignal() - 1)));
     }
 
     private void editSound() {

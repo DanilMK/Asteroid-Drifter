@@ -17,7 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.smok.drifter.widgets.EditScreen;
-import net.smok.drifter.widgets.Sprite;
 import net.smok.drifter.widgets.StringWidget;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +33,7 @@ public class AlertIconEditScreen extends EditScreen {
 
 
     public AlertIconEditScreen(@Nullable Screen parent, Icon icon, Consumer<Icon> onDone) {
-        super(Component.translatable("tooltip.asteroid_drifter.detector_edit_icon"), parent, Sprite.ofName("alert/alert_system_gui.png", 184, 201));
+        super(Component.translatable("tooltip.asteroid_drifter.detector_edit_icon"), parent, AlertDisplay.BACKGROUND);
         this.icon = new Icon(icon);
         this.onDone = onDone;
     }
@@ -49,7 +48,7 @@ public class AlertIconEditScreen extends EditScreen {
         int yTop = topPos + 20;
 
 
-        EditBox idInput = addRenderableWidget(new EditBox(font, xLeft, yTop, imageWidth() - 16, 20, title));
+        EditBox idInput = addRenderableWidget(new EditBox(font, xLeft + 2, yTop, imageWidth() - 20, 20, title));
         idInput.setMaxLength(255);
         idInput.setFilter(ResourceLocation::isValidResourceLocation);
         idInput.setValue(icon.getIdAsString());
@@ -62,8 +61,8 @@ public class AlertIconEditScreen extends EditScreen {
 
         int yIconPos = yTop;
         addRenderableOnly((guiGraphics, mouseX, mouseY, partialTick) -> {
-            AlertDisplayWidget.EMPTY.draw(guiGraphics, xRight - 20, yIconPos);
-            AlertDisplayWidget.renderIcon(guiGraphics, icon, xRight - 19, yIconPos + 1);
+            AlertDisplay.EMPTY.draw(guiGraphics, xRight - 20, yIconPos);
+            AlertDisplay.renderIcon(guiGraphics, icon, xRight - 19, yIconPos + 1);
         });
 
 
@@ -102,7 +101,7 @@ public class AlertIconEditScreen extends EditScreen {
 
                 addRenderableWidget(new Slot(x, y,
                         () -> icon.equals(iconPreset),
-                        (guiGraphics, integer, integer2) -> AlertDisplayWidget.renderIcon(guiGraphics, iconPreset, x + 1, y + 1),
+                        (guiGraphics, integer, integer2) -> AlertDisplay.renderIcon(guiGraphics, iconPreset, x + 1, y + 1),
                         () -> {
                             idInput.setValue(iconPreset.getId().toString());
                             icon.setId(iconPreset.getId());
@@ -121,10 +120,6 @@ public class AlertIconEditScreen extends EditScreen {
         super.done();
     }
 
-    @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-    }
 
     private class Checkbox extends AbstractButton {
 
@@ -185,8 +180,8 @@ public class AlertIconEditScreen extends EditScreen {
 
         @Override
         protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            if (isSelected.get()) AlertDisplayWidget.BLANK_PRESS.draw(guiGraphics, getX(), getY());
-            else AlertDisplayWidget.BLANK.draw(guiGraphics, getX(), getY());
+            if (isSelected.get()) AlertDisplay.BLANK_PRESS.draw(guiGraphics, getX(), getY());
+            else AlertDisplay.BLANK.draw(guiGraphics, getX(), getY());
             renderItem.accept(guiGraphics, getX(), getY());
             if (isHovered()) {
                 RenderSystem.enableBlend();

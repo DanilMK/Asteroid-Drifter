@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.smok.drifter.widgets.EditScreen;
-import net.smok.drifter.widgets.Sprite;
 import net.smok.drifter.widgets.StringWidget;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.Nullable;
@@ -26,10 +25,10 @@ import java.util.function.Supplier;
 public class AlertSoundEditScreen extends EditScreen {
 
     public static final List<TriConsumer<GuiGraphics, Integer, Integer>> RENDER_SLOTS = List.of(
-            (guiGraphics, x, y) -> AlertDisplayWidget.renderIcon(guiGraphics, Icon.ICON_PRESETS[0], x + 1, y + 1),
-            (guiGraphics, x, y) -> AlertDisplayWidget.renderIcon(guiGraphics, Icon.ICON_PRESETS[1], x + 1, y + 1),
-            (guiGraphics, x, y) -> AlertDisplayWidget.renderIcon(guiGraphics, Icon.ICON_PRESETS[2], x + 1, y + 1),
-            (guiGraphics, x, y) -> AlertDisplayWidget.renderIcon(guiGraphics, Icon.ICON_PRESETS[3], x + 1, y + 1),
+            (guiGraphics, x, y) -> AlertDisplay.renderIcon(guiGraphics, Icon.ICON_PRESETS[0], x + 1, y + 1),
+            (guiGraphics, x, y) -> AlertDisplay.renderIcon(guiGraphics, Icon.ICON_PRESETS[1], x + 1, y + 1),
+            (guiGraphics, x, y) -> AlertDisplay.renderIcon(guiGraphics, Icon.ICON_PRESETS[2], x + 1, y + 1),
+            (guiGraphics, x, y) -> AlertDisplay.renderIcon(guiGraphics, Icon.ICON_PRESETS[3], x + 1, y + 1),
 
             (guiGraphics, x, y) -> guiGraphics.renderItem(ModItems.MARS_GLOBE.get().getDefaultInstance(), x + 2, y + 3),
             (guiGraphics, x, y) -> guiGraphics.renderItem(ModItems.EARTH_GLOBE.get().getDefaultInstance(), x + 2, y + 3),
@@ -49,7 +48,7 @@ public class AlertSoundEditScreen extends EditScreen {
 
 
     public AlertSoundEditScreen(@Nullable Screen parent, AlertSound sound, Consumer<AlertSound> onDone) {
-        super(Component.translatable("tooltip.asteroid_drifter.detector_edit_sound"), parent, Sprite.ofName("alert/alert_system_gui.png", 184, 201));
+        super(Component.translatable("tooltip.asteroid_drifter.detector_edit_sound"), parent, AlertDisplay.BACKGROUND);
         this.sound = new AlertSound(sound);
         this.onDone = onDone;
     }
@@ -65,7 +64,7 @@ public class AlertSoundEditScreen extends EditScreen {
         int yTop = topPos + 20;
 
 
-        EditBox idInput = addRenderableWidget(new EditBox(font, xLeft, yTop, imageWidth() - 16, 20, title));
+        EditBox idInput = addRenderableWidget(new EditBox(font, xLeft + 2, yTop, imageWidth() - 20, 20, title));
         idInput.setMaxLength(255);
         idInput.setFilter(ResourceLocation::isValidResourceLocation);
         idInput.setValue(sound.getIdAsString());
@@ -90,13 +89,13 @@ public class AlertSoundEditScreen extends EditScreen {
         PitchSlider pitchSlider = addRenderableWidget(new PitchSlider(xRight, yTop));
 
 
-        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(xLeft, topPos + imageWidth() - 50, button -> {
+        addRenderableWidget(AlertDisplay.BUTTON.createButton(xLeft, topPos + imageWidth() - 51, button -> {
             soundManager.stop(lastPlayedSound);
             lastPlayedSound = SimpleSoundInstance.forUI(sound.getSoundEvent(), sound.getPitch());
             soundManager.play(lastPlayedSound);
         }, Component.translatable("mco.selectServer.play")));
 
-        addRenderableWidget(AlertDisplayWidget.BUTTON.createButton(xRight - 60, topPos + imageWidth() - 50,
+        addRenderableWidget(AlertDisplay.BUTTON.createButton(xRight - 60, topPos + imageWidth() - 51,
                 button -> soundManager.stop(lastPlayedSound), Component.translatable("gui.asteroid_drifter.stop")));
 
 
@@ -154,8 +153,8 @@ public class AlertSoundEditScreen extends EditScreen {
 
         @Override
         protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            if (isSelected.get()) AlertDisplayWidget.BLANK_PRESS.draw(guiGraphics, getX(), getY());
-            else AlertDisplayWidget.BLANK.draw(guiGraphics, getX(), getY());
+            if (isSelected.get()) AlertDisplay.BLANK_PRESS.draw(guiGraphics, getX(), getY());
+            else AlertDisplay.BLANK.draw(guiGraphics, getX(), getY());
             renderItem.accept(guiGraphics, getX(), getY());
             if (isHoveredOrFocused()) {
                 RenderSystem.enableBlend();
