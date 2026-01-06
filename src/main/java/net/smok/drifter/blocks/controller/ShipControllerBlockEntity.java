@@ -142,9 +142,9 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
         if (getCollision() != null) {
             if (escapeDangerTime.getValue() > 0) {
-                escapeDangerTime.setValue(escapeDangerTime.getValue() - 1);
+                escapeDangerTime.setValue(escapeDangerTime.getValue() - 1);/*
                 if (isInDanger() && gameTime % 20L == 0L) alertPanel.executeIfPresent(lvl, alertPanelBlock ->
-                        alertPanelBlock.startDanger(getCollision().getSecond()));
+                        alertPanelBlock.startDanger(getCollision().getSecond()));*/
 
             } else if (isInDanger()) crush();
             else pass();
@@ -217,9 +217,9 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         collisionType.setValue(ShipEventRegistries.getRandomCollision(random));
         if (collisionType.getValue() == null) return;
         dangerPosition.setValue(shipPosition.getValue());
-        escapeDangerTime.setValue(ESCAPE_DANGER_TIME);
+        escapeDangerTime.setValue(ESCAPE_DANGER_TIME);/*
         alertPanel.executeIfPresent(lvl, alertPanelBlock ->
-                alertPanelBlock.startDanger(getCollision().getSecond()));
+                alertPanelBlock.startDanger(getCollision().getSecond()));*/
     }
 
 

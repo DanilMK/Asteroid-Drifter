@@ -93,15 +93,13 @@ public final class NetworkHandler {
 
     public static final ServerBoundPackets.ServerBoundPacket2<BlockPos, Integer> DETECTOR_MAX_SET =
             ServerBoundPackets.of(new ResourceLocation(Values.MOD_ID, "detector_max_set"), ServerBoundPackets.BLOCK_POS_CODEC, ServerBoundPackets.INTEGER_CODEC,
-                    (server, player, level, value1, value2) -> {
-                        level.getBlockEntity(value1, DrifterBlocks.DETECTOR_BLOCK_ENTITY.get()).ifPresent(
-                                detector -> {
-                                    if (Container.stillValidBlockEntity(detector, player)) {
-                                        detector.setMaxSignal(value2);
-                                    }
+                    (server, player, level, value1, value2) -> level.getBlockEntity(value1, DrifterBlocks.DETECTOR_BLOCK_ENTITY.get()).ifPresent(
+                            detector -> {
+                                if (Container.stillValidBlockEntity(detector, player)) {
+                                    detector.setMaxSignal(value2);
                                 }
-                        );
-                    }).register();
+                            }
+                    )).register();
 
 
     public static final BiRegisteredServerReceiver<BlockPos, Integer> CREATIVE_SHIP_CONTROL =

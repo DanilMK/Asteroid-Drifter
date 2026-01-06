@@ -109,10 +109,6 @@ public class DetectorScreen extends AbstractContainerScreen<DetectorMenu> {
                 NetworkHandler.DETECTOR_MAX_SET.createPacket(detector.getBlockPos(), detector.getMaxSignal()).getData());
     }
 
-    private void setTest(boolean test) {
-        ClientPlayNetworking.send(NetworkHandler.DETECTOR_TEST.getId(), NetworkHandler.DETECTOR_TEST.createPacket(detector.getBlockPos(), 0, test).getData());
-    }
-
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {}

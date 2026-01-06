@@ -28,7 +28,7 @@ public class DetectorBlockEntity extends ExtendedBlockEntity implements Detector
     }
 
     @Override
-    public Component getDisplayName() {
+    public @NotNull Component getDisplayName() {
         return Component.translatable("block.asteroid_drifter.detector");
     }
 
