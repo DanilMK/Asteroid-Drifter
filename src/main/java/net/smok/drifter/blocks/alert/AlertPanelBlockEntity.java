@@ -12,36 +12,26 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.smok.drifter.blocks.controller.SpaceCollision;
-import net.smok.drifter.events.ShipEvent;
+import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.menus.AlertSystemMenu;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.ShipBlock;
-import net.smok.drifter.utils.SavedDataSlot;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-public class AlertPanelBlockEntity extends BlockEntity implements ExtraDataMenuProvider, ShipBlock {
+public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraDataMenuProvider, ShipBlock, Detector {
 
 
 
-    private final Danger bigCollision = new Danger("big_collision", 5);
-    private final Danger smallCollision = new Danger("small_collision", 7);
+    private final Set<BlockPos> lamps = new HashSet<>();
+    private final List<AlertContainer> alerts = new ArrayList<>();
 
-
-    private final Set<BlockPos> lampPoses = new HashSet<>();
-    private final List<Danger> dangers = List.of(bigCollision, smallCollision);
 
     public AlertPanelBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(DrifterBlocks.ALERT_PANEL_BLOCK_ENTITY.get(), blockPos, blockState);
     }
-
 
 
     @Override
@@ -57,98 +47,109 @@ public class AlertPanelBlockEntity extends BlockEntity implements ExtraDataMenuP
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
-        return new AlertSystemMenu(i, this);
+        return new AlertSystemMenu(i, inventory, this);
     }
 
     public void tick(@NotNull Level lvl) {
-        if (lvl.getGameTime() % 20L == 19L)
-            dangers.forEach(danger -> danger.active.setValue(false));
-
         if (lvl.getGameTime() % 20L != 1L) return;
-        for (Danger danger : dangers) {
-            if (danger.active.getValue() | danger.tested.getValue()) {
-                sendActiveToLamps(lvl, danger);
-                break;
-            }
-        }
 
-    }
+        List<Alert> alerts = getAllAlerts().stream().filter(Alert::isActiveOrTested).toList();
 
-    private void sendActiveToLamps(Level lvl, Danger danger) {
-        for (BlockPos lampPose : new HashSet<>(lampPoses)) {
+        for (BlockPos lampPose : new HashSet<>(lamps)) {
             Optional<AlertLampBlockEntity> lamp = lvl.getChunkAt(lampPose)
                     .getBlockEntity(lampPose, DrifterBlocks.ALERT_LAMP_BLOCK_ENTITY.get());
 
-            if (lamp.isPresent()) lamp.get().activate(danger.color.getValue());
-            else lampPoses.remove(lampPose);
+            if (lamp.isPresent()) lamp.get().activate(alerts);
+            else lamps.remove(lampPose);
         }
     }
 
-    public void startDanger(int dangerId) {
-        dangers.get(dangerId).active.setValue(true);
-        setChanged();
-    }
-
-    public void startDanger(SpaceCollision collision) {
-        switch (collision) {
-            case ONE_BIG -> bigCollision.active.setValue(true);
-            case ONE_SMALL -> smallCollision.active.setValue(true);
-        }
-        setChanged();
-    }
-
-    public void startDanger(ShipEvent shipEvent) {
-        dangers.get(0).active.setValue(true);
-        setChanged();
-    }
-
-    public void testDanger(Integer dangerId) {
-        SavedDataSlot<Boolean> tested = dangers.get(dangerId).tested;
-        tested.setValue(!tested.getValue());
-        setChanged();
-    }
-
-    public void changeColor(Integer danger, Integer color) {
-        dangers.get(danger).color.setValue(color);
-        setChanged();
-    }
 
     @Override
     protected void saveAdditional(CompoundTag compoundTag) {
         super.saveAdditional(compoundTag);
-        ListTag dangersTag = new ListTag();
-        for (Danger danger : dangers) dangersTag.add(danger.save());
-        compoundTag.put("dangers", dangersTag);
 
         ListTag lamps = new ListTag();
-        for (BlockPos lampPose : lampPoses)
-            lamps.add(NbtUtils.writeBlockPos(lampPose));
+        for (BlockPos pos : this.lamps)
+            lamps.add(NbtUtils.writeBlockPos(pos));
         compoundTag.put("lamps", lamps);
+
+        ListTag alertsList = new ListTag();
+        for (AlertContainer alert : alerts) {
+            CompoundTag tag = new CompoundTag();
+            tag.put("detector", NbtUtils.writeBlockPos(alert.blockPos));
+            tag.putInt("index", alert.index);
+            alertsList.add(tag);
+        }
+        compoundTag.put("alerts", alertsList);
     }
 
     @Override
     public void load(CompoundTag compoundTag) {
         super.load(compoundTag);
-        ListTag dangersTag = compoundTag.getList("dangers", Tag.TAG_COMPOUND);
-        for (int i = 0; i < dangers.size() & i < dangersTag.size(); i++) {
-            dangers.get(i).load(dangersTag.getCompound(i));
-        }
 
 
         if (compoundTag.contains("lamps", CompoundTag.TAG_LIST)) {
             ListTag lamps = compoundTag.getList("lamps", CompoundTag.TAG_COMPOUND);
-            for (Tag lamp : lamps) lampPoses.add(NbtUtils.readBlockPos((CompoundTag) lamp));
+            for (Tag lamp : lamps) this.lamps.add(NbtUtils.readBlockPos((CompoundTag) lamp));
+        }
+
+        alerts.clear();
+        if (compoundTag.contains("alerts", CompoundTag.TAG_LIST)) {
+            ListTag alertsList = compoundTag.getList("alerts", CompoundTag.TAG_COMPOUND);
+            for (Tag alert : alertsList) {
+                CompoundTag alertTag = (CompoundTag) alert;
+                if (alertTag.contains("detector", Tag.TAG_COMPOUND)) {
+                    alerts.add(new AlertContainer(NbtUtils.readBlockPos(alertTag.getCompound("detector")),
+                            alertTag.contains("index") ? alertTag.getInt("index") : 0));
+                }
+            }
         }
     }
 
-    public List<Danger> getDangers() {
-        return dangers;
+    @Override
+    public List<Alert> getAllAlerts() {
+        List<Alert> list = new ArrayList<>();
+        if (level == null) return list;
+        int max = alerts.size() - 1;
+        for (int i = max; i >= 0; i--) {
+            AlertContainer alertContainer = alerts.get(i);
+            int finalI = i;
+            alertContainer.alert(level).ifPresentOrElse(alert -> list.add(0, alert), () -> alerts.remove(finalI));
+        }
+        if (max + 1 != alerts.size()) setChanged();
+        return list;
+    }
+
+    @Override
+    public int alertsSize() {
+        return alerts.size();
+    }
+
+    @Override
+    public void swap(int alertA, int alertB) {
+        if (alertA >= alertsSize() || alertA < 0 || alertB >= alertsSize() || alertB < 0) return;
+
+        AlertContainer change = alerts.get(alertA);
+        alerts.set(alertA, alerts.get(alertB));
+        alerts.set(alertB, change);
+        setChanged();
     }
 
     @Override
     public boolean bind(BlockPos pos, ShipBlock other) {
+        if (other == this) return false;
         if (other instanceof AlertLampBlockEntity) {
-            lampPoses.add(pos);
+            lamps.add(pos);
+            setChanged();
+            return true;
+        }
+        if (other instanceof Detector detector &&
+                (alerts.isEmpty() || alerts.stream().noneMatch(alertContainer -> alertContainer.blockPos.equals(pos)))) {
+            List<Alert> allAlerts = detector.getAllAlerts();
+            for (int i = 0; i < allAlerts.size(); i++) {
+                alerts.add(new AlertContainer(pos, i));
+            }
             setChanged();
             return true;
         }
@@ -157,34 +158,19 @@ public class AlertPanelBlockEntity extends BlockEntity implements ExtraDataMenuP
 
     @Override
     public void clear() {
-        lampPoses.clear();
+        lamps.clear();
+        alerts.clear();
         setChanged();
     }
 
-    public record Danger(String name, SavedDataSlot<Integer> color, SavedDataSlot<Boolean> active, SavedDataSlot<Boolean> tested) {
+    private record AlertContainer(BlockPos blockPos, int index) {
 
-        public Danger(String name, int defColor) {
-            this(name, SavedDataSlot.intValue("color", 0, 15).setValue(defColor),
-                    SavedDataSlot.booleanValue("active"), SavedDataSlot.booleanValue("tested"));
-        }
-
-        public @NotNull CompoundTag save() {
-            CompoundTag tag = new CompoundTag();
-            color.save(tag);
-            active.save(tag);
-            tested.save(tag);
-            return tag;
-        }
-
-        public void load(@NotNull CompoundTag tag) {
-            color.load(tag);
-            active.load(tag);
-            tested.load(tag);
-        }
-
-        @Contract(value = " -> new", pure = true)
-        public @NotNull Component text() {
-            return Component.translatable("tooltip.asteroid_drifter.danger." + name);
+        public Optional<Alert> alert(@NotNull Level level) {
+            BlockEntity blockEntity = level.getBlockEntity(blockPos);
+            if (blockEntity instanceof Detector detector && detector.alertsSize() > index)
+                return Optional.of(detector.getAllAlerts().get(index));
+            return Optional.empty();
         }
     }
+
 }

@@ -84,9 +84,8 @@ public class AlertPanelBlock extends BasicEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return blockEntityType == DrifterBlocks.ALERT_PANEL_BLOCK_ENTITY.get() ? (level1, blockPos, blockState1, blockEntity) -> {
-            if (!level1.isClientSide) ((AlertPanelBlockEntity)blockEntity).tick(level1);
-        } : null;
+        return blockEntityType == DrifterBlocks.ALERT_PANEL_BLOCK_ENTITY.get() && level.isClientSide() ?
+                (level1, blockPos, blockState1, blockEntity) -> ((AlertPanelBlockEntity)blockEntity).tick(level1) : null;
     }
 
     @Override

@@ -60,6 +60,10 @@ public class AlertLampBlockEntity extends BlockEntity implements ShipBlock {
         activeColor.load(compoundTag);
     }
 
+    public void activate(List<Alert> alerts) {
+
+    }
+
     public void activate(int color) {
         activeColor.setValue(color);
         if (level != null) {

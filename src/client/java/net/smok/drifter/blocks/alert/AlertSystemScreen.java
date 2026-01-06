@@ -1,39 +1,51 @@
 package net.smok.drifter.blocks.alert;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.smok.drifter.menus.AlertSystemMenu;
-import net.smok.drifter.registries.Values;
+import net.smok.drifter.widgets.Sprite;
+import net.smok.drifter.widgets.StringWidget;
+import org.jetbrains.annotations.NotNull;
 
 
 public class AlertSystemScreen extends AbstractContainerScreen<AlertSystemMenu> {
 
-    private static final ResourceLocation BACKGROUND = new ResourceLocation(Values.MOD_ID, "textures/gui/alert/alert_system_gui.png");
+    public static final Sprite BACKGROUND_SPRITE = AlertDisplay.BACKGROUND;
+    private final @NotNull AlertPanelBlockEntity alertSystemBlock;
+    private AlertSelectionList list;
+    private boolean initialized;
 
-    public AlertSystemScreen(AlertSystemMenu abstractContainerMenu, Inventory inventory, Component component) {
-        super(abstractContainerMenu, inventory, component);
 
+    public AlertSystemScreen(AlertSystemMenu menu, Inventory inventory, Component component) {
+        super(menu, inventory, component);
+        alertSystemBlock = menu.getAlertSystemBlock();
+        imageHeight = BACKGROUND_SPRITE.height();
+        imageWidth = BACKGROUND_SPRITE.width();
     }
 
     @Override
     protected void init() {
         super.init();
-
-        for (int i = 0; i < menu.getDangers().size(); i++) {
-            AlertPanelBlockEntity.Danger danger = menu.getDangers().get(i);
-            addRenderableWidget(new AlertDangerWidget(leftPos + 8, topPos + 16 + i * AlertDangerWidget.HEIGHT, danger, font, menu.getBlockPos(), i));
+        addRenderableOnly(new StringWidget(leftPos + 4, topPos + 4, imageWidth - 8, 10, font, title, StringWidget.Position.CENTER));
+        if (initialized) list.updateSize(imageWidth, imageHeight, leftPos, topPos + 20, topPos + imageHeight - 36);
+        else {
+            list = new AlertSelectionList(minecraft, imageWidth, imageHeight, leftPos, topPos + 18, topPos + imageHeight - 36, 24, alertSystemBlock);
+            list.setRenderBackground(false);
+            list.setRenderTopAndBottom(false);
+            list.refreshEntries();
+            initialized = true;
         }
+        addRenderableWidget(list);
+        list.createEditButtons(minecraft, this, width / 2, topPos + imageHeight - 28).forEach(this::addRenderableWidget);
+
 
     }
 
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        guiGraphics.drawString(font, title, titleLabelX, titleLabelY, 0x2a262b, false);
     }
 
     @Override
@@ -44,8 +56,7 @@ public class AlertSystemScreen extends AbstractContainerScreen<AlertSystemMenu> 
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float deltaTime, int mouseX, int mouseY) {
-        RenderSystem.enableBlend();
-        guiGraphics.blit(BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
-        RenderSystem.disableBlend();
+        BACKGROUND_SPRITE.draw(guiGraphics, leftPos, topPos);
     }
+
 }
