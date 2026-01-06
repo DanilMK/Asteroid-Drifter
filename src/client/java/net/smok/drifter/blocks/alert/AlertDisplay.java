@@ -50,7 +50,7 @@ public record AlertDisplay(Alert alert, Font font) {
     }
 
     public void swap(BlockPos blockPos, int indexA, int indexB) {
-        ClientPlayNetworking.send(NetworkHandler.DETECTOR_MOVE.getId(), NetworkHandler.DETECTOR_MOVE.createPacket(blockPos, indexA, indexB).getData());
+        ClientPlayNetworking.send(NetworkHandler.DETECTOR_SWAP.getId(), NetworkHandler.DETECTOR_SWAP.createPacket(blockPos, indexA, indexB).getData());
     }
 
     public void editSound(@NotNull Minecraft minecraft, Screen parent, BlockPos blockPos, int index) {
