@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
+import net.smok.drifter.blocks.ShipBlock;
 import net.smok.drifter.menus.DetectorMenu;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.utils.SavedDataSlot;
@@ -16,17 +17,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class DetectorBlockEntity extends ExtendedBlockEntity implements Detector {
+public class DetectorBlockEntity extends ExtendedBlockEntity implements Detector, ShipBlock {
     private final SavedDataSlot<Alert> alert = Alert.savedDataSlot(this, "alert.basic", Icon.ICON_PRESETS[0], "alert");
 
-    private final SavedDataSlot<Integer> minSignal = SavedDataSlot.intValue("min_signal", 0, 15);
-    private final SavedDataSlot<Integer> maxSignal = SavedDataSlot.intValue("max_signal", 0, 15);
+    private final SavedDataSlot<Integer> minSignal = SavedDataSlot.intValue("min_signal", 0, 15).setValue(1);
+    private final SavedDataSlot<Integer> maxSignal = SavedDataSlot.intValue("max_signal", 0, 15).setValue(15);
 
     public DetectorBlockEntity(BlockPos pos, BlockState blockState) {
         super(DrifterBlocks.DETECTOR_BLOCK_ENTITY.get(), pos, blockState);
     }
-
-    //todo сохранение после смены сигнала, ховер, клик по нажатию, текст поменять на виджет, снять выделение после клика, разобраться с сохранением стейтов.
 
     @Override
     public Component getDisplayName() {

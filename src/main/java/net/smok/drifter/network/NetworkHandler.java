@@ -63,13 +63,13 @@ public final class NetworkHandler {
                             detector.setSound(value2, value3);
                     }).register();
 
-    public static final ServerBoundPackets.ServerBoundPacket3<BlockPos, Integer, Integer> DETECTOR_MOVE =
+    public static final ServerBoundPackets.ServerBoundPacket3<BlockPos, Integer, Integer> DETECTOR_SWAP =
             ServerBoundPackets.of(new ResourceLocation(Values.MOD_ID, "detector_priority"), ServerBoundPackets.BLOCK_POS_CODEC,
                     ServerBoundPackets.INTEGER_CODEC, ServerBoundPackets.INTEGER_CODEC,
                     (server, player, level, value1, value2, value3) -> {
                         BlockEntity blockEntity = level.getBlockEntity(value1);
                         if (blockEntity instanceof Detector detector && Container.stillValidBlockEntity(blockEntity, player))
-                            detector.moveAlert(value2, value3);
+                            detector.swap(value2, value3);
                     }).register();
 
     public static final ServerBoundPackets.ServerBoundPacket3<BlockPos, Integer, Boolean> DETECTOR_TEST =
