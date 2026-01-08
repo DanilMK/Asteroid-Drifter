@@ -13,13 +13,13 @@ import net.smok.drifter.widgets.Hovered;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AlertSelectionList extends AbstractSelectionList<AlertSelectionList.Entry> {
 
     private final Detector detector;
-    private final List<LabeledImageButton> editButtons = new ArrayList<>();
+    private @Nullable LabeledImageButton nameEditButton, soundEditButton, iconEditButton;
+
 
     public AlertSelectionList(Minecraft minecraft, int width, int height, int x, int y0, int y1, int itemHeight, Detector detector) {
         super(minecraft, width, height, y0, y1, itemHeight);
@@ -72,32 +72,45 @@ public class AlertSelectionList extends AbstractSelectionList<AlertSelectionList
     @Override
     public void setSelected(@Nullable AlertSelectionList.Entry selected) {
         super.setSelected(selected);
-        editButtons.forEach(labeledImageButton -> labeledImageButton.active = getSelected() != null);
+        if (selected instanceof AlertEntry alertEntry)
+        {
+            if (nameEditButton != null) nameEditButton.active = alertEntry.alertDisplay.alert().canEditName();
+            if (soundEditButton != null) soundEditButton.active = alertEntry.alertDisplay.alert().canEditSound();
+            if (iconEditButton != null) iconEditButton.active = alertEntry.alertDisplay.alert().canEditIcon();
+        } else {
+            if (nameEditButton != null) nameEditButton.active = false;
+            if (soundEditButton != null) soundEditButton.active = false;
+            if (iconEditButton != null) iconEditButton.active = false;
+        }
     }
 
     public List<LabeledImageButton> createEditButtons(Minecraft minecraft, Screen parent, int centerX, int y) {
-        editButtons.clear();
 
-        editButtons.add(AlertDisplay.BUTTON.createButton(centerX - 90, y, button -> {
-            AlertEntry selected = (AlertEntry) getSelected();
-            int index = children().indexOf(selected);
-            if (selected != null) selected.alertDisplay.editName(minecraft, parent, detector.getBlockPos(), index);
+        nameEditButton = (AlertDisplay.BUTTON.createButton(centerX - 90, y, button -> {
+            if (getSelected() instanceof AlertEntry selected && selected.alertDisplay.alert().canEditName()) {
+                int index = children().indexOf(selected);
+                selected.alertDisplay.editName(minecraft, parent, detector.getBlockPos(), index);
+            }
                 }, Component.translatable("tooltip.asteroid_drifter.detector_edit_name")));
 
-        editButtons.add(AlertDisplay.BUTTON.createButton(centerX - 30, y, button -> {
-            AlertEntry selected = (AlertEntry) getSelected();
-            int index = children().indexOf(selected);
-            if (selected != null) selected.alertDisplay.editSound(minecraft, parent, detector.getBlockPos(), index);
+        soundEditButton = (AlertDisplay.BUTTON.createButton(centerX - 30, y, button -> {
+            if (getSelected() instanceof AlertEntry selected && selected.alertDisplay.alert().canEditSound()) {
+                int index = children().indexOf(selected);
+                selected.alertDisplay.editSound(minecraft, parent, detector.getBlockPos(), index);
+            }
         }, Component.translatable("tooltip.asteroid_drifter.detector_edit_sound")));
 
-        editButtons.add(AlertDisplay.BUTTON.createButton(centerX + 30, y, button -> {
-            AlertEntry selected = (AlertEntry) getSelected();
-            int index = children().indexOf(selected);
-            if (selected != null) selected.alertDisplay.editIcon(minecraft, parent, detector.getBlockPos(), index);
+        iconEditButton = (AlertDisplay.BUTTON.createButton(centerX + 30, y, button -> {
+            if (getSelected() instanceof AlertEntry selected && selected.alertDisplay.alert().canEditIcon()) {
+                int index = children().indexOf(selected);
+                selected.alertDisplay.editIcon(minecraft, parent, detector.getBlockPos(), index);
+            }
         }, Component.translatable("tooltip.asteroid_drifter.detector_edit_icon")));
 
-        editButtons.forEach(labeledImageButton -> labeledImageButton.active = getSelected() != null);
-        return editButtons;
+        nameEditButton.active = false;
+        soundEditButton.active = false;
+        iconEditButton.active = false;
+        return List.of(nameEditButton, soundEditButton, iconEditButton);
     }
 
 

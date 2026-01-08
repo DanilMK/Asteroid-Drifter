@@ -101,6 +101,22 @@ public class Alert {
         detector.setChanged();
     }
 
+    public boolean canEditName() {
+        return true;
+    }
+
+    public boolean canEditIcon() {
+        return true;
+    }
+
+    public boolean canEditSound() {
+        return true;
+    }
+
+    public boolean canBeTested() {
+        return true;
+    }
+
     @Contract("_, _, _, _ -> new")
     public static @NotNull SavedDataSlot<Alert> savedDataSlot(Detector detector, String defaultName, Icon defaultIcon, String dataName) {
         return new SavedDataSlot<>(new Alert(detector, defaultIcon, defaultName)) {

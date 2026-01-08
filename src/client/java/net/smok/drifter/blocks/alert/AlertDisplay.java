@@ -43,6 +43,7 @@ public record AlertDisplay(Alert alert, Font font) {
     public static final Sprite BACKGROUND = Sprite.ofName("alert/alert_system_gui.png", 196, 201);
 
     public void test(BlockPos blockPos, int index) {
+        if (!alert.canBeTested()) return;
         alert().setTested(!alert().isTested());
         Minecraft.getInstance().getSoundManager()
                 .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
@@ -54,21 +55,24 @@ public record AlertDisplay(Alert alert, Font font) {
     }
 
     public void editSound(@NotNull Minecraft minecraft, Screen parent, BlockPos blockPos, int index) {
-        minecraft.setScreen(new AlertSoundEditScreen(parent, alert.getSound(), s ->
-                ClientPlayNetworking.send(NetworkHandler.DETECTOR_SOUND.getId(),
-                        NetworkHandler.DETECTOR_SOUND.createPacket(blockPos, index, s).getData())));
+        minecraft.setScreen(new AlertSoundEditScreen(parent, alert.getSound(), s -> {
+            if (alert.canEditSound()) ClientPlayNetworking.send(NetworkHandler.DETECTOR_SOUND.getId(),
+                    NetworkHandler.DETECTOR_SOUND.createPacket(blockPos, index, s).getData());
+        }));
     }
 
     public void editName(@NotNull Minecraft minecraft, Screen parent, BlockPos blockPos, int index) {
-        minecraft.setScreen(new AlertNameEditScreen(parent, alert.getName(), s ->
-                ClientPlayNetworking.send(NetworkHandler.DETECTOR_NAME.getId(),
-                        NetworkHandler.DETECTOR_NAME.createPacket(blockPos, index, s).getData())));
+        minecraft.setScreen(new AlertNameEditScreen(parent, alert.getName(), s -> {
+            if (alert.canEditName()) ClientPlayNetworking.send(NetworkHandler.DETECTOR_NAME.getId(),
+                    NetworkHandler.DETECTOR_NAME.createPacket(blockPos, index, s).getData());
+        }));
     }
 
     public void editIcon(@NotNull Minecraft minecraft, Screen parent, BlockPos blockPos, int index) {
-        minecraft.setScreen(new AlertIconEditScreen(parent, alert.getIcon(), i ->
-                ClientPlayNetworking.send(NetworkHandler.DETECTOR_ICON.getId(),
-                        NetworkHandler.DETECTOR_ICON.createPacket(blockPos, index, i).getData())));
+        minecraft.setScreen(new AlertIconEditScreen(parent, alert.getIcon(), i -> {
+            if (alert.canEditIcon()) ClientPlayNetworking.send(NetworkHandler.DETECTOR_ICON.getId(),
+                    NetworkHandler.DETECTOR_ICON.createPacket(blockPos, index, i).getData());
+        }));
     }
 
     public static void renderIcon(@NotNull GuiGraphics guiGraphics, @NotNull Icon icon, int x, int y) {
