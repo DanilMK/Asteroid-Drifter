@@ -1,10 +1,14 @@
 package net.smok.drifter.blocks.alert;
 
 import earth.terrarium.botarium.common.menu.ExtraDataMenuProvider;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -12,10 +16,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.smok.drifter.blocks.ExtendedBlockEntity;
 import net.smok.drifter.menus.AlertSystemMenu;
 import net.smok.drifter.registries.DrifterBlocks;
 import net.smok.drifter.blocks.ShipBlock;
+import net.smok.drifter.registries.Values;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,14 +56,22 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
         return new AlertSystemMenu(i, inventory, this);
     }
 
-    public void tick(@NotNull Level lvl) {
+    public void tick(@NotNull ServerLevel lvl) {
         if (lvl.getGameTime() % 20L != 1L) return;
 
-        List<Alert> alerts = getAllAlerts().stream().filter(Alert::isActiveOrTested).toList();
+        List<Alert> activeAlerts = getAllAlerts().stream().filter(Alert::isActiveOrTested).toList();
+        boolean empty = activeAlerts.isEmpty();
 
         for (BlockPos lampPose : new HashSet<>(lamps)) {
-            Optional<AlertLampBlockEntity> lamp = lvl.getChunkAt(lampPose)
-                    .getBlockEntity(lampPose, DrifterBlocks.ALERT_LAMP_BLOCK_ENTITY.get());
+            BlockState blockState = lvl.getBlockState(lampPose);
+            if (blockState.is(DrifterBlocks.ALERT_LAMP.get())) {
+                if (!empty) {
+                    AABB aABB = new AABB(lampPose).inflate(8d);
+                    List<ServerPlayer> list = lvl.getEntitiesOfClass(ServerPlayer.class, aABB);
+                    for (ServerPlayer player : list)
+                        ServerPlayNetworking.send(player, new ResourceLocation(Values.MOD_ID, "alert_player_holder"),
+                                PacketByteBufs.create().writeBlockPos(getBlockPos()));
+                }
 
                 lvl.setBlock(lampPose, blockState.setValue(AlertLampBlock.COLOR, empty ? 0 : activeAlerts.get(0).getColor()), 3);
             }
@@ -144,7 +158,7 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
     @Override
     public boolean bind(BlockPos pos, ShipBlock other) {
         if (other instanceof AlertPanelBlockEntity) return false;
-        if (other instanceof AlertLampBlockEntity) {
+        if (other instanceof AlertLampBlock) {
             lamps.add(pos);
             setChanged();
             return true;

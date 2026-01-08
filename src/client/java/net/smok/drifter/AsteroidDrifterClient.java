@@ -2,6 +2,8 @@ package net.smok.drifter;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -10,7 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.world.level.block.Block;
-import net.smok.drifter.blocks.alert.AlertOverlay;
+import net.smok.drifter.blocks.alert.AlertPlayerHolder;
 import net.smok.drifter.blocks.alert.AlertSystemScreen;
 import net.smok.drifter.blocks.alert.DetectorScreen;
 import net.smok.drifter.blocks.controller.ControllerBlockRenderer;
@@ -46,7 +48,7 @@ public class AsteroidDrifterClient implements ClientModInitializer {
 		MenuScreens.register(DrifterMenus.SHIP_STRUCTURE_MENU.get(), ShipStructureBlockScreen::new);
 		MenuScreens.register(DrifterMenus.DETECTOR_MENU.get(), DetectorScreen::new);
 
-		HudRenderCallback.EVENT.register(new AlertOverlay());
+		HudRenderCallback.EVENT.register(AlertPlayerHolder.INSTANCE);
 
 		BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutout(), TRANSPARENT_BLOCKS);
 
@@ -62,7 +64,8 @@ public class AsteroidDrifterClient implements ClientModInitializer {
 
 		EntityRendererRegistry.register(DrifterEntities.COLLIDED_ASTEROID.get(), context -> new ThrownItemRenderer<>(context, 3.0F, true));
 		//EntityRendererRegistry.register(DrifterEntities.MAGNETIC_FIELD.get(), MagneticFieldRenderer::new);
-
+		ClientTickEvents.END_WORLD_TICK.register(AlertPlayerHolder.tickId, AlertPlayerHolder.INSTANCE);
+		ClientPlayNetworking.registerGlobalReceiver(AlertPlayerHolder.tickId, AlertPlayerHolder.INSTANCE);
 	}
 
 }
