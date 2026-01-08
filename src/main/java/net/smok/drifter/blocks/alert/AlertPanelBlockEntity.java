@@ -59,8 +59,8 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
             Optional<AlertLampBlockEntity> lamp = lvl.getChunkAt(lampPose)
                     .getBlockEntity(lampPose, DrifterBlocks.ALERT_LAMP_BLOCK_ENTITY.get());
 
-            if (lamp.isPresent()) lamp.get().activate(alerts);
-            else lamps.remove(lampPose);
+                lvl.setBlock(lampPose, blockState.setValue(AlertLampBlock.COLOR, empty ? 0 : activeAlerts.get(0).getColor()), 3);
+            }
         }
     }
 

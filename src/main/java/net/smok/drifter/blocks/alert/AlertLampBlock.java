@@ -6,24 +6,18 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.smok.drifter.registries.DrifterBlocks;
+import net.smok.drifter.blocks.ShipBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-
-public class AlertLampBlock extends FaceAttachedHorizontalDirectionalBlock implements EntityBlock {
+public class AlertLampBlock extends FaceAttachedHorizontalDirectionalBlock implements ShipBlock {
     public static final IntegerProperty COLOR = IntegerProperty.create("color", 0, 15);
 
     private final LampShape lampShape;
@@ -57,19 +51,14 @@ public class AlertLampBlock extends FaceAttachedHorizontalDirectionalBlock imple
     @Override
     public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos blockPos2, boolean bl) {
         if (level.isClientSide) return;
-
-        Optional<AlertLampBlockEntity> blockEntity = level.getBlockEntity(blockPos, DrifterBlocks.ALERT_LAMP_BLOCK_ENTITY.get());
-        int activeColor = blockEntity.map(AlertLampBlockEntity::getActiveColor).orElse(0);
-
-        updateLampColor(blockState, level, blockPos, activeColor);
+        updateLampColor(blockState, level, blockPos);
     }
 
-    public static void updateLampColor(BlockState blockState, Level level, BlockPos blockPos, int activeColor) {
+    public static void updateLampColor(BlockState blockState, Level level, BlockPos blockPos) {
         int signal = level.getBestNeighborSignal(blockPos);
         int currentColor = blockState.getValue(COLOR);
-        int nextColor = activeColor > 0 ? activeColor : signal;
 
-        if (nextColor != currentColor) level.setBlock(blockPos, blockState.setValue(COLOR, nextColor), 2);
+        if (signal != currentColor) level.setBlock(blockPos, blockState.setValue(COLOR, signal), 2);
     }
 
 
@@ -78,19 +67,6 @@ public class AlertLampBlock extends FaceAttachedHorizontalDirectionalBlock imple
         super.createBlockStateDefinition(builder.add(COLOR, FACING, FACE));
     }
 
-
-    @Nullable
-    @Override
-    public BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
-        return new AlertLampBlockEntity(blockPos, blockState);
-    }
-
-    @Nullable
-    @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return blockEntityType == DrifterBlocks.ALERT_LAMP_BLOCK_ENTITY.get() ? (level1, blockPos, state, type) ->
-                AlertLampBlockEntity.tick(level1, blockPos, state, (AlertLampBlockEntity) type) : null;
-    }
 
 
     public record LampShape(VoxelShape northShape, VoxelShape eastShape, VoxelShape southShape,
