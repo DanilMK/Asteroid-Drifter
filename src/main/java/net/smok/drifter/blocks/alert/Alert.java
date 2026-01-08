@@ -34,6 +34,10 @@ public class Alert {
         return Component.literal(name);
     }
 
+    public @NotNull Component subText() {
+        return Component.empty();
+    }
+
     public String getName() {
         return name;
     }
