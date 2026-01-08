@@ -127,6 +127,11 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
     }
 
     @Override
+    public boolean isExtreme() {
+        return false;
+    }
+
+    @Override
     public void swap(int alertA, int alertB) {
         if (alertA >= alertsSize() || alertA < 0 || alertB >= alertsSize() || alertB < 0) return;
 
@@ -138,13 +143,13 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
 
     @Override
     public boolean bind(BlockPos pos, ShipBlock other) {
-        if (other == this) return false;
+        if (other instanceof AlertPanelBlockEntity) return false;
         if (other instanceof AlertLampBlockEntity) {
             lamps.add(pos);
             setChanged();
             return true;
         }
-        if (other instanceof Detector detector &&
+        if (other instanceof Detector detector && detector.isExtreme() &&
                 (alerts.isEmpty() || alerts.stream().noneMatch(alertContainer -> alertContainer.blockPos.equals(pos)))) {
             List<Alert> allAlerts = detector.getAllAlerts();
             for (int i = 0; i < allAlerts.size(); i++) {
@@ -167,7 +172,7 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
 
         public Optional<Alert> alert(@NotNull Level level) {
             BlockEntity blockEntity = level.getBlockEntity(blockPos);
-            if (blockEntity instanceof Detector detector && detector.alertsSize() > index)
+            if (blockEntity instanceof Detector detector && detector.isExtreme() && detector.alertsSize() > index)
                 return Optional.of(detector.getAllAlerts().get(index));
             return Optional.empty();
         }

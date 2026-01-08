@@ -12,6 +12,10 @@ public interface Detector {
 
     BlockPos getBlockPos();
 
+    default boolean isExtreme () {
+        return true;
+    }
+
     default void setName(int alert, String name) {
         if (alert > alertsSize()) return;
         getAllAlerts().get(alert).setName(name);
