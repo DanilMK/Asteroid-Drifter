@@ -36,6 +36,7 @@
   "tooltip.asteroid_drifter.detector_sound_presets": "Sound presets",
   "tooltip.asteroid_drifter.detector_sound_pitch": "Pitch %s %%",
   "tooltip.asteroid_drifter.detector_sound_period": "Period %s s",
+  "tooltip.asteroid_drifter.detector_sound_volume": "Volume %s %%",
   "tooltip.asteroid_drifter.empty_alerts": "No alerts.",
   "gui.asteroid_drifter.launch": "Launch",
   "gui.asteroid_drifter.reroll": "Reroll",

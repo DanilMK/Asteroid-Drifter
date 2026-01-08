@@ -19,26 +19,27 @@ import java.util.Objects;
 public class AlertSound {
 
     public static final AlertSound[] SOUND_PRESETS = new AlertSound[] {
-            new AlertSound(DrifterSounds.SHIP_ALARM.get(), 20, 1),
-            new AlertSound(DrifterSounds.HARD_ALARM.get(), 20, 1),
-            new AlertSound(DrifterSounds.BIOHAZARD_ALARM.get(), 20, 1),
-            new AlertSound(DrifterSounds.FIRE_ALARM.get(), 20, 1),
+            new AlertSound(DrifterSounds.SHIP_ALARM.get(), 60, 1, 1),
+            new AlertSound(DrifterSounds.HARD_ALARM.get(), 60, 1, 1),
+            new AlertSound(DrifterSounds.BIOHAZARD_ALARM.get(), 60, 1, 1),
+            new AlertSound(DrifterSounds.FIRE_ALARM.get(), 60, 1, 1),
 
-            new AlertSound(DrifterSounds.MARS_ALARM.get(), 20, 1),
-            new AlertSound(DrifterSounds.EARTH_ALARM.get(), 20, 1),
-            new AlertSound(DrifterSounds.VENUS_ALARM.get(), 20, 1),
-            new AlertSound(DrifterSounds.SIREN_ALARM.get(), 20, 1),
+            new AlertSound(DrifterSounds.MARS_ALARM.get(), 60, 1, 1),
+            new AlertSound(DrifterSounds.EARTH_ALARM.get(), 60, 1, 1),
+            new AlertSound(DrifterSounds.VENUS_ALARM.get(), 60, 1, 1),
+            new AlertSound(DrifterSounds.SIREN_ALARM.get(), 60, 1, 1),
 
-            new AlertSound(DrifterSounds.GALAXY_POLICE_ALARM.get(), 20, 1),
-            new AlertSound(SoundEvents.BELL_BLOCK, 20, 1),
-            new AlertSound(SoundEvents.NOTE_BLOCK_HARP.value(), 20, 1),
-            new AlertSound(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(), 20, 1)
+            new AlertSound(DrifterSounds.GALAXY_POLICE_ALARM.get(), 60, 1, 1),
+            new AlertSound(SoundEvents.BELL_BLOCK, 60, 1, 1),
+            new AlertSound(SoundEvents.NOTE_BLOCK_HARP.value(), 60, 1, 1),
+            new AlertSound(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(), 60, 1, 1)
     };
 
 
     private ResourceLocation id;
-    private int period; // 1t - 5s (100t)
+    private int period; // 1t - 8s (100t)
     private float pitch; // 0-2
+    private float volume; // 0-1
     private SoundEvent soundEvent;
 
     @Contract(pure = true)
@@ -47,18 +48,21 @@ public class AlertSound {
         this.period = defaultSound.period;
         this.pitch = defaultSound.pitch;
         this.soundEvent = defaultSound.soundEvent;
+        this.volume = defaultSound.volume;
     }
 
-    public AlertSound(@NotNull SoundEvent soundEvent, int period, float pitch) {
+    public AlertSound(@NotNull SoundEvent soundEvent, int period, float pitch, float volume) {
         id = BuiltInRegistries.SOUND_EVENT.getKey(soundEvent);
         this.period = period;
         this.pitch = pitch;
         this.soundEvent = soundEvent;
+        this.volume = volume;
     }
 
-    public AlertSound(ResourceLocation id, int period, float pitch) {
+    public AlertSound(ResourceLocation id, int period, float pitch, float volume) {
         this.period = period;
         this.pitch = pitch;
+        this.volume = volume;
         setId(id);
     }
 
@@ -86,7 +90,7 @@ public class AlertSound {
     }
 
     public void setPeriod(int period) {
-        this.period = Mth.clamp(period, 2, 100);
+        this.period = Mth.clamp(period, 2, 160);
     }
 
     public float getPitch() {
@@ -101,11 +105,20 @@ public class AlertSound {
         return soundEvent;
     }
 
+    public float getVolume() {
+        return volume;
+    }
+
+    public void setVolume(float volume) {
+        this.volume = Mth.clamp(volume, 0, 1);
+    }
+
     public static ServerBoundPackets.ByteCodec<AlertSound> BYTE_CODEC = ServerBoundPackets.codec((byteBuf, sound) -> {
         byteBuf.writeResourceLocation(sound.id);
         byteBuf.writeInt(sound.period);
         byteBuf.writeFloat(sound.pitch);
-    }, byteBuf -> new AlertSound(byteBuf.readResourceLocation(), byteBuf.readInt(), byteBuf.readFloat()));
+        byteBuf.writeFloat(sound.volume);
+    }, byteBuf -> new AlertSound(byteBuf.readResourceLocation(), byteBuf.readInt(), byteBuf.readFloat(), byteBuf.readFloat()));
 
 
     public static SavedDataSlot<AlertSound> savedDataSlot(AlertSound defaultSound, String name) {
@@ -123,6 +136,9 @@ public class AlertSound {
 
                     if (tag.contains("pitch", Tag.TAG_FLOAT))
                         getValue().setPitch(tag.getFloat("pitch"));
+
+                    if (tag.contains("volume", Tag.TAG_FLOAT))
+                        getValue().setVolume(tag.getFloat("volume"));
                 }
 
             }
@@ -133,6 +149,7 @@ public class AlertSound {
                 tag.putString("id", getValue().getIdAsString());
                 tag.putInt("period", getValue().getPeriod());
                 tag.putFloat("pitch", getValue().getPitch());
+                tag.putFloat("volume", getValue().getVolume());
                 compoundTag.put(name, tag);
             }
         };
@@ -146,17 +163,22 @@ public class AlertSound {
         return Component.translatable("tooltip.asteroid_drifter.detector_sound_period", String.format("%.1f", period / 20f));
     }
 
+    public Component getVolumeText() {
+        return Component.translatable("tooltip.asteroid_drifter.detector_sound_volume", (int) (volume * 100));
+    }
+
     @Override
     public boolean equals(Object object) {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         AlertSound that = (AlertSound) object;
-        return period == that.period && Float.compare(pitch, that.pitch) == 0 && Objects.equals(id, that.id);
+        return period == that.period && Float.compare(pitch, that.pitch) == 0 && Float.compare(volume, that.volume) == 0
+                && Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, period, pitch);
+        return Objects.hash(id, period, pitch, volume);
     }
 
     @Override
@@ -165,6 +187,7 @@ public class AlertSound {
                 "id=" + id +
                 ", period=" + period +
                 ", pitch=" + pitch +
+                ", volume=" + volume +
                 '}';
     }
 }

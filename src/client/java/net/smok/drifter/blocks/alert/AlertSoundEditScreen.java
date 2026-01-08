@@ -3,7 +3,6 @@ package net.smok.drifter.blocks.alert;
 import com.mojang.blaze3d.systems.RenderSystem;
 import earth.terrarium.adastra.common.registry.ModItems;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -12,8 +11,10 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Items;
 import net.smok.drifter.widgets.EditScreen;
+import net.smok.drifter.widgets.SliderButton;
 import net.smok.drifter.widgets.StringWidget;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.Nullable;
@@ -45,6 +46,9 @@ public class AlertSoundEditScreen extends EditScreen {
     private final Consumer<AlertSound> onDone;
     private SimpleSoundInstance lastPlayedSound;
     private SoundManager soundManager;
+    private int ticks;
+    private boolean playing;
+    private int barX0, barX1, barY;
 
 
     public AlertSoundEditScreen(@Nullable Screen parent, AlertSound sound, Consumer<AlertSound> onDone) {
@@ -62,7 +66,9 @@ public class AlertSoundEditScreen extends EditScreen {
         int xLeft = leftPos + 8;
         int xRight = leftPos + imageWidth() - 8;
         int yTop = topPos + 20;
-
+        barX0 = xLeft + 1;
+        barX1 = xRight - 2;
+        barY = yTop + 21;
 
         EditBox idInput = addRenderableWidget(new EditBox(font, xLeft + 2, yTop, imageWidth() - 20, 20, title));
         idInput.setMaxLength(255);
@@ -82,21 +88,33 @@ public class AlertSoundEditScreen extends EditScreen {
         int y1 = yTop;
 
 
-        PeriodSlider periodSlider = addRenderableWidget(new PeriodSlider(xRight, yTop));
+        SliderButton periodSlider = addRenderableWidget(new SliderButton(
+                xRight - 80, yTop, 80, 20, (AlertSoundEditScreen.this.sound.getPeriod() - 2) / 158d,
+                sound::getPeriodText, value -> sound.setPeriod((int) (value * 158 + 2))
+        ));
 
         yTop += 30;
 
-        PitchSlider pitchSlider = addRenderableWidget(new PitchSlider(xRight, yTop));
+        SliderButton pitchSlider = addRenderableWidget(new SliderButton(
+                xRight - 80, yTop, 80, 20, AlertSoundEditScreen.this.sound.getPitch() / 2d,
+                sound::getPitchText, value -> sound.setPitch((float) (value * 2))));
+
+        yTop += 30;
+
+        SliderButton volumeSlider = addRenderableWidget(new SliderButton(
+                xRight - 80, yTop, 80, 20, AlertSoundEditScreen.this.sound.getVolume() / 2d,
+                sound::getVolumeText, value -> sound.setVolume((float) (value * 2))));
 
 
         addRenderableWidget(AlertDisplay.BUTTON.createButton(xLeft, topPos + imageWidth() - 51, button -> {
-            soundManager.stop(lastPlayedSound);
-            lastPlayedSound = SimpleSoundInstance.forUI(sound.getSoundEvent(), sound.getPitch());
-            soundManager.play(lastPlayedSound);
+            playSound();
+            playing = true;
         }, Component.translatable("mco.selectServer.play")));
 
-        addRenderableWidget(AlertDisplay.BUTTON.createButton(xRight - 60, topPos + imageWidth() - 51,
-                button -> soundManager.stop(lastPlayedSound), Component.translatable("gui.asteroid_drifter.stop")));
+        addRenderableWidget(AlertDisplay.BUTTON.createButton(xRight - 60, topPos + imageWidth() - 51, button -> {
+            soundManager.stop(lastPlayedSound);
+            playing = false;
+        }, Component.translatable("gui.asteroid_drifter.stop")));
 
 
         // icon presets
@@ -113,16 +131,32 @@ public class AlertSoundEditScreen extends EditScreen {
                         RENDER_SLOTS.get(i),
                         () -> {
                             idInput.setValue(soundPreset.getId().toString());
-                            sound.setPitch(soundPreset.getPitch());
-                            sound.setPeriod(soundPreset.getPeriod());
-                            pitchSlider.setValue(sound.getPitch());
-                            periodSlider.setValue(sound.getPeriod());
+                            pitchSlider.setValue(sound.getPitch() / 2d);
+                            volumeSlider.setValue(sound.getVolume() / 2d);
+                            periodSlider.setValue((sound.getPeriod() - 2) / 158d);
+                            playSound();
                         }, soundPreset));
             }
         }
-
-
     }
+
+    private void playSound() {
+        soundManager.stop(lastPlayedSound);
+        lastPlayedSound = SimpleSoundInstance.forUI(sound.getSoundEvent(), sound.getPitch(), sound.getVolume());
+        if (sound.getVolume() >= 0.01f) soundManager.play(lastPlayedSound);
+    }
+
+
+    @Override
+    public void tick() {
+        if (playing) ticks++;
+        else ticks = 0;
+        if (ticks >= sound.getPeriod()) {
+            ticks = 0;
+            playSound();
+        }
+    }
+
 
     @Override
     protected void done() {
@@ -133,22 +167,21 @@ public class AlertSoundEditScreen extends EditScreen {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+        if (playing) guiGraphics.hLine(barX0, (int) Mth.lerp((float) ticks / sound.getPeriod(), barX0, barX1), barY, Integer.MAX_VALUE);
     }
 
 
-    private class Slot extends AbstractWidget {
+    private static class Slot extends AbstractWidget {
 
         private final Supplier<Boolean> isSelected;
         private final TriConsumer<GuiGraphics, Integer, Integer> renderItem;
         private final Runnable onClick;
-        private final AlertSound toPlay;
 
         public Slot(int x, int y, Supplier<Boolean> isSelected, TriConsumer<GuiGraphics, Integer, Integer> renderItem, Runnable onClick, AlertSound toPlay) {
             super(x, y, 20, 20, Component.empty());
             this.isSelected = isSelected;
             this.renderItem = renderItem;
             this.onClick = onClick;
-            this.toPlay = toPlay;
         }
 
         @Override
@@ -164,9 +197,7 @@ public class AlertSoundEditScreen extends EditScreen {
         }
 
         @Override
-        protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
-
-        }
+        protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {}
 
         @Override
         public void onClick(double mouseX, double mouseY) {
@@ -174,52 +205,7 @@ public class AlertSoundEditScreen extends EditScreen {
         }
 
         @Override
-        public void playDownSound(SoundManager handler) {
-            handler.stop(lastPlayedSound);
-            lastPlayedSound = SimpleSoundInstance.forUI(toPlay.getSoundEvent(), toPlay.getPitch());
-            handler.play(lastPlayedSound);
-        }
+        public void playDownSound(SoundManager handler) {}
     }
 
-    private class PitchSlider extends AbstractSliderButton {
-        public PitchSlider(int xRight, int yTop) {
-            super(xRight - 80, yTop, 80, 20, AlertSoundEditScreen.this.sound.getPitchText(), AlertSoundEditScreen.this.sound.getPitch() / 2d);
-        }
-
-        @Override
-        protected void updateMessage() {
-            setMessage(sound.getPitchText());
-        }
-
-        @Override
-        protected void applyValue() {
-            sound.setPitch((float) (value * 2));
-        }
-
-        private void setValue(float value) {
-            this.value = value / 2d;
-            updateMessage();
-        }
-    }
-
-    private class PeriodSlider extends AbstractSliderButton {
-        public PeriodSlider(int xRight, int yTop) {
-            super(xRight - 80, yTop, 80, 20, AlertSoundEditScreen.this.sound.getPeriodText(), (AlertSoundEditScreen.this.sound.getPeriod() - 2) / 100d);
-        }
-
-        @Override
-        protected void updateMessage() {
-            setMessage(sound.getPeriodText());
-        }
-
-        @Override
-        protected void applyValue() {
-            sound.setPeriod((int) (value * 98 + 2));
-        }
-
-        private void setValue(int value) {
-            this.value = (value - 2) / 100d;
-            updateMessage();
-        }
-    }
 }
