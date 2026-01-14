@@ -15,7 +15,6 @@ public final class WorldGenUtils {
 
 
     public static void sharpSurface(HashMap<BlockPos, BlockState> placedBlocks, RandomSource random, float sharpness) {
-        Debug.log("Sharp start " + sharpness);
         var setCopy = new HashMap<>(placedBlocks);
         setCopy.keySet().forEach(blockPos -> {
 
@@ -32,7 +31,6 @@ public final class WorldGenUtils {
     }
 
     public static void smooth(int smooth, HashMap<BlockPos, BlockState> placedBlocks) {
-        Debug.log("Smooth surface start");
         int smoothCube = (smooth + 1) * (smooth + 1) * (smooth + 1);
         var setCopy = new HashMap<>(placedBlocks);
         setCopy.forEach((blockPos, blockState) -> smoothApply(smooth, smoothCube, placedBlocks, setCopy, blockPos));
