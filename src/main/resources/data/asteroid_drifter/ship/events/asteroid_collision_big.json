@@ -1,5 +1,5 @@
 {
-  "collision_type": "asteroid_drifter:asteroid",
+  "type": "asteroid_drifter:asteroid",
   "color": 16777098,
   "min_amount": 1,
   "max_amount": 3,
