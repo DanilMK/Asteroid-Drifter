@@ -63,11 +63,11 @@ public class RecipeDataProvider extends FabricRecipeProvider {
         registerSapling(writer, Blocks.OAK_SAPLING, "oak");
         registerSapling(writer, Blocks.DARK_OAK_SAPLING, "dark_oak");
 
-        FuelRecipeBuilder.of(FluidIngredient.of(ModFluids.OIL.get()), BlockStateProvider.simple(DrifterBlocks.OIL_SLUDGE.get()),2.5f, 0.03f)
+        FuelRecipeBuilder.of(FluidIngredient.of(ModFluids.OIL.get()), BlockStateProvider.simple(DrifterBlocks.OIL_SLUDGE.get()),2.5f, 0.005f)
                 .save(writer, new ResourceLocation(Values.MOD_ID, "oil"));
-        FuelRecipeBuilder.of(FluidIngredient.of(ModFluids.FUEL.get()), BlockStateProvider.simple(DrifterBlocks.OIL_SLUDGE.get()), 2f, 0.015f)
+        FuelRecipeBuilder.of(FluidIngredient.of(ModFluids.FUEL.get()), BlockStateProvider.simple(DrifterBlocks.OIL_SLUDGE.get()), 2f, 0.002f)
                 .save(writer, new ResourceLocation(Values.MOD_ID, "fuel"));
-        FuelRecipeBuilder.of(FluidIngredient.of(ModFluids.CRYO_FUEL.get()), BlockStateProvider.simple(DrifterBlocks.CRYO_SLUDGE.get()), 2f, 0.005f)
+        FuelRecipeBuilder.of(FluidIngredient.of(ModFluids.CRYO_FUEL.get()), BlockStateProvider.simple(DrifterBlocks.CRYO_SLUDGE.get()), 2f, 0.001f)
                 .save(writer, new ResourceLocation(Values.MOD_ID, "cryo_fuel"));
     }
 
