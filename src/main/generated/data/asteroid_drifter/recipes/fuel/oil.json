@@ -4,7 +4,7 @@
   "fluid": {
     "fluid": "ad_astra:oil"
   },
-  "slagChance": 0.03,
+  "slagChance": 0.005,
   "slag_block": {
     "type": "minecraft:simple_state_provider",
     "state": {
