@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
+import net.smok.drifter.ShipConfig;
 import net.smok.drifter.blocks.ShipBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,11 +27,11 @@ public class EngineNozzleBlock extends DirectionalBlock implements ShipBlock {
 
 
     public static final Property<Boolean> LIT = BlockStateProperties.LIT;
-    private final float maxSpeed;
+    private final float maxSpeedFactor;
 
-    public EngineNozzleBlock(Properties properties, float maxSpeed) {
+    public EngineNozzleBlock(Properties properties, float maxSpeedFactor) {
         super(properties);
-        this.maxSpeed = maxSpeed;
+        this.maxSpeedFactor = maxSpeedFactor;
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH).setValue(LIT, false));
     }
 
@@ -61,7 +62,7 @@ public class EngineNozzleBlock extends DirectionalBlock implements ShipBlock {
     }
 
     public float getMaxSpeed() {
-        return maxSpeed;
+        return maxSpeedFactor * ShipConfig.startSpeed();
     }
 
     @Override
