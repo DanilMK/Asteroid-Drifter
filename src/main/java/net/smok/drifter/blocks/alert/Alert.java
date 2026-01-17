@@ -12,11 +12,11 @@ public class Alert {
 
     private final Detector detector;
 
-    private String name;
-    private boolean active;
-    private boolean tested;
-    private final SavedDataSlot<Icon> icon;
-    private final SavedDataSlot<AlertSound> sound;
+    protected String name;
+    protected boolean active;
+    protected boolean tested;
+    protected final SavedDataSlot<Icon> icon;
+    protected final SavedDataSlot<AlertSound> sound;
 
     public Alert(Detector detector, String defaultName) {
         this(detector, Icon.ICON_PRESETS[0], defaultName);
@@ -94,7 +94,7 @@ public class Alert {
     }
 
     public boolean isActiveOrTested() {
-        return active || tested;
+        return isActive() || isTested();
     }
 
     private void update() {
