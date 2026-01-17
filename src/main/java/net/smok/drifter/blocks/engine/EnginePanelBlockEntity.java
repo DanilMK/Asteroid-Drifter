@@ -180,7 +180,7 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
         });
 
         // handle fuel load to tank
-        if (gameTime % 10L == 0){
+        if (gameTime % 20L == 3){
             if (!getItem(BUCKET_INPUT).isEmpty()) {
                 tank.executeIfPresent(lvl, tankBlockEntity ->
                         {
@@ -192,6 +192,7 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
                 );
             }
             recountMaxSpeed();
+            setChanged();
         }
 
         fuelTick(lvl, gameTime);
@@ -347,7 +348,6 @@ public class EnginePanelBlockEntity extends ExtendedBlockEntity implements Basic
     }
 
     public boolean canLaunch(float distance) {
-        Debug.log("Can launch " + FluidConstants.toMillibuckets(getFuel()) + " > " + (recipe != null ? recipe.kmToMb(distance) : 1));
         return recipe != null && FluidConstants.toMillibuckets(getFuel()) > recipe.kmToMb(distance);
     }
 

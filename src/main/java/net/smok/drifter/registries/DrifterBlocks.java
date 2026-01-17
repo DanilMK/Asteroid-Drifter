@@ -123,16 +123,16 @@ public final class DrifterBlocks {
 
     // Engine Nuzzles
     public static final RegistryEntry<EngineNozzleBlock> STEEL_NUZZLE_BLOCK = BLOCKS.register("steel_engine_nuzzle",
-            () -> new EngineNozzleBlock(steelProperties(), ShipConfig.startSpeed() / 16));
+            () -> new EngineNozzleBlock(steelProperties(), 1f / 16));
 
     public static final RegistryEntry<EngineNozzleBlock> DESH_NUZZLE_BLOCK = BLOCKS.register("desh_engine_nuzzle",
-            () -> new EngineNozzleBlock(steelProperties(), ShipConfig.startSpeed() / 8));
+            () -> new EngineNozzleBlock(steelProperties(), 1f / 8));
 
     public static final RegistryEntry<EngineNozzleBlock> OSTRUM_NUZZLE_BLOCK = BLOCKS.register("ostrum_engine_nuzzle",
-            () -> new EngineNozzleBlock(steelProperties(), ShipConfig.startSpeed() / 4));
+            () -> new EngineNozzleBlock(steelProperties(), 1f / 4));
 
     public static final RegistryEntry<EngineNozzleBlock> CALORITE_NUZZLE_BLOCK = BLOCKS.register("calorite_engine_nuzzle",
-            () -> new EngineNozzleBlock(steelProperties(), ShipConfig.startSpeed() / 2));
+            () -> new EngineNozzleBlock(steelProperties(), 1f / 2));
 
 
     // Engine block
