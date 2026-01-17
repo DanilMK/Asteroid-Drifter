@@ -8,7 +8,7 @@ import net.minecraft.world.inventory.DataSlot;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class SavedDataSlot<T> {
+public abstract class SavedDataSlot<T> implements Savable {
 
     private T value;
 
@@ -25,8 +25,10 @@ public abstract class SavedDataSlot<T> {
         return this;
     }
 
+    @Override
     public abstract void load(CompoundTag compoundTag);
 
+    @Override
     public abstract void save(CompoundTag compoundTag);
 
 

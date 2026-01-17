@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public final class BlockEntityPosition<T extends BlockEntity> {
+public final class BlockEntityPosition<T extends BlockEntity> implements Savable {
     private @Nullable BlockPos pos;
     private final String name;
     private final BlockEntityType<T> blockEntityType;
@@ -34,11 +34,13 @@ public final class BlockEntityPosition<T extends BlockEntity> {
         this.pos = pos;
     }
 
+    @Override
     public void load(CompoundTag compoundTag) {
         if (compoundTag.contains(name, Tag.TAG_COMPOUND))
             pos = NbtUtils.readBlockPos(compoundTag.getCompound(name));
     }
 
+    @Override
     public void save(CompoundTag compoundTag) {
         if (pos != null) compoundTag.put(name, NbtUtils.writeBlockPos(pos));
     }
