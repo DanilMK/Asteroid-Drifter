@@ -4,9 +4,9 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.util.RandomSource;
 import net.smok.drifter.blocks.controller.PathGenerator;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.events.ShipEvent;
 import net.smok.drifter.recipies.AsteroidRecipe;
 import net.smok.drifter.recipies.Path;
+import net.smok.drifter.recipies.PathEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -38,9 +38,9 @@ public class ComplexPathGenerator implements PathGenerator {
                 AsteroidRecipe recipe = getRandomRecipe(controller.getLevel(), controller, random, distance);
 
                 if (recipe == null) continue;
-                List<Pair<ShipEvent, Integer>> events = getRandomEvents(random, recipe, distance);
-                asteroids.add(Path.of(recipe, x, y, distance, ring, events));
-            }
+                List<Pair<PathEvent, Integer>> events = getRandomEvents(random, recipe, distance);
+                asteroids.add(Path.of(controller.getFutureEventsContainer(), recipe, x, y, distance, ring, events));
+             }
 
         }
     }

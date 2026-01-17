@@ -21,8 +21,9 @@ public record PathEvent(ResourceLocation shipEvent, float secondInDanger, float 
     ).apply(instance, PathEvent::new));
 
 
+
     public @Nullable ShipEvent getShipEvent() {
-        return ShipEventRegistries.getCollision(shipEvent);
+        return ShipEventRegistries.getShipEvent(shipEventId);
     }
 
     public @NotNull Component toComponent() {

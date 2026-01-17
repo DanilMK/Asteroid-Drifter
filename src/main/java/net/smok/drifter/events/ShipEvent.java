@@ -31,7 +31,7 @@ public interface ShipEvent {
             public void load(CompoundTag compoundTag) {
                 if (compoundTag.contains("collisionType")) {
                     ResourceLocation collisionId = new ResourceLocation(compoundTag.getString("collisionType"));
-                    ShipEvent shipEvent = ShipEventRegistries.getCollision(collisionId);
+                    ShipEvent shipEvent = ShipEventRegistries.getShipEvent(collisionId);
                     if (shipEvent != null) setValue(new Pair<>(collisionId, shipEvent));
                 }
             }

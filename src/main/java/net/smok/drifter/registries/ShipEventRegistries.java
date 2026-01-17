@@ -32,29 +32,29 @@ public class ShipEventRegistries {
 
     public static void init() {}
 
-    public static ResourceKey<Registry<ShipEventType<?>>> COLLISION_TYPE_KEY =
+    public static ResourceKey<Registry<ShipEventType<?>>> SHIP_EVENT_TYPE_KEY =
             ResourceKey.createRegistryKey(new ResourceLocation(Values.MOD_ID, "ship/collision"));
 
 
-    public static Registry<ShipEventType<?>> COLLISION_TYPES = new MappedRegistry<>(COLLISION_TYPE_KEY, Lifecycle.stable());
+    public static Registry<ShipEventType<?>> SHIP_EVENT_TYPES = new MappedRegistry<>(SHIP_EVENT_TYPE_KEY, Lifecycle.stable());
 
     public static final ShipEventType<AsteroidCollision> ASTEROID_COLLISION_TYPE = register("asteroid", AsteroidCollision::codec);
 
-    private static final Map<ResourceLocation, ShipEvent> COLLISIONS = new HashMap<>();
+    public static final Map<ResourceLocation, ShipEvent> SHIP_EVENTS = new HashMap<>();
 
-    public static ShipEvent getCollision(ResourceLocation key) {
-        return COLLISIONS.get(key);
+    public static ShipEvent getShipEvent(ResourceLocation key) {
+        return SHIP_EVENTS.get(key);
     }
 
-    public static Pair<ResourceLocation, ShipEvent> getRandomCollision(@NotNull RandomSource random) {
-        if (COLLISIONS.isEmpty()) return null;
-        List<Map.Entry<ResourceLocation, ShipEvent>> list = COLLISIONS.entrySet().stream().toList();
+    public static Pair<ResourceLocation, ShipEvent> getRandomShipEvent(@NotNull RandomSource random) {
+        if (SHIP_EVENTS.isEmpty()) return null;
+        List<Map.Entry<ResourceLocation, ShipEvent>> list = SHIP_EVENTS.entrySet().stream().toList();
         Map.Entry<ResourceLocation, ShipEvent> entry = list.get(random.nextInt(list.size()));
         return new Pair<>(entry.getKey(), entry.getValue());
     }
 
     private static <M extends ShipEvent> ShipEventType<M> register(String name, ShipEventType<M> type) {
-        return Registry.register(COLLISION_TYPES, new ResourceLocation(Values.MOD_ID, name), type);
+        return Registry.register(SHIP_EVENT_TYPES, new ResourceLocation(Values.MOD_ID, name), type);
     }
 
     public static class CollisionRegistration extends SimpleJsonResourceReloadListener implements IdentifiableResourceReloadListener {
@@ -65,7 +65,7 @@ public class ShipEventRegistries {
 
         @Override
         protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
-            COLLISIONS.clear();
+            SHIP_EVENTS.clear();
 
             object.forEach((resourceLocation, jsonElement) -> {
                 JsonObject obj = GsonHelper.convertToJsonObject(jsonElement, "events");
@@ -73,12 +73,12 @@ public class ShipEventRegistries {
                     JsonElement typeElement = obj.get("type");
                     if (typeElement.isJsonPrimitive()) {
                         ResourceLocation typeId = new ResourceLocation(typeElement.getAsString());
-                        ShipEventType<?> eventType = COLLISION_TYPES.get(typeId);
+                        ShipEventType<?> eventType = SHIP_EVENT_TYPES.get(typeId);
                         if (eventType != null) {
                             Codec<? extends ShipEvent> codec = eventType.codec(resourceLocation);
                             DataResult<? extends ShipEvent> dataResult = codec.parse(JsonOps.INSTANCE, obj);
                             ShipEvent shipEvent = dataResult.getOrThrow(false, Debug::err);
-                            COLLISIONS.put(resourceLocation, shipEvent);
+                            SHIP_EVENTS.put(resourceLocation, shipEvent);
 
                         }
                     }
