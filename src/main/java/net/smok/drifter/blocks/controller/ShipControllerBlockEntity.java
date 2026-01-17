@@ -63,7 +63,6 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
     private final SavedDataSlot<Pair<ResourceLocation, ShipEvent>> collisionType = ShipEvent.createSavedData();
     private final SavedDataSlot<Integer> escapeDangerTime = SavedDataSlot.intValue("escapeDangerTime", 0, ESCAPE_DANGER_TIME); // in ticks
     private final SavedDataSlot<Boolean> stand = SavedDataSlot.booleanValue("stand");
-    private final SavedDataSlot<Integer> completedEvents = SavedDataSlot.intValue("completedEvents");
     private int shipMoving;
     private int clientTick = 20;
 
@@ -79,7 +78,7 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
 
     private final List<SavedDataSlot<?>> savedDataSlots = List.of(remainDistance, selectedAsteroid,
-            shipPosition, dangerPosition, collisionType, escapeDangerTime, stand, completedEvents);
+            shipPosition, dangerPosition, collisionType, escapeDangerTime, stand);
 
 
     public ShipControllerBlockEntity(BlockPos blockPos, BlockState blockState) {
@@ -195,7 +194,6 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
             });
             remainDistance.setValue(0f);
             reRollPaths();
-            completedEvents.setValue(0);
         }
         stand.setValue(true);
         engine.executeIfPresent(level, EnginePanelBlockEntity::resetSpeed);
@@ -287,10 +285,6 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
         return paths.get(selectedAsteroid.getValue());
     }
 
-    public int getCompletedEvents() {
-        return completedEvents.getValue();
-    }
-
     private void playSound(SoundEvent beaconActivate) {
         level.playSound(null, getBlockPos(), beaconActivate, SoundSource.BLOCKS, 2.0F, 0.5F);
     }
@@ -333,10 +327,6 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
     public boolean isLaunch() {
         return !stand.getValue();
-    }
-
-    public List<SavedDataSlot<?>> getDataSlots() {
-        return savedDataSlots;
     }
 
     public int getShipPosition() {

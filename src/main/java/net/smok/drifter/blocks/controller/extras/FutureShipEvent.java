@@ -9,9 +9,7 @@ import net.smok.drifter.blocks.alert.Alert;
 import net.smok.drifter.blocks.alert.AlertSound;
 import net.smok.drifter.blocks.alert.Icon;
 import net.smok.drifter.events.ShipEvent;
-import net.smok.drifter.recipies.PathEvent;
 import net.smok.drifter.registries.ShipEventRegistries;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,12 +18,6 @@ public class FutureShipEvent extends Alert {
     private final FutureEventsContainer container;
     private final ShipEvent shipEvent;
     private int ticks;
-
-    @Contract("_, _ -> new")
-    public static @Nullable FutureShipEvent fromPathEvent(FutureEventsContainer container, @NotNull PathEvent pathEvent) {
-        if (pathEvent.getShipEvent() == null) return null;
-        return new FutureShipEvent(container, pathEvent.alarmIcon(), pathEvent.getShipEvent(), (int) (pathEvent.alertTime() * 20f));
-    }
 
     public FutureShipEvent(FutureEventsContainer container, @NotNull ShipEvent shipEvent, int ticks) {
         super(container, shipEvent.id().toLanguageKey("ship_event"));

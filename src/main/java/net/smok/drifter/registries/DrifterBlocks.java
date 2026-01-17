@@ -20,7 +20,6 @@ import net.smok.drifter.blocks.engine.*;
 import net.smok.drifter.blocks.garden.*;
 import net.smok.drifter.blocks.structure.ShipStructureBlock;
 import net.smok.drifter.blocks.structure.ShipStructureBlockEntity;
-import net.smok.drifter.ShipConfig;
 import org.jetbrains.annotations.NotNull;
 
 public final class DrifterBlocks {
