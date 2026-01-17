@@ -5,9 +5,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.smok.drifter.blocks.controller.PathGenerator;
 import net.smok.drifter.blocks.controller.ShipControllerBlockEntity;
-import net.smok.drifter.events.ShipEvent;
 import net.smok.drifter.recipies.AsteroidRecipe;
 import net.smok.drifter.recipies.Path;
+import net.smok.drifter.recipies.PathEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -22,22 +22,24 @@ public class SimplePathGenerator implements PathGenerator {
 
 
     @Override
-    public void genAsteroidField(@NotNull ShipControllerBlockEntity controller, @NotNull RandomSource random, @NotNull List<Path> asteroids) {
+    public void genAsteroidField(@NotNull ShipControllerBlockEntity controller,
+                                 @NotNull RandomSource random, @NotNull List<Path> asteroids) {
         for (int i = 0; i < 8; i++) {
-            generatePlacedAsteroid(asteroids, i, random, controller.getLevel(), controller);
+            generatePlacedAsteroid(controller.getFutureEventsContainer(), asteroids, i, random, controller.getLevel(), controller);
         }
     }
 
 
-    private void generatePlacedAsteroid(List<Path> asteroids, int i, @NotNull RandomSource random, Level level, ShipControllerBlockEntity controller) {
+    private void generatePlacedAsteroid(FutureEventsContainer container, List<Path> asteroids, int i,
+                                        @NotNull RandomSource random, Level level, ShipControllerBlockEntity controller) {
 
         int xDist = startX[i] + random.nextInt(-ASTEROID_SCATTER, +ASTEROID_SCATTER);
         int yDist = startY[i] + random.nextInt(-ASTEROID_SCATTER, +ASTEROID_SCATTER);
         int distance = (xDist * xDist + yDist * yDist) * DISTANCE_FACTOR;
         AsteroidRecipe recipe = getRandomRecipe(level, controller, random, distance);
         if (recipe == null) return;
-        List<Pair<ShipEvent, Integer>> events = getRandomEvents(random, recipe, distance);
-        asteroids.add(Path.of(recipe, xDist, yDist, distance, 1, events));
+        List<Pair<PathEvent, Integer>> events = getRandomEvents(random, recipe, distance);
+        asteroids.add(Path.of(container, recipe, xDist, yDist, distance, 1, events));
     }
 
 }

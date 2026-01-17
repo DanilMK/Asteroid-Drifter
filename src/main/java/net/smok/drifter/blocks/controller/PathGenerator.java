@@ -3,7 +3,6 @@ package net.smok.drifter.blocks.controller;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
-import net.smok.drifter.events.ShipEvent;
 import net.smok.drifter.recipies.AsteroidRecipe;
 import net.smok.drifter.recipies.Path;
 import net.smok.drifter.recipies.PathEvent;
@@ -27,12 +26,12 @@ public interface PathGenerator {
     }
 
     @NotNull
-    default List<Pair<ShipEvent, Integer>> getRandomEvents(@NotNull RandomSource random, AsteroidRecipe recipe, int distance) {
-        List<Pair<ShipEvent, Integer>> events = new ArrayList<>();
+    default List<Pair<PathEvent, Integer>> getRandomEvents(@NotNull RandomSource random, AsteroidRecipe recipe, int distance) {
+        List<Pair<PathEvent, Integer>> events = new ArrayList<>();
         for (PathEvent pathEvent : recipe.pathEvents()) {
-            if (pathEvent.chance() > random.nextFloat()) continue;
+            if (pathEvent.chance() <= random.nextFloat()) continue;
             int dist = random.nextInt((int) (pathEvent.minPathTraveled() * distance), (int) (pathEvent.maxPathTraveled() * distance));
-            events.add(new Pair<>(pathEvent.getShipEvent(), dist));
+            events.add(new Pair<>(pathEvent, dist));
         }
         return events;
     }
