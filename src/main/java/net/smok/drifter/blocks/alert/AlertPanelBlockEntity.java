@@ -33,6 +33,7 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
 
     private final Set<BlockPos> lamps = new HashSet<>();
     private final List<AlertContainer> alerts = new ArrayList<>();
+    private final Set<BlockPos> detectors = new HashSet<>();
 
 
     public AlertPanelBlockEntity(BlockPos blockPos, BlockState blockState) {
@@ -57,11 +58,41 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
     }
 
     public void tick(@NotNull ServerLevel lvl) {
+        if (lvl.getGameTime() % 20L == 0L) {
+
+            // Checks and restore the correspondence between stored alarms and alarms in detectors
+            boolean changed = false;
+            for (BlockPos pos : new HashSet<>(detectors)) {
+                BlockEntity blockEntity = lvl.getBlockEntity(pos);
+                if (blockEntity instanceof Detector detector) {
+                    int size = detector.getAllAlerts().size();
+
+                    int max = -1;
+                    for (AlertContainer alert : alerts)
+                        if (alert.blockPos.equals(pos)) max = Math.max(max, alert.index);
+                    max++;
+
+                    if (max < size) {
+                        for (int i = max; i < size; i++) {
+                            alerts.add(new AlertContainer(pos, i));
+                        }
+                        changed = true;
+                    } else if (max > size) {
+                        alerts.removeIf(ac -> ac.blockPos.equals(pos) && ac.index >= size);
+                        changed = true;
+                    }
+
+                } else detectors.remove(pos);
+            }
+            if (changed) setChanged();
+            return;
+        }
         if (lvl.getGameTime() % 20L != 1L) return;
 
         List<Alert> activeAlerts = getAllAlerts().stream().filter(Alert::isActiveOrTested).toList();
         boolean empty = activeAlerts.isEmpty();
 
+        // Send all active alerts to player and turn on lamps
         for (BlockPos lampPose : new HashSet<>(lamps)) {
             BlockState blockState = lvl.getBlockState(lampPose);
             if (blockState.is(DrifterBlocks.ALERT_LAMP.get())) {
@@ -88,6 +119,11 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
             lamps.add(NbtUtils.writeBlockPos(pos));
         compoundTag.put("lamps", lamps);
 
+        ListTag detectors = new ListTag();
+        for (BlockPos pos : this.detectors)
+            detectors.add(NbtUtils.writeBlockPos(pos));
+        compoundTag.put("detectors", detectors);
+
         ListTag alertsList = new ListTag();
         for (AlertContainer alert : alerts) {
             CompoundTag tag = new CompoundTag();
@@ -103,9 +139,16 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
         super.load(compoundTag);
 
 
+        lamps.clear();
         if (compoundTag.contains("lamps", CompoundTag.TAG_LIST)) {
             ListTag lamps = compoundTag.getList("lamps", CompoundTag.TAG_COMPOUND);
             for (Tag lamp : lamps) this.lamps.add(NbtUtils.readBlockPos((CompoundTag) lamp));
+        }
+
+        detectors.clear();
+        if (compoundTag.contains("detectors", CompoundTag.TAG_LIST)) {
+            ListTag detectors = compoundTag.getList("detectors", CompoundTag.TAG_COMPOUND);
+            for (Tag detector : detectors) this.detectors.add(NbtUtils.readBlockPos((CompoundTag) detector));
         }
 
         alerts.clear();
@@ -163,14 +206,16 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
             setChanged();
             return true;
         }
-        if (other instanceof Detector detector && detector.isExtreme() &&
-                (alerts.isEmpty() || alerts.stream().noneMatch(alertContainer -> alertContainer.blockPos.equals(pos)))) {
-            List<Alert> allAlerts = detector.getAllAlerts();
-            for (int i = 0; i < allAlerts.size(); i++) {
-                alerts.add(new AlertContainer(pos, i));
+        if (other instanceof Detector detector && detector.isExtreme()) {
+            detectors.add(pos);
+            if (alerts.isEmpty() || alerts.stream().noneMatch(alertContainer -> alertContainer.blockPos.equals(pos))) {
+                List<Alert> allAlerts = detector.getAllAlerts();
+                for (int i = 0; i < allAlerts.size(); i++) {
+                    alerts.add(new AlertContainer(pos, i));
+                }
+                setChanged();
+                return true;
             }
-            setChanged();
-            return true;
         }
         return false;
     }
@@ -179,6 +224,7 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
     public void clear() {
         lamps.clear();
         alerts.clear();
+        detectors.clear();
         setChanged();
     }
 
