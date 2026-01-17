@@ -1,5 +1,7 @@
 package net.smok.drifter.blocks.alert;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -50,14 +52,14 @@ public class Icon {
             new Icon(Items.EMERALD,9, false)
     };
 
-    private ResourceLocation id;
+    private @NotNull ResourceLocation id = Values.ALERT_EFFECT.getId();
     private int colorIndex;
     private boolean paintIcon;
     private @Nullable ItemStack asItem;
     private @Nullable MobEffect asMobEffect;
 
     public Icon(@NotNull MobEffect id, int colorIndex, boolean paintIcon) {
-        this.id = BuiltInRegistries.MOB_EFFECT.getKey(id);
+        this.id = Objects.requireNonNull(BuiltInRegistries.MOB_EFFECT.getKey(id));
         this.colorIndex = colorIndex;
         this.paintIcon = paintIcon;
         this.asItem = null;
@@ -85,7 +87,7 @@ public class Icon {
         asMobEffect = preset.asMobEffect;
     }
 
-    public Icon(ResourceLocation id, int colorIndex, boolean paintIcon) {
+    public Icon(@NotNull ResourceLocation id, int colorIndex, boolean paintIcon) {
         this.colorIndex = colorIndex;
         this.paintIcon = paintIcon;
         setId(id);
@@ -109,7 +111,7 @@ public class Icon {
         setId(new ResourceLocation(id));
     }
 
-    public ResourceLocation getId() {
+    public @NotNull ResourceLocation getId() {
         return id;
     }
 
