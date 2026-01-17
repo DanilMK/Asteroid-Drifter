@@ -99,9 +99,18 @@ public class AlertPanelBlockEntity extends ExtendedBlockEntity implements ExtraD
                 if (!empty) {
                     AABB aABB = new AABB(lampPose).inflate(8d);
                     List<ServerPlayer> list = lvl.getEntitiesOfClass(ServerPlayer.class, aABB);
-                    for (ServerPlayer player : list)
+                    for (ServerPlayer player : list) {
+                        FriendlyByteBuf buf = PacketByteBufs.create();
+                        buf.writeInt(activeAlerts.size());
+                        activeAlerts.forEach(alert -> {
+                            buf.writeComponent(alert.text()).writeComponent(alert.subText());
+                            Icon.BYTE_CODEC.encode(buf, alert.getIcon());
+                            AlertSound.BYTE_CODEC.encode(buf, alert.getSound());
+                        });
+
                         ServerPlayNetworking.send(player, new ResourceLocation(Values.MOD_ID, "alert_player_holder"),
-                                PacketByteBufs.create().writeBlockPos(getBlockPos()));
+                                buf);
+                    }
                 }
 
                 lvl.setBlock(lampPose, blockState.setValue(AlertLampBlock.COLOR, empty ? 0 : activeAlerts.get(0).getColor()), 3);

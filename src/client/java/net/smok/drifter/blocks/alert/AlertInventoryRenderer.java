@@ -18,7 +18,7 @@ public class AlertInventoryRenderer {
 
     public static void renderEffects(GuiGraphics guiGraphics, int imageRight, int imageTop, int freeSpace,
                                      int mouseX, int mouseY, boolean noEffects, Font font) {
-        List<Alert> alerts = AlertPlayerHolder.INSTANCE.getActiveAlerts();
+        List<AlertPlayerHolder.AlertHolder> alerts = AlertPlayerHolder.INSTANCE.getActiveAlerts();
         if (alerts.isEmpty() || freeSpace < 32) return;
 
         int x = getX(imageRight, freeSpace, noEffects);
@@ -30,17 +30,17 @@ public class AlertInventoryRenderer {
         int y = imageTop;
 
         if (bigSize) {
-            for (Alert alert : alerts) {
+            for (AlertPlayerHolder.AlertHolder alert : alerts) {
                 renderBigAlert(guiGraphics, font, x, y, alert);
                 y += height;
             }
         } else {
-            for (Alert alert : alerts) {
+            for (AlertPlayerHolder.AlertHolder alert : alerts) {
                 renderSmallAlert(guiGraphics, x, y, alert);
                 y += height;
             }
             y = imageTop;
-            for (Alert alert : alerts) {
+            for (AlertPlayerHolder.AlertHolder alert : alerts) {
                 if (renderHoverText(guiGraphics, font, x, y, mouseX, mouseY, alert)) break;
                 y += height;
             }
@@ -61,26 +61,26 @@ public class AlertInventoryRenderer {
     }
 
 
-    public static void renderBigAlert(@NotNull GuiGraphics guiGraphics, @NotNull Font font, int x, int y, @NotNull Alert alert) {
+    public static void renderBigAlert(@NotNull GuiGraphics guiGraphics, @NotNull Font font, int x, int y, @NotNull AlertPlayerHolder.AlertHolder alert) {
         BIG_FRAME.draw(guiGraphics, x, y);
         AlertDisplay.renderIcon(guiGraphics, alert.getIcon(), x + 7, y + 7);
-        guiGraphics.drawString(font, alert.text(), x + 28, y + 6, 16777215);
-        guiGraphics.drawString(font, alert.subText(), x + 28, y + 16, 16777215);
+        guiGraphics.drawString(font, alert.getText(), x + 28, y + 6, 16777215);
+        guiGraphics.drawString(font, alert.getSubText(), x + 28, y + 16, 16777215);
     }
 
-    public static void renderSmallAlert(@NotNull GuiGraphics guiGraphics, int x, int y, @NotNull Alert alert) {
+    public static void renderSmallAlert(@NotNull GuiGraphics guiGraphics, int x, int y, @NotNull AlertPlayerHolder.AlertHolder alert) {
         SMALL_FRAME.draw(guiGraphics, x, y);
         AlertDisplay.renderIcon(guiGraphics, alert.getIcon(), x + 7, y + 7);
     }
 
-    public static void renderOverlayAlert(@NotNull GuiGraphics guiGraphics, int x, int y, @NotNull Alert alert) {
+    public static void renderOverlayAlert(@NotNull GuiGraphics guiGraphics, int x, int y, @NotNull AlertPlayerHolder.AlertHolder alert) {
         OVER_FRAME.draw(guiGraphics, x, y);
         AlertDisplay.renderIcon(guiGraphics, alert.getIcon(), x + 3, y + 3);
     }
 
-    public static boolean renderHoverText(@NotNull GuiGraphics guiGraphics, Font font, int x, int y, int mouseX, int mouseY, @NotNull Alert alert) {
+    public static boolean renderHoverText(@NotNull GuiGraphics guiGraphics, Font font, int x, int y, int mouseX, int mouseY, @NotNull AlertPlayerHolder.AlertHolder alert) {
         if (Hovered.isHover(x, y, x + 32, y + 32, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font, List.of(alert.text(), alert.subText()), Optional.empty(), mouseX, mouseY);
+            guiGraphics.renderTooltip(font, List.of(alert.getText(), alert.getSubText()), Optional.empty(), mouseX, mouseY);
             return true;
         }
         return false;
