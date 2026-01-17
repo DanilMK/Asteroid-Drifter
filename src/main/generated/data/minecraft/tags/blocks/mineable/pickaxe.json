@@ -17,6 +17,7 @@
     "asteroid_drifter:ship_structure_block",
     "asteroid_drifter:oil_sludge",
     "asteroid_drifter:cryo_sludge",
-    "asteroid_drifter:bio_sludge"
+    "asteroid_drifter:bio_sludge",
+    "asteroid_drifter:detector"
   ]
 }
