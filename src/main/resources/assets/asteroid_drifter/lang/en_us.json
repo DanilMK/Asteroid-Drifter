@@ -110,5 +110,7 @@
   "subtitles.asteroid_drifter.biohazard_alarm": "Biohazard Alarm",
   "subtitles.asteroid_drifter.siren_alarm": "Siren Alarm",
   "subtitles.asteroid_drifter.fire_alarm": "Fire Alarm",
-  "subtitles.asteroid_drifter.galaxy_police_alarm": "Galaxy Police Alarm"
+  "subtitles.asteroid_drifter.galaxy_police_alarm": "Galaxy Police Alarm",
+  "ship_event.asteroid_drifter.asteroid_collision_big": "Field of large asteroids",
+  "ship_event.asteroid_drifter.asteroid_collision_small": "Field of small asteroids"
 }

@@ -139,11 +139,6 @@ public class ShipControllerBlockEntity extends ExtendedBlockEntity implements Sh
 
         ShipStructure.findStructure(lvl, getBlockPos()).ifPresent(structure ->
                 getSelectedRecipe().startEvent((int) getRemainDistance(), lvl, structure));
-
-        if (getSelectedRecipe() != null) {
-            boolean b = getSelectedRecipe().anyAlert();
-            lvl.setBlock(getBlockPos().above(), Blocks.REDSTONE_LAMP.defaultBlockState().setValue(RedstoneLampBlock.LIT, b), 3);
-        }
     }
 
 

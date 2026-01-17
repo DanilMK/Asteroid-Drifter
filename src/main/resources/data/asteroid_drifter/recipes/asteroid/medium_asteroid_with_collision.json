@@ -1,0 +1,23 @@
+{
+  "type": "asteroid_drifter:asteroid",
+  "icon": "asteroid_drifter:medium_asteroid",
+  "size": 2,
+  "tooltips": [
+    "item.asteroid_drifter.medium_asteroid"
+  ],
+  "path_events": [
+    {
+      "event": "asteroid_drifter:asteroid_collision_small",
+      "alert_icon": {
+        "id": "asteroid_drifter:mob_effect/alert",
+        "color": 7,
+        "paintColor": true
+      },
+      "alert_time": 0.5,
+      "chance": 0.3,
+      "min_path_traveled": 0.5,
+      "max_path_traveled": 0.8
+    }
+  ],
+  "configured_feature": "asteroid_drifter:medium_asteroid"
+}
