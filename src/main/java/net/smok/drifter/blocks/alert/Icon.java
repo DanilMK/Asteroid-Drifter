@@ -177,6 +177,12 @@ public class Icon {
         return icon;
     });
 
+    public static final Codec<Icon> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ResourceLocation.CODEC.fieldOf("id").forGetter(Icon::getId),
+            Codec.intRange(0, 15).optionalFieldOf("color", 3).forGetter(Icon::getColorIndex),
+            Codec.BOOL.optionalFieldOf("paintColor", false).forGetter(Icon::isPaintIcon)
+    ).apply(instance, Icon::new));
+
 
     private static final Color[] COLORS = new Color[]{Color.black, Color.darkGray, Color.gray, Color.white,
             new Color(0x5a381e), Color.red, Color.orange, Color.yellow, Color.green, new Color(0x455522),
